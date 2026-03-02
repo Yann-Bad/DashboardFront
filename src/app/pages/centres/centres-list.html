@@ -1,0 +1,108 @@
+<div class="list-page">
+  <div class="page-header">
+    <h1>Centres de Gestion</h1>
+    <p class="subtitle">Liste complète avec filtres et pagination</p>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-card">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label for="filterCode">Code</label>
+        <input id="filterCode" type="text" [(ngModel)]="filter.code" placeholder="ex: CDG01" />
+      </div>
+      <div class="filter-field">
+        <label for="filterLibelle">Libellé</label>
+        <input id="filterLibelle" type="text" [(ngModel)]="filter.libelle" placeholder="Rechercher…" />
+      </div>
+      <div class="filter-field filter-field--small">
+        <label for="filterTenant">Tenant ID</label>
+        <input id="filterTenant" type="number" [(ngModel)]="filter.tenantId" placeholder="—" min="1" />
+      </div>
+      <div class="filter-field filter-field--small">
+        <label for="filterPageSize">Par page</label>
+        <select id="filterPageSize" [(ngModel)]="filter.pageSize" (change)="onSearch()">
+          @for (n of pageSizeOptions; track n) {
+            <option [value]="n">{{ n }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-primary" (click)="onSearch()">Rechercher</button>
+        <button class="btn-secondary" (click)="onReset()">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p>Chargement…</p>
+    </div>
+  } @else if (error) {
+    <div class="error-banner">{{ error }}</div>
+  } @else if (result) {
+    <!-- Results summary -->
+    <div class="results-info">
+      <span>{{ result.totalCount | number }} résultat(s) — page {{ result.page }} / {{ result.totalPages }}</span>
+    </div>
+
+    @if (result.data.length === 0) {
+      <div class="empty-state">Aucun centre trouvé pour ces critères.</div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Libellé</th>
+              <th>Adresse</th>
+              <th class="text-right">Employeurs</th>
+              <th class="text-right">Employés</th>
+              <th>Tenant</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of result.data; track c.id) {
+              <tr>
+                <td><code>{{ c.code }}</code></td>
+                <td>{{ c.libelle }}</td>
+                <td class="text-muted">{{ c.adresse ?? '—' }}</td>
+                <td class="text-right">{{ c.nombreEmployeurs | number }}</td>
+                <td class="text-right">{{ c.nombreEmployes | number }}</td>
+                <td>{{ c.tenantId ?? '—' }}</td>
+                <td>
+                  <a [routerLink]="['/centres', c.id]" class="btn-action">Détail</a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button
+          class="page-btn"
+          [disabled]="result.page === 1"
+          (click)="goToPage(result.page - 1)"
+        >‹ Préc.</button>
+
+        @for (p of pages; track p) {
+          <button
+            class="page-btn"
+            [class.active]="p === result.page"
+            (click)="goToPage(p)"
+          >{{ p }}</button>
+        }
+
+        <button
+          class="page-btn"
+          [disabled]="result.page === result.totalPages"
+          (click)="goToPage(result.page + 1)"
+        >Suiv. ›</button>
+      </div>
+    }
+  }
+</div>

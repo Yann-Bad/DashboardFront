@@ -1,0 +1,101 @@
+<div class="detail-page">
+  @if (loading) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p>Chargement…</p>
+    </div>
+  } @else if (error) {
+    <div class="error-banner">
+      {{ error }}
+      <a routerLink="/centres" class="btn-link" style="margin-left:1rem">← Retour à la liste</a>
+    </div>
+  } @else if (centre) {
+    <!-- Header -->
+    <div class="detail-header">
+      <div>
+        <a routerLink="/centres" class="back-link">← Centres de Gestion</a>
+        <h1>{{ centre.libelle }}</h1>
+        <span class="code-badge">{{ centre.code }}</span>
+        @if (centre.ancienCode) {
+          <span class="code-badge secondary">Ancien: {{ centre.ancienCode }}</span>
+        }
+      </div>
+    </div>
+
+    <!-- Counters -->
+    <div class="stats-grid">
+      @for (c of counters; track c.label) {
+        <div class="stat-card" [attr.data-color]="c.color">
+          <div class="stat-icon">{{ c.icon }}</div>
+          <div class="stat-body">
+            <span class="stat-value">{{ c.value | number }}</span>
+            <span class="stat-label">{{ c.label }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Details grid -->
+    <div class="details-grid">
+      <!-- General info -->
+      <div class="info-card">
+        <h2>Informations générales</h2>
+        <dl class="info-list">
+          <dt>ID</dt><dd>{{ centre.id }}</dd>
+          <dt>Code</dt><dd><code>{{ centre.code ?? '—' }}</code></dd>
+          <dt>Libellé</dt><dd>{{ centre.libelle ?? '—' }}</dd>
+          <dt>Adresse</dt><dd>{{ centre.adresse ?? '—' }}</dd>
+          <dt>Tenant</dt><dd>{{ centre.tenantId ?? '—' }}</dd>
+          <dt>Tag Production</dt><dd>{{ centre.tagProd ?? '—' }}</dd>
+          <dt>Ancien Code</dt><dd>{{ centre.ancienCode ?? '—' }}</dd>
+          <dt>Ancien Code Pension</dt><dd>{{ centre.ancienCodePension ?? '—' }}</dd>
+        </dl>
+      </div>
+
+      <!-- Relations -->
+      <div class="info-card">
+        <h2>Relations</h2>
+        <dl class="info-list">
+          <dt>Établissement</dt>
+          <dd>
+            @if (centre.etablissementId) {
+              <span>{{ centre.etablissementLibelle }} <span class="text-muted">(#{{ centre.etablissementId }})</span></span>
+            } @else {
+              <span class="text-muted">—</span>
+            }
+          </dd>
+          <dt>Organigramme</dt>
+          <dd>
+            @if (centre.organigrammeId) {
+              <span>{{ centre.organigrammeLibelle }} <span class="text-muted">(#{{ centre.organigrammeId }})</span></span>
+            } @else {
+              <span class="text-muted">—</span>
+            }
+          </dd>
+          <dt>Entité Adresse</dt>
+          <dd>
+            @if (centre.entiteAdresseId) {
+              <span>{{ centre.entiteAdresseLibelle }} <span class="text-muted">(#{{ centre.entiteAdresseId }})</span></span>
+            } @else {
+              <span class="text-muted">—</span>
+            }
+          </dd>
+        </dl>
+      </div>
+
+      <!-- Audit -->
+      <div class="info-card">
+        <h2>Audit</h2>
+        <dl class="info-list">
+          <dt>Date de création</dt>
+          <dd>{{ centre.dateCreated | date:'dd/MM/yyyy HH:mm' }}</dd>
+          <dt>Dernière modification</dt>
+          <dd>{{ centre.lastUpdated | date:'dd/MM/yyyy HH:mm' }}</dd>
+          <dt>Créé par (ID)</dt><dd>{{ centre.userCreatedId }}</dd>
+          <dt>Modifié par (ID)</dt><dd>{{ centre.userUpdatedId }}</dd>
+          <dt>Version</dt><dd>{{ centre.version }}</dd>
+        </dl>
+      </div>
+    </div>
+  }
+</div>

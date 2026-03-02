@@ -1,0 +1,70 @@
+<div class="dashboard-page">
+  <div class="page-header">
+    <h1>Tableau de Bord</h1>
+    <p class="subtitle">Vue d'ensemble des centres de gestion</p>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p>Chargement des statistiques…</p>
+    </div>
+  } @else if (error) {
+    <div class="error-banner">{{ error }}</div>
+  } @else if (stats) {
+    <!-- Stat cards -->
+    <div class="stats-grid">
+      @for (card of statCards; track card.label) {
+        <div class="stat-card" [attr.data-color]="card.color">
+          <div class="stat-icon">{{ card.icon }}</div>
+          <div class="stat-body">
+            <span class="stat-value">{{ card.value | number }}</span>
+            <span class="stat-label">{{ card.label }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Top 5 table -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Top 5 Centres par Nombre d'Employeurs</h2>
+        <a routerLink="/centres" class="btn-link">Voir tous les centres →</a>
+      </div>
+      @if (stats.top5CentresParEmployeurs.length === 0) {
+        <p class="empty-state">Aucun centre disponible.</p>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Code</th>
+              <th>Libellé</th>
+              <th>Adresse</th>
+              <th class="text-right">Employeurs</th>
+              <th class="text-right">Employés</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (centre of stats.top5CentresParEmployeurs; track centre.id; let i = $index) {
+              <tr>
+                <td>
+                  <span class="rank-badge" [attr.data-rank]="i + 1">{{ i + 1 }}</span>
+                </td>
+                <td><code>{{ centre.code }}</code></td>
+                <td>{{ centre.libelle }}</td>
+                <td class="text-muted">{{ centre.adresse ?? '—' }}</td>
+                <td class="text-right">{{ centre.nombreEmployeurs | number }}</td>
+                <td class="text-right">{{ centre.nombreEmployes | number }}</td>
+                <td>
+                  <a [routerLink]="['/centres', centre.id]" class="btn-action">Détail</a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</div>

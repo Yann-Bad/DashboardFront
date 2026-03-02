@@ -1,0 +1,108 @@
+.detail-page {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.detail-header {
+  margin-bottom: 1.75rem;
+}
+.back-link {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+}
+.back-link:hover { text-decoration: underline; }
+.detail-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.5rem;
+}
+.code-badge {
+  display: inline-block;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  margin-right: 0.4rem;
+  font-family: monospace;
+}
+.code-badge.secondary {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/* Stats grid (reuse pattern) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.1rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.stat-icon { font-size: 1.5rem; }
+.stat-body { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.4rem; font-weight: 700; color: var(--color-text); }
+.stat-label { font-size: 0.72rem; color: var(--color-text-muted); margin-top: 0.15rem; }
+
+.stat-card[data-color='green']  { border-left: 4px solid #22c55e; }
+.stat-card[data-color='purple'] { border-left: 4px solid #a855f7; }
+.stat-card[data-color='orange'] { border-left: 4px solid #f97316; }
+.stat-card[data-color='teal']   { border-left: 4px solid #14b8a6; }
+.stat-card[data-color='red']    { border-left: 4px solid #ef4444; }
+.stat-card[data-color='indigo'] { border-left: 4px solid #6366f1; }
+
+/* Details grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+.info-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+}
+.info-card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+/* Definition list */
+.info-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.45rem 1rem;
+  margin: 0;
+}
+.info-list dt {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  align-self: center;
+  white-space: nowrap;
+}
+.info-list dd {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  margin: 0;
+  word-break: break-word;
+}

@@ -25,6 +25,79 @@
       }
     </div>
 
+    <!-- ============================================================ -->
+    <!-- Section : Répartition globale des employeurs                 -->
+    <!-- ============================================================ -->
+    <div class="section-card emp-repartition">
+      <div class="section-header">
+        <h2>Répartition des employeurs</h2>
+        <span class="text-muted">Total : {{ stats.totalEmployeurs | number }}</span>
+      </div>
+
+      <div class="emp-rep-grid">
+        <!-- Tuile total -->
+        <div class="emp-total-tile">
+          <span class="emp-total-value">{{ stats.totalEmployeurs | number }}</span>
+          <span class="emp-total-label">Employeurs immatriculés</span>
+          <span class="emp-total-sub">dont {{ stats.totalEmployes | number }} employé(s)</span>
+        </div>
+
+        <!-- Barres de progression -->
+        <div class="emp-bars">
+          @for (r of repartitionEmployeurs; track r.label) {
+            <div class="emp-bar-row" [attr.data-color]="r.couleur">
+              <div class="emp-bar-meta">
+                <span class="emp-bar-icon">{{ r.icon }}</span>
+                <span class="emp-bar-label">{{ r.label }}</span>
+                <span class="emp-bar-count">{{ r.valeur | number }}</span>
+                <span class="emp-bar-pct">{{ r.pourcentage }} %</span>
+              </div>
+              <div class="emp-bar-track">
+                <div class="emp-bar-fill" [style.width.%]="r.pourcentage"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Section : Répartition globale des employés                  -->
+    <!-- StatutEmployeId : 1=Actif | 2=Inactif                       -->
+    <!-- ============================================================ -->
+    <div class="section-card emp-repartition">
+      <div class="section-header">
+        <h2>Répartition des employés</h2>
+        <span class="text-muted">Actifs + Inactifs : {{ stats.employesActifs + stats.employesInactifs | number }}</span>
+      </div>
+
+      <div class="emp-rep-grid">
+        <!-- Tuile total -->
+        <div class="emp-total-tile">
+          <span class="emp-total-value">{{ stats.totalEmployes | number }}</span>
+          <span class="emp-total-label">Employés immatriculés</span>
+          <span class="emp-total-sub">dont {{ stats.employesActifs + stats.employesInactifs | number }} validé(s)</span>
+        </div>
+
+        <!-- Barres de progression -->
+        <div class="emp-bars">
+          @for (r of repartitionEmployes; track r.label) {
+            <div class="emp-bar-row" [attr.data-color]="r.couleur">
+              <div class="emp-bar-meta">
+                <span class="emp-bar-icon">{{ r.icon }}</span>
+                <span class="emp-bar-label">{{ r.label }}</span>
+                <span class="emp-bar-count">{{ r.valeur | number }}</span>
+                <span class="emp-bar-pct">{{ r.pourcentage }} %</span>
+              </div>
+              <div class="emp-bar-track">
+                <div class="emp-bar-fill" [style.width.%]="r.pourcentage"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
     <!-- Top 5 table -->
     <div class="section-card">
       <div class="section-header">

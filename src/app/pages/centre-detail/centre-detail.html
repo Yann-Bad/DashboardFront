@@ -35,6 +35,70 @@
       }
     </div>
 
+    <!-- Section : Répartition des employeurs -->
+    @if (employeurStats) {
+      <div class="emp-stats-section">
+        <h2 class="section-title">Répartition des employeurs</h2>
+        <div class="emp-stats-grid">
+
+          <!-- Total employeurs -->
+          <div class="emp-total-card">
+            <span class="emp-total-value">{{ employeurStats.totalEmployeurs | number }}</span>
+            <span class="emp-total-label">Employeurs immatriculés</span>
+            <span class="emp-total-sub">dont {{ employeurStats.totalEmployes | number }} employé (s)</span>
+          </div>
+
+          <!-- Barres de répartition -->
+          @for (r of employeurRepartition; track r.label) {
+            <div class="emp-bar-card" [attr.data-color]="r.color">
+              <div class="emp-bar-header">
+                <span class="emp-bar-icon">{{ r.icon }}</span>
+                <span class="emp-bar-label">{{ r.label }}</span>
+                <span class="emp-bar-pct">{{ r.pct }} %</span>
+              </div>
+              <div class="emp-bar-track">
+                <div class="emp-bar-fill" [style.width.%]="r.pct"></div>
+              </div>
+              <span class="emp-bar-value">{{ r.value | number }} employeur(s)</span>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
+    <!-- Section : Répartition des employés -->
+    @if (employeStats) {
+      <div class="emp-stats-section">
+        <h2 class="section-title">Répartition des employés</h2>
+        <div class="emp-stats-grid">
+
+          <!-- Total employés -->
+          <div class="emp-total-card">
+            <span class="emp-total-value">{{ employeStats.actif + employeStats.inactif | number }}</span>
+            <span class="emp-total-label">Employés validés</span>
+            <span class="emp-total-sub">sur {{ employeStats.totalEmployes | number }} immatriculé(s)</span>
+          </div>
+
+          <!-- Barres de répartition -->
+          @for (r of employeRepartition; track r.label) {
+            <div class="emp-bar-card" [attr.data-color]="r.color">
+              <div class="emp-bar-header">
+                <span class="emp-bar-icon">{{ r.icon }}</span>
+                <span class="emp-bar-label">{{ r.label }}</span>
+                <span class="emp-bar-pct">{{ r.pct | number:'1.1-1' }} %</span>
+              </div>
+              <div class="emp-bar-track">
+                <div class="emp-bar-fill" [style.width.%]="r.pct"></div>
+              </div>
+              <span class="emp-bar-value">{{ r.value | number }} employé(s)</span>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
     <!-- Details grid -->
     <div class="details-grid">
       <!-- General info -->

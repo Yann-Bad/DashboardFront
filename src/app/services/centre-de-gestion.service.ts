@@ -7,6 +7,8 @@ import {
   CentreDeGestionFilterDto,
   PagedResultDto,
   DashboardStatsDto,
+  CentreEmployeurStatsDto,
+  CentreEmployeStatsDto,
 } from '../models/centre-de-gestion.model';
 
 @Injectable({ providedIn: 'root' })
@@ -53,5 +55,31 @@ export class CentreDeGestionService {
   /** GET /api/CentreDeGestion/dashboard/stats */
   getDashboardStats(): Observable<DashboardStatsDto> {
     return this.http.get<DashboardStatsDto>(`${this.base}/dashboard/stats`);
+  }
+
+  /**
+   * Récupère les statistiques des employeurs rattachés au centre de gestion.
+   * Correspond à : GET /api/CentreDeGestion/:centreId/stats/employeurs
+   *
+   * @param centreId - Identifiant du centre de gestion
+   * @returns Observable contenant le DTO de statistiques employeurs
+   */
+  getEmployeurStats(centreId: number): Observable<CentreEmployeurStatsDto> {
+    return this.http.get<CentreEmployeurStatsDto>(
+      `${this.base}/${centreId}/stats/employeurs`
+    );
+  }
+
+  /**
+   * Récupère les statistiques des employés rattachés au centre de gestion.
+   * Correspond à : GET /api/CentreDeGestion/:centreId/stats/employes
+   *
+   * @param centreId - Identifiant du centre de gestion
+   * @returns Observable contenant le DTO de statistiques employés
+   */
+  getEmployeStats(centreId: number): Observable<CentreEmployeStatsDto> {
+    return this.http.get<CentreEmployeStatsDto>(
+      `${this.base}/${centreId}/stats/employes`
+    );
   }
 }

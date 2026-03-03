@@ -1,24 +1,20 @@
 <div class="app-shell">
-  <nav class="sidebar">
-    <div class="sidebar-brand">
-      <span class="brand-icon">??</span>
-      <span class="brand-name">Dashboard CDG</span>
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="brand-icon">📊</span>
+      <span class="brand-name">CNSS Dashboard</span>
     </div>
-    <ul class="nav-list">
-      <li>
-        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
-          <span class="nav-icon">??</span>
-          <span>Tableau de Bord</span>
-        </a>
-      </li>
-      <li>
-        <a routerLink="/centres" routerLinkActive="active" class="nav-item">
-          <span class="nav-icon">??</span>
-          <span>Centres de Gestion</span>
-        </a>
-      </li>
-    </ul>
-  </nav>
+    <nav class="header-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span>Tableau de Bord</span>
+      </a>
+      <a routerLink="/centres" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">🏢</span>
+        <span>Centres de Gestion</span>
+      </a>
+    </nav>
+  </header>
   <main class="main-content">
     <router-outlet />
   </main>

@@ -4,6 +4,122 @@
   margin: 0 auto;
 }
 
+/* ── Section statistiques employeurs ─────────────────────────── */
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 1rem;
+}
+
+.emp-stats-section {
+  margin-bottom: 2rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+}
+
+.emp-stats-grid {
+  display: grid;
+  grid-template-columns: minmax(160px, 200px) repeat(3, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Tuile "Total" */
+.emp-total-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light, #eff6ff);
+  border-radius: 10px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  height: 100%;
+}
+.emp-total-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+}
+.emp-total-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-top: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.emp-total-sub {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+/* Tuile barre */
+.emp-bar-card {
+  background: var(--color-bg, #f9fafb);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.emp-bar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.emp-bar-icon { font-size: 1.1rem; }
+.emp-bar-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+}
+.emp-bar-pct {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Barre de progression */
+.emp-bar-track {
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.emp-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+  background: #94a3b8; /* fallback */
+}
+.emp-bar-value {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Couleurs des barres selon data-color */
+.emp-bar-card[data-color='green']  .emp-bar-fill { background: #22c55e; }
+.emp-bar-card[data-color='orange'] .emp-bar-fill { background: #f97316; }
+.emp-bar-card[data-color='red']    .emp-bar-fill { background: #ef4444; }
+
+/* Responsive : empilement sur petits écrans */
+@media (max-width: 720px) {
+  .emp-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── fins section statistiques employeurs ─────────────────────── */
+
+
 .detail-header {
   margin-bottom: 1.75rem;
 }

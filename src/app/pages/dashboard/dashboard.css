@@ -67,6 +67,149 @@
 .stat-card[data-color='red']    { border-left: 4px solid #ef4444; }
 .stat-card[data-color='indigo'] { border-left: 4px solid #6366f1; }
 
+/* ── Répartition des employeurs ─────────────────────────────── */
+.emp-repartition { margin-bottom: 1.5rem; }
+
+.emp-rep-grid {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+/* Tuile total */
+.emp-total-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light, #eff6ff);
+  border-radius: 10px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  height: 100%;
+}
+.emp-total-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-primary, #3b82f6);
+  line-height: 1;
+}
+.emp-total-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-top: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.emp-total-sub {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: 0.2rem;
+}
+
+/* Barres */
+.emp-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.emp-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.emp-bar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--color-text);
+}
+.emp-bar-icon  { font-size: 1rem; }
+.emp-bar-label { font-weight: 600; flex: 1; }
+.emp-bar-count { color: var(--color-text-muted); }
+.emp-bar-pct   { font-weight: 700; min-width: 3.5rem; text-align: right; }
+
+.emp-bar-track {
+  height: 9px;
+  background: var(--color-border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.emp-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.45s ease;
+}
+
+.emp-bar-row[data-color='green']  .emp-bar-fill { background: #22c55e; }
+.emp-bar-row[data-color='orange'] .emp-bar-fill { background: #f97316; }
+.emp-bar-row[data-color='red']    .emp-bar-fill { background: #ef4444; }
+
+@media (max-width: 640px) {
+  .emp-rep-grid { grid-template-columns: 1fr; }
+}
+/* ── fin répartition ─────────────────────────────────────────── */
+
+/* ── Tableau détail par centre ─────────────────────────────── */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+}
+.centre-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+.centre-table thead tr {
+  background: var(--color-text, #1e293b);
+  color: #fff;
+}
+.centre-table thead th {
+  padding: 0.65rem 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.centre-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.12s;
+}
+.table-row-link { cursor: pointer; }
+.table-row-link:hover { background: var(--color-primary-light, #eff6ff); }
+.centre-table td { padding: 0.55rem 0.9rem; vertical-align: middle; }
+.centre-code    { display: block; font-weight: 700; color: var(--color-text); }
+.centre-libelle { display: block; font-size: 0.75rem; color: var(--color-text-muted); }
+
+.badge {
+  display: inline-block;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  min-width: 1.8rem;
+  text-align: center;
+}
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-warning { background: #fef9c3; color: #b45309; }
+.badge-danger  { background: #fee2e2; color: #b91c1c; }
+
+.badge-pct {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: 0.1rem;
+}
+.table-footer {
+  background: var(--color-bg, #f9fafb);
+  border-top: 2px solid var(--color-border);
+}
+.table-footer td { padding: 0.6rem 0.9rem; }
+.text-center { text-align: center; }
+.fw-bold     { font-weight: 700; }
+/* ── fin tableau détail ─────────────────────────────────────── */
+
 /* Section card */
 .section-card {
   background: var(--color-surface);

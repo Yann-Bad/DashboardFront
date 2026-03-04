@@ -1,0 +1,434 @@
+<div class="declarations-page">
+<div class="page-header">
+  <h1>Analyse des déclarations de cotisations</h1>
+  <p>Suivi des déclarations par période — validation, rattrapage, redressement</p>
+</div>
+
+<!-- =========================================================
+     Filtre
+     ========================================================= -->
+<div class="filter-panel">
+  <h2>Filtres</h2>
+  <div class="filter-grid">
+
+    <label>
+      Année début
+      <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2100" />
+    </label>
+
+    <label>
+      Mois début
+      <select [(ngModel)]="filter.moisDebut">
+        @for (m of mois; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Année fin
+      <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2100" />
+    </label>
+
+    <label>
+      Mois fin
+      <select [(ngModel)]="filter.moisFin">
+        @for (m of mois; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Statut
+      <select [(ngModel)]="filter.valideesSeulement">
+        <option [ngValue]="null">Toutes</option>
+        <option [ngValue]="true">Validées uniquement</option>
+        <option [ngValue]="false">Non validées uniquement</option>
+      </select>
+    </label>
+
+    <label>
+      Détail par centre
+      <select [(ngModel)]="filter.avecDetailParCentre">
+        <option [ngValue]="false">Non</option>
+        <option [ngValue]="true">Oui</option>
+      </select>
+    </label>
+
+    <div class="filter-actions">
+      <button class="btn-apply" (click)="load()" [disabled]="loading()">
+        {{ loading() ? 'Chargement…' : 'Appliquer' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================================================
+     États : chargement / erreur
+     ========================================================= -->
+@if (loading()) {
+  <div class="state-loading">
+    <div class="spinner"></div>
+    <span>Chargement des données…</span>
+  </div>
+}
+
+@if (!loading() && error()) {
+  <div class="state-error">
+    <span>{{ error() }}</span>
+  </div>
+}
+
+@if (!loading() && !error()) {
+
+  <!-- =========================================================
+       Cartes de synthèse globale
+       ========================================================= -->
+  @if (totaux(); as t) {
+    <div class="summary-grid">
+
+      <div class="summary-card">
+        <div class="label">Total déclarations</div>
+        <div class="value">{{ t.totalDeclarations | number }}</div>
+        <div class="sub">sur la période sélectionnée</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Validées</div>
+        <div class="value green">{{ t.declarationsValidees | number }}</div>
+        <div class="sub">Valide = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Non validées</div>
+        <div class="value red">{{ t.declarationsNonValidees | number }}</div>
+        <div class="sub">Valide ≠ 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Rattrapages</div>
+        <div class="value orange">{{ t.declarationsRattrapage | number }}</div>
+        <div class="sub">TagRattrapage = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Redressements</div>
+        <div class="value red">{{ t.declarationsRedressees | number }}</div>
+        <div class="sub">Tagredress = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Complémentaires</div>
+        <div class="value blue">{{ t.declarationsComplementaires | number }}</div>
+        <div class="sub">Tagcpl = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Travailleurs déclarés</div>
+        <div class="value">{{ t.totalTravailleursDeclares | number }}</div>
+        <div class="sub">cumul NombreTravailleur</div>
+      </div>
+
+    </div>
+
+    <!-- Taux de validation global -->
+    <div class="taux-global">
+      <div class="taux-label">
+        <span>Taux de validation global</span>
+        <strong>{{ tauxValidationGlobal() | number:'1.1-1' }} %</strong>
+      </div>
+      <div class="progress-track">
+        <div
+          class="progress-fill"
+          [class.green]="tauxValidationGlobal() >= 80"
+          [class.orange]="tauxValidationGlobal() >= 50 && tauxValidationGlobal() < 80"
+          [class.red]="tauxValidationGlobal() < 50"
+          [style.width]="barWidth(tauxValidationGlobal())"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Histogramme Chart.js — évolution mensuelle -->
+    @if (declarations().length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Évolution des déclarations</h2>
+          <div class="histogram-legend">
+            <span class="hleg hleg-up">&#8593; Hausse</span>
+            <span class="hleg hleg-down">&#8595; Baisse</span>
+            <span class="hleg hleg-stable">&#8594; Stable</span>
+            <span class="hleg hleg-none">&#8212; 1re&nbsp;période</span>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartData()"
+            [options]="chartOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+  }<!-- end @if totaux -->
+
+  <!-- =========================================================
+       Tableau des périodes
+       ========================================================= -->
+  @if (declarations().length === 0) {
+    <div class="state-empty">
+      <span>Aucune déclaration trouvée pour les critères sélectionnés.</span>
+    </div>
+  } @else {
+    <div class="table-section">
+      <div class="section-header">
+        <h2>Détail par période</h2>
+        <span class="period-count">{{ declarations().length }} période(s)</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th class="center">Tendance</th>
+              <th class="right">Total</th>
+              <th class="center">Variation</th>
+              <th class="center">Croissance</th>
+              <th class="right">Validées</th>
+              <th class="right">Non validées</th>
+              <th class="right">Rattrapages</th>
+              <th class="right">Redressements</th>
+              <th class="right">Complémentaires</th>
+              <th class="right">Employeurs</th>
+              <th class="right">Travailleurs</th>
+              <th>Taux validation</th>
+              @if (filter.avecDetailParCentre) {
+                <th class="center">Centres</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of declarations(); track d.annee + '-' + d.mois) {
+              <tr
+                class="data-row"
+                [class.row-selected]="selectedPeriode() === d"
+                (click)="toggleDetail(d)"
+              >
+                <td class="periode-cell">
+                  {{ moisLabel(d.mois) }} {{ d.annee }}
+                </td>
+
+                <!-- Tendance -->
+                <td class="center">
+                  @if (d.tendance) {
+                    <span [class]="'trend-badge ' + tendanceClass(d.tendance)">
+                      {{ tendanceIcon(d.tendance) }} {{ d.tendance }}
+                    </span>
+                  } @else {
+                    <span class="trend-badge trend-none">—</span>
+                  }
+                </td>
+
+                <td class="right"><strong>{{ d.totalDeclarations | number }}</strong></td>
+
+                <!-- Variation absolue déclarations -->
+                <td class="center">
+                  <span [class]="'var-chip ' + varClass(d.variationDeclarations)">
+                    {{ fmt(d.variationDeclarations) }}
+                  </span>
+                </td>
+
+                <!-- Taux de croissance % -->
+                <td class="center">
+                  @if (d.tauxCroissance !== null) {
+                    <span [class]="'var-chip ' + varClass(d.tauxCroissance)">
+                      {{ fmt(d.tauxCroissance) }} %
+                    </span>
+                  } @else {
+                    <span class="var-chip var-none">—</span>
+                  }
+                </td>
+
+                <td class="right">
+                  <span class="badge val">{{ d.declarationsValidees | number }}</span>
+                </td>
+                <td class="right">
+                  @if (d.declarationsNonValidees > 0) {
+                    <span class="badge non">{{ d.declarationsNonValidees | number }}</span>
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td class="right">
+                  @if (d.declarationsRattrapage > 0) {
+                    <span class="badge ratt">{{ d.declarationsRattrapage | number }}</span>
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td class="right">
+                  @if (d.declarationsRedressees > 0) {
+                    <span class="badge non">{{ d.declarationsRedressees | number }}</span>
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td class="right">
+                  @if (d.declarationsComplementaires > 0) {
+                    {{ d.declarationsComplementaires | number }}
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td class="right">{{ d.nombreEmployeursDeclares | number }}</td>
+                <td class="right">{{ d.totalTravailleursDeclares | number }}</td>
+                <td class="taux-cell">
+                  <div class="taux-mini">
+                    <span>{{ d.tauxValidation | number:'1.1-1' }} %</span>
+                    <div class="bar-mini">
+                      <div
+                        class="bar-mini-fill"
+                        [class.green]="d.tauxValidation >= 80"
+                        [class.orange]="d.tauxValidation >= 50 && d.tauxValidation < 80"
+                        [style.width]="barWidth(d.tauxValidation)"
+                      ></div>
+                    </div>
+                  </div>
+                </td>
+                @if (filter.avecDetailParCentre) {
+                  <td class="center">{{ d.parCentre.length }}</td>
+                }
+              </tr>
+
+              <!-- Panneau de tendance détaillé (expandable au clic) -->
+              @if (selectedPeriode() === d) {
+                <tr class="trend-panel-row">
+                  <td [attr.colspan]="filter.avecDetailParCentre ? 15 : 14">
+                    <div class="trend-panel">
+                      <div class="trend-panel-title">
+                        Tendance — {{ moisLabel(d.mois) }} {{ d.annee }}
+                      </div>
+                      <div class="trend-panel-grid">
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Déclarations</span>
+                          <span class="tm-value">{{ d.totalDeclarations | number }}</span>
+                          <span [class]="'tm-delta ' + varClass(d.variationDeclarations)">
+                            {{ fmt(d.variationDeclarations) }} vs période préc.
+                          </span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Croissance</span>
+                          <span [class]="'tm-value ' + varClass(d.tauxCroissance)">
+                            {{ d.tauxCroissance !== null ? (fmt(d.tauxCroissance) + ' %') : '—' }}
+                          </span>
+                          <span class="tm-note">vs période précédente</span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Taux de validation</span>
+                          <span class="tm-value">{{ d.tauxValidation | number:'1.1-1' }} %</span>
+                          <span [class]="'tm-delta ' + varClass(d.variationTauxValidation)">
+                            {{ fmt(d.variationTauxValidation) }} pts
+                          </span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Employeurs déclarés</span>
+                          <span class="tm-value">{{ d.nombreEmployeursDeclares | number }}</span>
+                          <span [class]="'tm-delta ' + varClass(d.variationEmployeurs)">
+                            {{ fmt(d.variationEmployeurs) }} vs période préc.
+                          </span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Travailleurs déclarés</span>
+                          <span class="tm-value">{{ d.totalTravailleursDeclares | number }}</span>
+                          <span [class]="'tm-delta ' + varClass(d.variationTravailleurs)">
+                            {{ fmt(d.variationTravailleurs) }} vs période préc.
+                          </span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Rattrapage</span>
+                          <span class="tm-value">{{ d.declarationsRattrapage | number }}</span>
+                          <span class="tm-note">{{ d.tauxRattrapage | number:'1.1-1' }} % du total</span>
+                        </div>
+
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+
+              <!-- Sous-lignes de détail par centre -->
+              @if (filter.avecDetailParCentre && d.parCentre.length > 0) {
+                <tr class="centre-detail-row">
+                  <td [attr.colspan]="filter.avecDetailParCentre ? 11 : 10">
+                    <div class="centre-detail-inner">
+                      <table class="centre-table">
+                        <thead>
+                          <tr>
+                            <th>Centre</th>
+                            <th class="right">Total</th>
+                            <th class="right">Validées</th>
+                            <th class="right">Non val.</th>
+                            <th class="right">Employeurs</th>
+                            <th class="right">Travailleurs</th>
+                            <th>Taux</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (c of d.parCentre; track c.centreId) {
+                            <tr>
+                              <td>
+                                <strong>{{ c.centreCode }}</strong>
+                                @if (c.centreLibelle) { — {{ c.centreLibelle }} }
+                              </td>
+                              <td class="right">{{ c.totalDeclarations | number }}</td>
+                              <td class="right">
+                                <span class="badge val">{{ c.validees | number }}</span>
+                              </td>
+                              <td class="right">
+                                @if (c.nonValidees > 0) {
+                                  <span class="badge non">{{ c.nonValidees | number }}</span>
+                                } @else {
+                                  <span style="color:#94a3b8">—</span>
+                                }
+                              </td>
+                              <td class="right">{{ c.nombreEmployeurs | number }}</td>
+                              <td class="right">{{ c.totalTravailleurs | number }}</td>
+                              <td>
+                                <div class="taux-mini">
+                                  <span>{{ c.tauxValidation | number:'1.1-1' }} %</span>
+                                  <div class="bar-mini">
+                                    <div
+                                      class="bar-mini-fill"
+                                      [class.green]="c.tauxValidation >= 80"
+                                      [class.orange]="c.tauxValidation >= 50 && c.tauxValidation < 80"
+                                      [style.width]="barWidth(c.tauxValidation)"
+                                    ></div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+}
+</div>

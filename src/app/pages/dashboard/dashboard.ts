@@ -38,10 +38,10 @@ export class DashboardComponent implements OnInit {
       { label: 'Centres de Gestion',  value: this.stats.totalCentres,           icon: '🏢', color: 'blue'   },
       { label: 'Employeurs',          value: this.stats.totalEmployeurs,         icon: '👔', color: 'green'  },
       { label: 'Employés',            value: this.stats.totalEmployes,           icon: '👤', color: 'purple' },
-      { label: 'Cotisations Compte',  value: this.stats.totalCotisationsCompte,  icon: '💼', color: 'orange' },
-      { label: 'Encaissements',       value: this.stats.totalEncaissements,      icon: '💰', color: 'teal'   },
-      { label: 'Majorations',         value: this.stats.totalMajorations,        icon: '📈', color: 'red'    },
-      { label: 'Taxations',           value: this.stats.totalTaxations,          icon: '🧾', color: 'indigo' },
+      // { label: 'Cotisations Compte',  value: this.stats.totalCotisationsCompte,  icon: '💼', color: 'orange' },
+      // { label: 'Encaissements',       value: this.stats.totalEncaissements,      icon: '💰', color: 'teal'   },
+      // { label: 'Majorations',         value: this.stats.totalMajorations,        icon: '📈', color: 'red'    },
+      // { label: 'Taxations',           value: this.stats.totalTaxations,          icon: '🧾', color: 'indigo' },
     ];
   }
 

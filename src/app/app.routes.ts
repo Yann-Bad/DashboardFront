@@ -22,6 +22,11 @@ export const routes: Routes = [
       import('./pages/centre-detail/centre-detail').then((m) => m.CentreDetailComponent),
   },
   {
+    path: 'declarations',
+    loadComponent: () =>
+      import('./pages/declarations/declarations.component').then((m) => m.DeclarationsComponent),
+  },
+  {
     path: '**',
     redirectTo: 'dashboard',
   },

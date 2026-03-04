@@ -8,16 +8,8 @@
   <div class="filter-card">
     <div class="filter-row">
       <div class="filter-field">
-        <label for="filterCode">Code</label>
-        <input id="filterCode" type="text" [(ngModel)]="filter.code" placeholder="ex: CDG01" />
-      </div>
-      <div class="filter-field">
         <label for="filterLibelle">Libellé</label>
         <input id="filterLibelle" type="text" [(ngModel)]="filter.libelle" placeholder="Rechercher…" />
-      </div>
-      <div class="filter-field filter-field--small">
-        <label for="filterTenant">Tenant ID</label>
-        <input id="filterTenant" type="number" [(ngModel)]="filter.tenantId" placeholder="—" min="1" />
       </div>
       <div class="filter-field filter-field--small">
         <label for="filterPageSize">Par page</label>
@@ -59,7 +51,6 @@
               <th>Adresse</th>
               <th class="text-right">Employeurs</th>
               <th class="text-right">Employés</th>
-              <th>Tenant</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -71,7 +62,6 @@
                 <td class="text-muted">{{ c.adresse ?? '—' }}</td>
                 <td class="text-right">{{ c.nombreEmployeurs | number }}</td>
                 <td class="text-right">{{ c.nombreEmployes | number }}</td>
-                <td>{{ c.tenantId ?? '—' }}</td>
                 <td>
                   <a [routerLink]="['/centres', c.id]" class="btn-action">Détail</a>
                 </td>

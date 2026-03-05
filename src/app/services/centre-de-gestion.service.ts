@@ -14,11 +14,13 @@ import {
   DeclarationAnalyseDto,
   DeclarationFilterDto,
 } from '../models/declaration-analyse.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CentreDeGestionService {
   private readonly http = inject(HttpClient);
-  private readonly base = '/api/CentreDeGestion';
+  private readonly apiBaseUrl = environment.apiBaseUrl; // e.g. https://localhost:5001 or https://api.yourdomain.com
+  private readonly base = `${this.apiBaseUrl}/api/CentreDeGestion`;
 
   /** GET /api/CentreDeGestion — paginated + filtered list */
   getAll(filter: CentreDeGestionFilterDto): Observable<PagedResultDto<CentreDeGestionSummaryDto>> {

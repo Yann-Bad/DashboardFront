@@ -1,5 +1,9 @@
 <div class="app-shell">
+
+  <!-- Header is only shown when logged in -->
+  @if (isAuthenticated()) {
   <header class="app-header">
+
     <!-- Brand -->
     <a routerLink="/dashboard" class="header-brand">
       <div class="brand-logo">
@@ -40,19 +44,59 @@
           <line x1="16" y1="17" x2="8" y2="17"/>
           <polyline points="10 9 9 9 8 9"/>
         </svg>
-        <span>D&#233;clarations</span>
+        <span>Déclarations</span>
       </a>
     </nav>
 
-    <!-- Spacer -->
     <div class="header-spacer"></div>
 
-    <!-- Right side -->
+    <!-- User menu -->
     <div class="header-right">
-      <div class="header-badge">Administration</div>
-      <div class="user-avatar" title="Utilisateur">A</div>
+      <!-- Click outside overlay (invisible, closes dropdown) -->
+      @if (menuOpen()) {
+        <div class="menu-backdrop" (click)="closeMenu()"></div>
+      }
+
+      <div class="user-menu-wrapper">
+        <!-- Avatar button -->
+        <button class="user-avatar" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()" title="Menu utilisateur">
+          {{ userInitials() }}
+        </button>
+
+        <!-- Dropdown panel -->
+        @if (menuOpen()) {
+        <div class="user-dropdown" role="menu">
+          <!-- User info -->
+          <div class="dropdown-user-info">
+            <div class="dropdown-avatar">{{ userInitials() }}</div>
+            <div class="dropdown-user-details">
+              <span class="dropdown-username">{{ currentUser()?.userName }}</span>
+              <span class="dropdown-email">{{ currentUser()?.email }}</span>
+            </div>
+          </div>
+
+          <div class="dropdown-role-badge">
+            <span class="role-chip">{{ roleLabel() }}</span>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <!-- Actions -->
+          <button class="dropdown-item" role="menuitem" (click)="logout()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Se déconnecter
+          </button>
+        </div>
+        }
+      </div>
     </div>
+
   </header>
+  }
 
   <main class="main-content">
     <router-outlet />

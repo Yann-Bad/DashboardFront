@@ -1,0 +1,462 @@
+<div class="dossiers-page">
+<div class="page-header">
+  <div class="page-header-main">
+    <div>
+      <h1>Analyse des dossiers de prestations</h1>
+      <p>Suivi des dossiers par période — complétude, fermeture, rejet, rattrapage</p>
+    </div>
+    <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      Guide des métriques
+    </button>
+  </div>
+</div>
+
+<!-- =========================================================
+     Guide des métriques (collapsible)
+     ========================================================= -->
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer">&#10005;</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Compteurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Total</span><div><strong>Total dossiers</strong><p>Nombre de dossiers <code>Frontofficedossier</code> créés (DateCreated) sur la période, non supprimés.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Complets</span><div><strong>Dossiers complets</strong><p>Dossiers dont <code>TagComplet = 1</code> — pièces justificatives réunies, dossier prêt à traitement.</p></div></div>
+          <div class="guide-item"><span class="guide-badge slate">Fermés</span><div><strong>Dossiers fermés</strong><p>Dossiers dont <code>TagFerme = 1</code> — dossier clos (traitement terminé ou archivé).</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">Rejetés</span><div><strong>Dossiers rejetés</strong><p>Dossiers dont <code>TagRejete = 1</code> — dossier refusé suite à contrôle ou non-conformité.</p></div></div>
+          <div class="guide-item"><span class="guide-badge blue">Dépôts</span><div><strong>Dossiers en dépôt</strong><p>Dossiers dont <code>TagDepot = 1</code> — dossier physiquement déposé au guichet.</p></div></div>
+          <div class="guide-item"><span class="guide-badge orange">Réouverts</span><div><strong>Dossiers réouverts</strong><p>Dossiers dont <code>TagReouvert = 1</code> — dossier rouvert après fermeture ou rejet.</p></div></div>
+          <div class="guide-item"><span class="guide-badge orange">Rattrapages</span><div><strong>Dossiers en rattrapage</strong><p>Dossiers dont <code>TagRattrapage = 1</code> — régularisation d'une période antérieure.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot amber"></span>Taux &amp; Tendances</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge amber">Taux complet</span><div><strong>Taux de complétude</strong><p><code>(Complets / Total) × 100</code>. Indicateur principal de la qualité d'instruction. Affiché en barre de progression et sur l'axe droit du graphique.</p></div></div>
+          <div class="guide-item"><span class="guide-badge slate">Taux fermé</span><div><strong>Taux de fermeture</strong><p><code>(Fermés / Total) × 100</code>. Part des dossiers traités jusqu'à clôture.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">Taux rejet</span><div><strong>Taux de rejet</strong><p><code>(Rejetés / Total) × 100</code>. Un taux élevé peut signaler des problèmes de qualité de dossier.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Tendance</span><div><strong>Tendance mensuelle</strong><p>Comparaison du volume de dossiers avec la période précédente. Colore les barres du graphique en vert (hausse), rouge (baisse) ou orange (stable).</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot slate"></span>Détail par centre (optionnel)</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Centres</span><div><strong>Répartition par centre</strong><p>Activé via le filtre « Détail par centre → Oui ». Ventile chaque période par centre de gestion (<code>CentreDeGestionId</code>), avec compteurs et taux de complétude individuels.</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- =========================================================
+     Filtre
+     ========================================================= -->
+<div class="filter-panel">
+  <h2>Filtres</h2>
+  <div class="filter-grid">
+
+    <label>
+      Année début
+      <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2100" />
+    </label>
+    <label>
+      Mois début
+      <select [(ngModel)]="filter.moisDebut">
+        @for (m of mois; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Année fin
+      <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2100" />
+    </label>
+    <label>
+      Mois fin
+      <select [(ngModel)]="filter.moisFin">
+        @for (m of mois; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Id Type dossier
+      <input type="number" [(ngModel)]="filter.typeDossierId" placeholder="Tous" />
+    </label>
+    <label>
+      Id État dossier
+      <input type="number" [(ngModel)]="filter.etatDossierId" placeholder="Tous" />
+    </label>
+    <label>
+      Détail par centre
+      <select [(ngModel)]="filter.avecDetailParCentre">
+        <option [ngValue]="false">Non</option>
+        <option [ngValue]="true">Oui</option>
+      </select>
+    </label>
+
+    <div class="filter-actions">
+      <button class="btn-apply" (click)="load()" [disabled]="loading()">
+        {{ loading() ? 'Chargement…' : 'Appliquer' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================================================
+     États : chargement / erreur
+     ========================================================= -->
+@if (loading()) {
+  <div class="state-loading">
+    <div class="spinner"></div>
+    <span>Chargement des données…</span>
+  </div>
+}
+
+@if (!loading() && error()) {
+  <div class="state-error">
+    <span>{{ error() }}</span>
+  </div>
+}
+
+@if (!loading() && !error()) {
+
+  <!-- =========================================================
+       Cartes de synthèse globale
+       ========================================================= -->
+  @if (totaux(); as t) {
+    <div class="summary-grid">
+
+      <div class="summary-card">
+        <div class="label">Total dossiers</div>
+        <div class="value">{{ t.totalDossiers | number }}</div>
+        <div class="sub">sur la période sélectionnée</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Complets</div>
+        <div class="value green">{{ t.dossiersComplets | number }}</div>
+        <div class="sub">TagComplet = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Fermés</div>
+        <div class="value slate">{{ t.dossiersFermes | number }}</div>
+        <div class="sub">TagFerme = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Rejetés</div>
+        <div class="value red">{{ t.dossiersRejetes | number }}</div>
+        <div class="sub">TagRejete = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Dépôts</div>
+        <div class="value blue">{{ t.dossiersDepot | number }}</div>
+        <div class="sub">TagDepot = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Réouverts</div>
+        <div class="value orange">{{ t.dossiersReuverts | number }}</div>
+        <div class="sub">TagReouvert = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Rattrapages</div>
+        <div class="value orange">{{ t.dossiersRattrapage | number }}</div>
+        <div class="sub">TagRattrapage = 1</div>
+      </div>
+
+    </div>
+
+    <!-- Taux de complétude global -->
+    <div class="taux-global">
+      <div class="taux-label">
+        <span>Taux de complétude global</span>
+        <strong>{{ tauxCompletGlobal() | number:'1.1-1' }} %</strong>
+      </div>
+      <div class="progress-track">
+        <div
+          class="progress-fill"
+          [class.green]="tauxCompletGlobal() >= 80"
+          [class.orange]="tauxCompletGlobal() >= 50 && tauxCompletGlobal() < 80"
+          [class.red]="tauxCompletGlobal() < 50"
+          [style.width]="barWidth(tauxCompletGlobal())"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Histogramme Chart.js -->
+    @if (dossiers().length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Évolution des dossiers</h2>
+          <div class="histogram-legend">
+            <span class="hleg hleg-up">&#8593; Hausse</span>
+            <span class="hleg hleg-down">&#8595; Baisse</span>
+            <span class="hleg hleg-stable">&#8594; Stable</span>
+            <span class="hleg hleg-none">&#8212; 1re&nbsp;période</span>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartData()"
+            [options]="chartOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+  }<!-- end @if totaux -->
+
+  <!-- =========================================================
+       Tableau des périodes
+       ========================================================= -->
+  @if (dossiers().length === 0) {
+    <div class="state-empty">
+      <span>Aucun dossier trouvé pour les critères sélectionnés.</span>
+    </div>
+  } @else {
+    <div class="table-section">
+      <div class="section-header">
+        <h2>Détail par période</h2>
+        <span class="period-count">{{ dossiers().length }} période(s)</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th>Tendance</th>
+              <th class="right">Total</th>
+              <th class="right">Complets</th>
+              <th class="right">Fermés</th>
+              <th class="right">Rejetés</th>
+              <th class="right">Dépôts</th>
+              <th class="right">Réouverts</th>
+              <th class="right">Rattrapages</th>
+              <th class="center">Var. dossiers</th>
+              <th>Taux complet</th>
+              @if (filter.avecDetailParCentre) {
+                <th class="center">Centres</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of dossiers(); track d.mois + d.annee) {
+
+              <!-- Ligne principale -->
+              <tr
+                class="data-row"
+                [class.row-selected]="isSelected(d)"
+                (click)="toggleDetail(d)"
+              >
+                <td class="periode-cell">
+                  <span class="mois">{{ moisLabel(d.mois) }}</span>
+                  <span class="annee">{{ d.annee }}</span>
+                </td>
+                <td>
+                  <span [class]="'trend-badge ' + tendanceClass(d)">
+                    {{ tendanceIcon(d) }}
+                    {{ d.tendance ?? '1re pér.' }}
+                  </span>
+                </td>
+                <td class="right"><strong>{{ d.totalDossiers | number }}</strong></td>
+                <td class="right green">{{ d.dossiersComplets   | number }}</td>
+                <td class="right slate">{{ d.dossiersFermes     | number }}</td>
+                <td class="right red">
+                  @if (d.dossiersRejetes > 0) {
+                    <span class="badge rej">{{ d.dossiersRejetes | number }}</span>
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td class="right blue">{{ d.dossiersDepot      | number }}</td>
+                <td class="right orange">
+                  @if (d.dossiersReuverts > 0) {
+                    {{ d.dossiersReuverts | number }}
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td class="right">
+                  @if (d.dossiersRattrapage > 0) {
+                    {{ d.dossiersRattrapage | number }}
+                  } @else {
+                    <span style="color:#94a3b8">—</span>
+                  }
+                </td>
+                <td class="center">
+                  <span [class]="'var-chip ' + varClass(d.variationDossiers)">
+                    {{ fmt(d.variationDossiers) }}
+                  </span>
+                </td>
+                <td class="taux-cell">
+                  <div class="taux-mini">
+                    <span>{{ d.tauxComplet | number:'1.1-1' }} %</span>
+                    <div class="bar-mini">
+                      <div
+                        class="bar-mini-fill"
+                        [class.green]="d.tauxComplet >= 80"
+                        [class.orange]="d.tauxComplet >= 50 && d.tauxComplet < 80"
+                        [class.red]="d.tauxComplet < 50"
+                        [style.width]="barWidth(d.tauxComplet)"
+                      ></div>
+                    </div>
+                  </div>
+                </td>
+                @if (filter.avecDetailParCentre) {
+                  <td class="center">
+                    <span class="period-count">{{ d.parCentre.length }}</span>
+                  </td>
+                }
+              </tr>
+
+              <!-- Panneau de tendance détaillée (expandable) -->
+              @if (isSelected(d)) {
+                <tr class="trend-panel-row">
+                  <td [attr.colspan]="filter.avecDetailParCentre ? 12 : 11">
+                    <div class="trend-panel">
+                      <div class="trend-panel-title">
+                        {{ moisLabel(d.mois) }} {{ d.annee }} — détail &amp; tendances
+                      </div>
+                      <div class="trend-panel-grid">
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Total dossiers</span>
+                          <span class="tm-value">{{ d.totalDossiers | number }}</span>
+                          <span [class]="'tm-delta ' + varClass(d.variationDossiers)">
+                            {{ fmt(d.variationDossiers) }} vs période préc.
+                          </span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Taux de complétude</span>
+                          <span class="tm-value">{{ d.tauxComplet | number:'1.1-1' }} %</span>
+                          <span [class]="'tm-delta ' + varClass(d.variationTauxComplet)">
+                            {{ fmt(d.variationTauxComplet) }} pts vs période préc.
+                          </span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Taux de fermeture</span>
+                          <span class="tm-value">{{ d.tauxFerme | number:'1.1-1' }} %</span>
+                          <span class="tm-note">{{ d.dossiersFermes | number }} dossiers fermés</span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Taux de rejet</span>
+                          <span class="tm-value red">{{ d.tauxRejet | number:'1.1-1' }} %</span>
+                          <span class="tm-note">{{ d.dossiersRejetes | number }} dossiers rejetés</span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Croissance</span>
+                          <span class="tm-value">
+                            @if (d.tauxCroissance !== null) {
+                              {{ d.tauxCroissance | number:'1.1-1' }} %
+                            } @else {
+                              —
+                            }
+                          </span>
+                          <span class="tm-note">vs mois précédent</span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Rattrapage</span>
+                          <span class="tm-value">{{ d.dossiersRattrapage | number }}</span>
+                          <span class="tm-note">dossiers période antérieure</span>
+                        </div>
+
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+
+              <!-- Sous-lignes de détail par centre -->
+              @if (filter.avecDetailParCentre && d.parCentre.length > 0) {
+                <tr class="centre-detail-row">
+                  <td [attr.colspan]="filter.avecDetailParCentre ? 12 : 11">
+                    <div class="centre-detail-inner">
+                      <table class="centre-detail-table">
+                        <thead>
+                          <tr>
+                            <th>Centre</th>
+                            <th class="right">Total</th>
+                            <th class="right">Complets</th>
+                            <th class="right">Fermés</th>
+                            <th class="right">Rejetés</th>
+                            <th class="right">Réouverts</th>
+                            <th>Taux complet</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (c of d.parCentre; track c.centreId) {
+                            <tr>
+                              <td>
+                                <span class="centre-code">{{ c.centreCode ?? '—' }}</span>
+                                <span class="centre-lib">{{ c.centreLibelle }}</span>
+                              </td>
+                              <td class="right"><strong>{{ c.totalDossiers | number }}</strong></td>
+                              <td class="right green">{{ c.complets  | number }}</td>
+                              <td class="right slate">{{ c.fermes    | number }}</td>
+                              <td class="right">
+                                @if (c.rejetes > 0) {
+                                  <span class="badge rej">{{ c.rejetes | number }}</span>
+                                } @else {
+                                  <span style="color:#94a3b8">—</span>
+                                }
+                              </td>
+                              <td class="right orange">
+                                @if (c.reuverts > 0) {
+                                  {{ c.reuverts | number }}
+                                } @else {
+                                  <span style="color:#94a3b8">—</span>
+                                }
+                              </td>
+                              <td>
+                                <div class="taux-mini">
+                                  <span>{{ c.tauxComplet | number:'1.1-1' }} %</span>
+                                  <div class="bar-mini">
+                                    <div
+                                      class="bar-mini-fill"
+                                      [class.green]="c.tauxComplet >= 80"
+                                      [class.orange]="c.tauxComplet >= 50 && c.tauxComplet < 80"
+                                      [style.width]="barWidth(c.tauxComplet)"
+                                    ></div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              }
+
+            }
+          </tbody>
+        </table>
+      </div><!-- end table-wrap -->
+    </div><!-- end table-section -->
+  }
+
+}<!-- end @if !loading && !error -->
+</div>

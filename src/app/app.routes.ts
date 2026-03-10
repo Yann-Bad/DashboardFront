@@ -60,6 +60,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/declarations/declarations.component').then(m => m.DeclarationsComponent),
   },
+  {
+    path: 'dossiers',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/dossiers/dossiers.component').then(m => m.DossiersComponent),
+  },
 
   // ── Protected (Admin + Manager only) ─────────────────────────────────
   // Example for a future stats-management or config route:

@@ -1,8 +1,196 @@
 <div class="declarations-page">
 <div class="page-header">
-  <h1>Analyse des déclarations de cotisations</h1>
-  <p>Suivi des déclarations par période — validation, rattrapage, redressement</p>
+  <div class="page-header-main">
+    <div>
+      <h1>Analyse des déclarations de cotisations</h1>
+      <p>Suivi des déclarations par période — validation, rattrapage, redressement</p>
+    </div>
+    <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      Guide des métriques
+    </button>
+  </div>
 </div>
+
+<!-- =========================================================
+     Guide des métriques (collapsible)
+     ========================================================= -->
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer le guide">&#10005;</button>
+    </div>
+
+    <div class="guide-body">
+
+      <!-- Compteurs de déclarations -->
+      <div class="guide-group">
+        <h3 class="guide-group-title">
+          <span class="guide-dot indigo"></span>Déclarations
+        </h3>
+        <div class="guide-items">
+          <div class="guide-item">
+            <span class="guide-badge">Total</span>
+            <div>
+              <strong>Total déclarations</strong>
+              <p>Nombre total de lignes de cotisation&nbsp;<code>Cotisationfacturation</code> sur la période. Chaque ligne correspond à une déclaration mensuelle d'un employeur.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge green">Validées</span>
+            <div>
+              <strong>Déclarations validées</strong>
+              <p>Déclarations dont le champ <code>Valide = 1</code>. Elles sont considérées comme acceptées et intégrées dans la comptabilité des cotisations.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge red">Non validées</span>
+            <div>
+              <strong>Déclarations non validées</strong>
+              <p>Déclarations dont <code>Valide ≠ 1</code>. Elles sont en attente de traitement ou présentent une anomalie.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge orange">Rattrapages</span>
+            <div>
+              <strong>Déclarations de rattrapage</strong>
+              <p>Déclarations marquées <code>TagRattrapage = 1</code>. Elles concernent des périodes antérieures déclarées tardivement.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge red">Redressements</span>
+            <div>
+              <strong>Déclarations redressées</strong>
+              <p>Déclarations marquées <code>Tagredress = 1</code>. Elles résultent d'un contrôle ou d'un redressement formel de cotisations.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge blue">Complémentaires</span>
+            <div>
+              <strong>Déclarations complémentaires</strong>
+              <p>Déclarations marquées <code>Tagcpl = 1</code>. Elles complètent une déclaration principale existante (régularisation partielle).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Travailleurs et Employeurs -->
+      <div class="guide-group">
+        <h3 class="guide-group-title">
+          <span class="guide-dot slate"></span>Employeurs &amp; Travailleurs
+        </h3>
+        <div class="guide-items">
+          <div class="guide-item">
+            <span class="guide-badge">Employeurs</span>
+            <div>
+              <strong>Employeurs déclarés</strong>
+              <p>Nombre distinct d'employeurs (<code>EmployeurId</code>) ayant soumis au moins une déclaration sur la période.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge">Travailleurs</span>
+            <div>
+              <strong>Travailleurs déclarés</strong>
+              <p>Somme du champ <code>NombreTravailleur</code> sur toutes les déclarations de la période. Représente l'effectif salarié couvert.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Montants financiers -->
+      <div class="guide-group">
+        <h3 class="guide-group-title">
+          <span class="guide-dot amber"></span>Montants financiers
+        </h3>
+        <div class="guide-items">
+          <div class="guide-item">
+            <span class="guide-badge amber">Montant total</span>
+            <div>
+              <strong>Montant total déclaré</strong>
+              <p>Somme des montants dans <code>Cotisationcompteemployeur.Montant</code> liés aux déclarations de la période (via <code>FacturationId</code>). Represent le volume financier total soumis.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge green">Dont validé</span>
+            <div>
+              <strong>Montant validé</strong>
+              <p>Part du montant total provenant uniquement de déclarations dont <code>Valide = 1</code>. Indique la fraction financièrement confirmée.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge red">Non validé</span>
+            <div>
+              <strong>Montant non validé</strong>
+              <p>Différence between le montant total et le montant validé. Représente les sommes encore en attente de validation.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge">Var. montant</span>
+            <div>
+              <strong>Variation du montant</strong>
+              <p>Différence absolue entre le montant total déclaré de la période et celui de la période précédente. Une valeur positive (vert) indique une hausse ; négative (rouge), une baisse.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Taux et tendances -->
+      <div class="guide-group">
+        <h3 class="guide-group-title">
+          <span class="guide-dot indigo"></span>Taux &amp; Tendances
+        </h3>
+        <div class="guide-items">
+          <div class="guide-item">
+            <span class="guide-badge">Taux val.</span>
+            <div>
+              <strong>Taux de validation</strong>
+              <p>Pourcentage : <code>(Validées / Total) × 100</code>. Un taux élevé (≥ 80 %) indique une bonne santé du processus de validation. Affiché en barre de progression verte/orange/rouge.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge orange">Taux rattrap.</span>
+            <div>
+              <strong>Taux de rattrapage</strong>
+              <p>Part des rattrapages dans le total : <code>(Rattrapages / Total) × 100</code>. Un taux élevé peut signaler des retards structurels de déclaration.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge">Tendance</span>
+            <div>
+              <strong>Tendance mensuelle</strong>
+              <p>Comparaison du volume de déclarations avec la période précédente. <strong>Hausse</strong> si +&gt; 0, <strong>Baisse</strong> si &lt; 0, <strong>Stable</strong> si =&nbsp;0. La tendance colore les barres de l'histogramme.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-badge">Var. décl.</span>
+            <div>
+              <strong>Variation des déclarations</strong>
+              <p>Différence brute du nombre de déclarations vs la période précédente. Visible dans le panneau de tendance dépliable de chaque ligne.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Détail par centre -->
+      <div class="guide-group">
+        <h3 class="guide-group-title">
+          <span class="guide-dot slate"></span>Détail par centre (optionnel)
+        </h3>
+        <div class="guide-items">
+          <div class="guide-item">
+            <span class="guide-badge">Centres</span>
+            <div>
+              <strong>Répartition par centre de gestion</strong>
+              <p>Activé via le filtre « Détail par centre → Oui ». Affiche, pour chaque période, la ventilation des déclarations, employeurs, travailleurs et montants par centre de gestion (<code>Frontofficecentregestion</code>).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end guide-body -->
+  </div>
+}
 
 <!-- =========================================================
      Filtre
@@ -131,6 +319,56 @@
         <div class="sub">cumul NombreTravailleur</div>
       </div>
 
+      <div class="summary-card highlight-amount">
+        <div class="label">Montant total déclaré</div>
+        @if (t.montantsParDevise.length > 1) {
+          @for (m of t.montantsParDevise; track m.deviseId) {
+            <div class="value amount-currency-line">
+              <span class="devise-badge">{{ m.deviseCode ?? '?' }}</span>
+              {{ fmtMontant(m.montantTotal) }}
+            </div>
+          }
+        } @else {
+          <div class="value">{{ fmtMontant(t.montantTotalDeclare) }}</div>
+        }
+        <div class="sub">
+          @for (m of t.montantsParDevise; track m.deviseId) {
+            <span class="devise-badge">{{ m.deviseCode ?? '?' }}</span>
+          }
+          cumul comptes employeurs
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Dont validé</div>
+        @if (t.montantsParDevise.length > 1) {
+          @for (m of t.montantsParDevise; track m.deviseId) {
+            <div class="value green amount-currency-line">
+              <span class="devise-badge">{{ m.deviseCode ?? '?' }}</span>
+              {{ fmtMontant(m.montantValide) }}
+            </div>
+          }
+        } @else {
+          <div class="value green">{{ fmtMontant(t.montantValide) }}</div>
+        }
+        <div class="sub">déclarations Valide = 1</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Non validé</div>
+        @if (t.montantsParDevise.length > 1) {
+          @for (m of t.montantsParDevise; track m.deviseId) {
+            <div class="value red amount-currency-line">
+              <span class="devise-badge">{{ m.deviseCode ?? '?' }}</span>
+              {{ fmtMontant(m.montantNonValide) }}
+            </div>
+          }
+        } @else {
+          <div class="value red">{{ fmtMontant(t.montantNonValide) }}</div>
+        }
+        <div class="sub">déclarations Valide ≠ 1</div>
+      </div>
+
     </div>
 
     <!-- Taux de validation global -->
@@ -204,6 +442,9 @@
               <th class="right">Complémentaires</th>
               <th class="right">Employeurs</th>
               <th class="right">Travailleurs</th>
+              <th class="right">Montant déclaré</th>
+              <th class="right">Dont validé</th>
+              <th class="center">Var. montant</th>
               <th>Taux validation</th>
               @if (filter.avecDetailParCentre) {
                 <th class="center">Centres</th>
@@ -285,6 +526,13 @@
                 </td>
                 <td class="right">{{ d.nombreEmployeursDeclares | number }}</td>
                 <td class="right">{{ d.totalTravailleursDeclares | number }}</td>
+                <td class="right amount-cell">{{ fmtMontantDevise(d.montantTotalDeclare, d.montantsParDevise) }}</td>
+                <td class="right amount-cell green">{{ fmtMontantDevise(d.montantValide, d.montantsParDevise) }}</td>
+                <td class="center">
+                  <span [class]="'var-chip ' + varClass(d.variationMontant)">
+                    {{ fmtMontantVar(d.variationMontant) }}
+                  </span>
+                </td>
                 <td class="taux-cell">
                   <div class="taux-mini">
                     <span>{{ d.tauxValidation | number:'1.1-1' }} %</span>
@@ -306,7 +554,7 @@
               <!-- Panneau de tendance détaillé (expandable au clic) -->
               @if (selectedPeriode() === d) {
                 <tr class="trend-panel-row">
-                  <td [attr.colspan]="filter.avecDetailParCentre ? 15 : 14">
+                  <td [attr.colspan]="filter.avecDetailParCentre ? 18 : 17">
                     <div class="trend-panel">
                       <div class="trend-panel-title">
                         Tendance — {{ moisLabel(d.mois) }} {{ d.annee }}
@@ -358,7 +606,34 @@
                           <span class="tm-value">{{ d.declarationsRattrapage | number }}</span>
                           <span class="tm-note">{{ d.tauxRattrapage | number:'1.1-1' }} % du total</span>
                         </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Montant déclaré</span>
+                          @for (m of d.montantsParDevise; track m.deviseId) {
+                            <div class="tm-devise-row">
+                              <span class="devise-badge sm">{{ m.deviseCode ?? '?' }}</span>
+                              <span class="tm-value">{{ fmtMontant(m.montantTotal) }}</span>
+                            </div>
+                          } @empty {
+                            <span class="tm-value">{{ fmtMontant(d.montantTotalDeclare) }}</span>
+                          }
+                          <span [class]="'tm-delta ' + varClass(d.variationMontant)">
+                            {{ fmtMontantVar(d.variationMontant) }} vs période préc.
+                          </span>
+                        </div>
 
+                        <div class="trend-metric">
+                          <span class="tm-label">Montant validé</span>
+                          @for (m of d.montantsParDevise; track m.deviseId) {
+                            <div class="tm-devise-row">
+                              <span class="devise-badge sm">{{ m.deviseCode ?? '?' }}</span>
+                              <span class="tm-value green">{{ fmtMontant(m.montantValide) }}</span>
+                              <span class="tm-note">(non val. : {{ fmtMontant(m.montantNonValide) }})</span>
+                            </div>
+                          } @empty {
+                            <span class="tm-value green">{{ fmtMontant(d.montantValide) }}</span>
+                            <span class="tm-note">Non validé : {{ fmtMontant(d.montantNonValide) }}</span>
+                          }
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -368,7 +643,7 @@
               <!-- Sous-lignes de détail par centre -->
               @if (filter.avecDetailParCentre && d.parCentre.length > 0) {
                 <tr class="centre-detail-row">
-                  <td [attr.colspan]="filter.avecDetailParCentre ? 11 : 10">
+                  <td [attr.colspan]="filter.avecDetailParCentre ? 14 : 13">
                     <div class="centre-detail-inner">
                       <table class="centre-table">
                         <thead>
@@ -379,6 +654,8 @@
                             <th class="right">Non val.</th>
                             <th class="right">Employeurs</th>
                             <th class="right">Travailleurs</th>
+                            <th class="right">Montant</th>
+                            <th class="right">Dont validé</th>
                             <th>Taux</th>
                           </tr>
                         </thead>
@@ -402,6 +679,8 @@
                               </td>
                               <td class="right">{{ c.nombreEmployeurs | number }}</td>
                               <td class="right">{{ c.totalTravailleurs | number }}</td>
+                              <td class="right amount-cell">{{ fmtMontantDevise(c.montantTotal, c.montantsParDevise) }}</td>
+                              <td class="right amount-cell green">{{ fmtMontantDevise(c.montantValide, c.montantsParDevise) }}</td>
                               <td>
                                 <div class="taux-mini">
                                   <span>{{ c.tauxValidation | number:'1.1-1' }} %</span>

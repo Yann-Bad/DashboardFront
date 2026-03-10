@@ -14,6 +14,10 @@ import {
   DeclarationAnalyseDto,
   DeclarationFilterDto,
 } from '../models/declaration-analyse.model';
+import {
+  DossierAnalyseDto,
+  DossierFilterDto,
+} from '../models/dossier-analyse.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -112,5 +116,26 @@ export class CentreDeGestionService {
     if (filter.avecDetailParCentre)
       params = params.set('avecDetailParCentre', 'true');
     return this.http.get<DeclarationAnalyseDto[]>(`${this.base}/declarations/analyse`, { params });
+  }
+
+  /**
+   * Analyse des dossiers (Frontofficedossier) par période.
+   * Correspond à : GET /api/CentreDeGestion/dossiers/analyse
+   *
+   * @param filter - Critères optionnels : plage d'années, mois, type, état, centre, tenant
+   * @returns Observable contenant la liste des analyses de dossiers par période
+   */
+  getDossierAnalyse(filter: DossierFilterDto = {}): Observable<DossierAnalyseDto[]> {
+    let params = new HttpParams();
+    if (filter.anneeDebut        != null) params = params.set('anneeDebut',        filter.anneeDebut.toString());
+    if (filter.anneeFin          != null) params = params.set('anneeFin',          filter.anneeFin.toString());
+    if (filter.moisDebut)                 params = params.set('moisDebut',         filter.moisDebut);
+    if (filter.moisFin)                   params = params.set('moisFin',           filter.moisFin);
+    if (filter.typeDossierId     != null) params = params.set('typeDossierId',     filter.typeDossierId.toString());
+    if (filter.etatDossierId     != null) params = params.set('etatDossierId',     filter.etatDossierId.toString());
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    return this.http.get<DossierAnalyseDto[]>(`${this.base}/dossiers/analyse`, { params });
   }
 }

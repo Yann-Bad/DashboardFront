@@ -101,7 +101,7 @@
 /* ---- Cartes de synthèse globale ---- */
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -121,7 +121,7 @@
 }
 
 .summary-card .value {
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #1e293b;
   line-height: 1.1;
@@ -498,3 +498,226 @@ tbody td.center { text-align: center; }
 .tm-delta.var-down   { color: #b91c1c; }
 .tm-delta.var-stable { color: #b45309; }
 .tm-delta.var-none   { color: #94a3b8; }
+
+/* =========================================================================
+   Page header — layout avec bouton Guide
+   ========================================================================= */
+.page-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-guide {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-guide:hover  { background: #eff6ff; border-color: #6366f1; color: #4338ca; }
+.btn-guide.active { background: #eff6ff; border-color: #6366f1; color: #4338ca; font-weight: 600; }
+.btn-guide svg    { flex-shrink: 0; }
+
+/* =========================================================================
+   Guide des métriques — panneau collapsible
+   ========================================================================= */
+.guide-panel {
+  background: #fff;
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.07);
+}
+
+.guide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.4rem;
+  background: #eef2ff;
+  border-bottom: 1px solid #c7d2fe;
+}
+
+.guide-header h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #3730a3;
+  margin: 0;
+}
+
+.guide-close {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background 0.12s;
+}
+.guide-close:hover { background: #c7d2fe; }
+
+.guide-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 0;
+}
+
+/* ---- Groupe thématique ---- */
+.guide-group {
+  padding: 1.1rem 1.4rem;
+  border-right: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.guide-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.85rem;
+}
+
+.guide-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.guide-dot.indigo { background: #6366f1; }
+.guide-dot.amber  { background: #f59e0b; }
+.guide-dot.slate  { background: #64748b; }
+
+/* ---- Entrée de métrique ---- */
+.guide-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.guide-item {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+}
+
+.guide-item > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.guide-item strong {
+  display: block;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.15rem;
+}
+
+.guide-item p {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.guide-item p code {
+  background: #f1f5f9;
+  border-radius: 3px;
+  padding: 0 0.25rem;
+  font-size: 0.74rem;
+  color: #7c3aed;
+}
+
+/* ---- Badges de couleur dans le guide ---- */
+.guide-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+  white-space: nowrap;
+  height: fit-content;
+  min-width: 58px;
+  text-align: center;
+}
+
+.guide-badge.green  { background: #dcfce7; color: #15803d; }
+.guide-badge.red    { background: #fee2e2; color: #b91c1c; }
+.guide-badge.orange { background: #ffedd5; color: #c2410c; }
+.guide-badge.blue   { background: #dbeafe; color: #1d4ed8; }
+.guide-badge.amber  { background: #fef3c7; color: #b45309; }
+
+/* =========================================================================
+   Badge devise (code monnaie inline)
+   ========================================================================= */
+.devise-badge {
+  display: inline-block;
+  background: #ede9fe;
+  color: #7c3aed;
+  border-radius: 4px;
+  padding: 0.1rem 0.38rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+  margin-right: 0.2rem;
+  white-space: nowrap;
+}
+
+.devise-badge.sm {
+  font-size: 0.62rem;
+  padding: 0.07rem 0.28rem;
+}
+
+/* ---- Montant multi-devises dans les summary cards ---- */
+.amount-currency-line {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  line-height: 1.2;
+  margin-bottom: 0.1rem;
+}
+
+.amount-currency-line:last-of-type { margin-bottom: 0; }
+
+/* ---- Ligne devise dans le panneau de tendance ---- */
+.tm-devise-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.15rem;
+  flex-wrap: wrap;
+}
+
+.tm-devise-row .tm-value { font-size: 1rem; }
+.tm-devise-row .tm-note  { color: #94a3b8; font-size: 0.72rem; }
+
+/* ---- Highlight sur la summary card montant ---- */
+.highlight-amount {
+  border-color: #c4b5fd;
+  background: linear-gradient(135deg, #faf5ff 0%, #fff 60%);
+}

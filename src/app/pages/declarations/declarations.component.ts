@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
 import { CentreDeGestionService } from '../../services/centre-de-gestion.service';
-import { DeclarationAnalyseDto, DeclarationFilterDto } from '../../models/declaration-analyse.model';
+import { DeclarationAnalyseDto, DeclarationFilterDto, MontantParDeviseDto } from '../../models/declaration-analyse.model';
 
 @Component({
   selector: 'app-declarations',
@@ -25,6 +25,9 @@ export class DeclarationsComponent implements OnInit {
 
   /** Période sélectionnée pour le panneau de tendance détaillé */
   readonly selectedPeriode = signal<DeclarationAnalyseDto | null>(null);
+
+  /** Panneau d'aide / guide des métriques */
+  readonly showGuide = signal(false);
 
   // -------------------------------------------------------------------------
   // Filtre courant — initialisé sur l'année courante
@@ -59,6 +62,23 @@ export class DeclarationsComponent implements OnInit {
   readonly totaux = computed(() => {
     const data = this.declarations();
     if (!data.length) return null;
+
+    // Aggregate per-currency amounts across all periods
+    const deviseMap = new Map<number, MontantParDeviseDto & { montantNonValide: number }>();
+    for (const d of data) {
+      for (const m of d.montantsParDevise ?? []) {
+        const existing = deviseMap.get(m.deviseId);
+        if (existing) {
+          existing.montantTotal  += m.montantTotal;
+          existing.montantValide += m.montantValide;
+          existing.montantNonValide = existing.montantTotal - existing.montantValide;
+        } else {
+          deviseMap.set(m.deviseId, { ...m, montantNonValide: m.montantTotal - m.montantValide });
+        }
+      }
+    }
+    const montantsParDevise = [...deviseMap.values()].sort((a, b) => b.montantTotal - a.montantTotal);
+
     return {
       totalDeclarations:           data.reduce((s, d) => s + d.totalDeclarations, 0),
       declarationsValidees:        data.reduce((s, d) => s + d.declarationsValidees, 0),
@@ -67,6 +87,10 @@ export class DeclarationsComponent implements OnInit {
       declarationsRedressees:      data.reduce((s, d) => s + d.declarationsRedressees, 0),
       declarationsComplementaires: data.reduce((s, d) => s + d.declarationsComplementaires, 0),
       totalTravailleursDeclares:   data.reduce((s, d) => s + d.totalTravailleursDeclares, 0),
+      montantTotalDeclare:         data.reduce((s, d) => s + (d.montantTotalDeclare ?? 0), 0),
+      montantValide:               data.reduce((s, d) => s + (d.montantValide ?? 0), 0),
+      montantNonValide:            data.reduce((s, d) => s + (d.montantNonValide ?? 0), 0),
+      montantsParDevise,
     };
   });
 
@@ -99,8 +123,26 @@ export class DeclarationsComponent implements OnInit {
           borderWidth: 1,
           borderRadius: 5,
           borderSkipped: false,
+          yAxisID: 'y',
           order: 2,
         },
+        {
+          type: 'line' as const,
+          label: 'Montant déclaré',
+          data: data.map(d => d.montantTotalDeclare ?? 0),
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245,158,11,0.08)',
+          pointBackgroundColor: '#f59e0b',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.35,
+          fill: false,
+          borderWidth: 2,
+          yAxisID: 'yMontant',
+          order: 1,
+        } as any,
         {
           type: 'line' as const,
           label: 'Tendance',
@@ -115,7 +157,8 @@ export class DeclarationsComponent implements OnInit {
           tension: 0.35,
           fill: false,
           borderWidth: 2,
-          order: 1,
+          yAxisID: 'y',
+          order: 0,
         } as any,
       ],
     };
@@ -128,7 +171,7 @@ export class DeclarationsComponent implements OnInit {
       legend: {
         display: true,
         labels: {
-          filter: (item: any) => item.text === 'Tendance',
+          filter: (item: any) => item.text === 'Tendance' || item.text === 'Montant déclaré',
           usePointStyle: true,
           pointStyle: 'line',
           font: { size: 12 },
@@ -136,13 +179,26 @@ export class DeclarationsComponent implements OnInit {
       },
       tooltip: {
         callbacks: {
-          label: ctx => ` ${(ctx.parsed.y as number).toLocaleString('fr-FR')} déclarations`,
+          label: ctx => {
+            if (ctx.dataset.label === 'Montant déclaré')
+              return ` ${(ctx.parsed.y as number).toLocaleString('fr-FR', { minimumFractionDigits: 0 })} (montant)`;
+            return ` ${(ctx.parsed.y as number).toLocaleString('fr-FR')} déclarations`;
+          },
         },
       },
     },
     scales: {
       x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-      y: { beginAtZero: true, ticks: { precision: 0 } },
+      y: { beginAtZero: true, ticks: { precision: 0 }, position: 'left' },
+      yMontant: {
+        beginAtZero: true,
+        position: 'right',
+        grid: { drawOnChartArea: false },
+        ticks: {
+          callback: (v: any) => v.toLocaleString('fr-FR', { notation: 'compact' }),
+          font: { size: 10 },
+        },
+      },
     },
     onClick: (_event, elements) => {
       if (elements.length > 0) {
@@ -222,5 +278,26 @@ export class DeclarationsComponent implements OnInit {
   fmt(v: number | null): string {
     if (v === null || v === undefined) return '—';
     return v > 0 ? `+${v}` : `${v}`;
+  }
+
+  /** Formate un montant en valeur lisible avec séparateurs (ex: 1 234 567) */
+  fmtMontant(v: number | null | undefined): string {
+    if (v === null || v === undefined) return '—';
+    return v.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  /** Formate un montant avec son code devise (ex: "1 234 567 XOF") */
+  fmtMontantDevise(v: number | null | undefined, devises: MontantParDeviseDto[] | null | undefined): string {
+    const amount = this.fmtMontant(v);
+    if (!devises?.length) return amount;
+    const codes = [...new Set(devises.map(d => d.deviseCode).filter(Boolean))].join(' / ');
+    return codes ? `${amount} ${codes}` : amount;
+  }
+
+  /** Formate une variation de montant avec signe et séparateurs */
+  fmtMontantVar(v: number | null | undefined): string {
+    if (v === null || v === undefined) return '—';
+    const formatted = Math.abs(v).toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    return v > 0 ? `+${formatted}` : v < 0 ? `-${formatted}` : `${formatted}`;
   }
 }

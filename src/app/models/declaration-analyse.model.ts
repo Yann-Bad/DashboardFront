@@ -4,6 +4,16 @@
 // DeclarationFilterDto (DashboardCore)
 // ---------------------------------------------------------------------------
 
+/** Montant agrégé pour une devise donnée */
+export interface MontantParDeviseDto {
+  deviseId:      number;
+  deviseCode:    string | null;
+  deviseLibelle: string | null;
+  montantTotal:    number;
+  montantValide:   number;
+  montantNonValide: number;
+}
+
 /** Résumé des déclarations d'un centre de gestion sur une période donnée */
 export interface DeclarationParCentreDto {
   centreId: number;
@@ -14,6 +24,12 @@ export interface DeclarationParCentreDto {
   nonValidees: number;
   nombreEmployeurs: number;
   totalTravailleurs: number;
+  /** Montants agrégés (source : Cotisationcompteemployeur) */
+  montantTotal: number;
+  montantValide: number;
+  montantNonValide: number;
+  /** Ventilation par devise */
+  montantsParDevise: MontantParDeviseDto[];
   /** Calculé côté serveur */
   tauxValidation: number;
 }
@@ -31,6 +47,13 @@ export interface DeclarationAnalyseDto {
   declarationsComplementaires: number;
   nombreEmployeursDeclares: number;
   totalTravailleursDeclares: number;
+  /** Montants agrégés (source : Cotisationcompteemployeur) */
+  montantTotalDeclare: number;
+  montantValide: number;
+  montantNonValide: number;
+  variationMontant: number | null;
+  /** Ventilation par devise */
+  montantsParDevise: MontantParDeviseDto[];
   /** Calculés côté serveur */
   tauxValidation: number;
   tauxRattrapage: number;

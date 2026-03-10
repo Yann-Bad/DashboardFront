@@ -277,6 +277,7 @@ tbody td.center { text-align: center; }
 
 .bar-mini-fill.green  { background: #22c55e; }
 .bar-mini-fill.orange { background: #f59e0b; }
+.bar-mini-fill.red    { background: #ef4444; }
 
 /* Badges */
 .badge {
@@ -491,6 +492,7 @@ tbody td.center { text-align: center; }
 
 .tm-label { font-size: 0.7rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
 .tm-value { font-size: 1.15rem; font-weight: 700; color: #1e293b; }
+.tm-value.green { color: #16a34a; }
 .tm-delta { font-size: 0.75rem; font-weight: 600; }
 .tm-note  { font-size: 0.72rem; color: #94a3b8; }
 

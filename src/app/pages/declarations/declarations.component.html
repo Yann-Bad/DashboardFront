@@ -369,6 +369,25 @@
         <div class="sub">déclarations Valide ≠ 1</div>
       </div>
 
+      <div class="summary-card">
+        <div class="label">Employeurs ayant payé</div>
+        <div class="value green">{{ t.totalEmployeursAyantPaye | number }}</div>
+        <div class="sub">sur {{ t.totalEmployeursDeclares | number }} déclarant(s)</div>
+      </div>
+
+      <div class="summary-card highlight-amount">
+        <div class="label">Montant encaissé</div>
+        <div class="value green">{{ fmtMontant(t.montantEncaisse) }}</div>
+        <div class="sub">
+          Taux recouv. :
+          @if (t.totalEmployeursDeclares > 0) {
+            <strong>{{ (t.totalEmployeursAyantPaye / t.totalEmployeursDeclares * 100) | number:'1.1-1' }} %</strong>
+          } @else {
+            <strong>—</strong>
+          }
+        </div>
+      </div>
+
     </div>
 
     <!-- Taux de validation global -->
@@ -446,6 +465,10 @@
               <th class="right">Dont validé</th>
               <th class="center">Var. montant</th>
               <th>Taux validation</th>
+              <th class="right">Emp. payé</th>
+              <th class="center">Taux recouv.</th>
+              <th class="right">Montant enc.</th>
+              <th class="center">Var. enc.</th>
               @if (filter.avecDetailParCentre) {
                 <th class="center">Centres</th>
               }
@@ -546,6 +569,30 @@
                     </div>
                   </div>
                 </td>
+
+                <!-- Recouvrement -->
+                <td class="right">{{ d.employeursAyantPaye | number }}</td>
+                <td class="center">
+                  <div class="taux-mini">
+                    <span>{{ d.tauxRecouvrement | number:'1.1-1' }} %</span>
+                    <div class="bar-mini">
+                      <div
+                        class="bar-mini-fill"
+                        [class.green]="d.tauxRecouvrement >= 70"
+                        [class.orange]="d.tauxRecouvrement >= 40 && d.tauxRecouvrement < 70"
+                        [class.red]="d.tauxRecouvrement < 40"
+                        [style.width]="barWidth(d.tauxRecouvrement)"
+                      ></div>
+                    </div>
+                  </div>
+                </td>
+                <td class="right amount-cell">{{ fmtMontant(d.montantEncaisse) }}</td>
+                <td class="center">
+                  <span [class]="'var-chip ' + varClass(d.variationMontantEncaisse)">
+                    {{ fmtMontantVar(d.variationMontantEncaisse) }}
+                  </span>
+                </td>
+
                 @if (filter.avecDetailParCentre) {
                   <td class="center">{{ d.parCentre.length }}</td>
                 }
@@ -554,7 +601,7 @@
               <!-- Panneau de tendance détaillé (expandable au clic) -->
               @if (selectedPeriode() === d) {
                 <tr class="trend-panel-row">
-                  <td [attr.colspan]="filter.avecDetailParCentre ? 18 : 17">
+                  <td [attr.colspan]="filter.avecDetailParCentre ? 22 : 21">
                     <div class="trend-panel">
                       <div class="trend-panel-title">
                         Tendance — {{ moisLabel(d.mois) }} {{ d.annee }}
@@ -634,6 +681,21 @@
                             <span class="tm-note">Non validé : {{ fmtMontant(d.montantNonValide) }}</span>
                           }
                         </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Employeurs ayant payé</span>
+                          <span class="tm-value green">{{ d.employeursAyantPaye | number }}</span>
+                          <span class="tm-note">Taux recouvrement : {{ d.tauxRecouvrement | number:'1.1-1' }} %</span>
+                        </div>
+
+                        <div class="trend-metric">
+                          <span class="tm-label">Montant encaissé</span>
+                          <span class="tm-value green">{{ fmtMontant(d.montantEncaisse) }}</span>
+                          <span [class]="'tm-delta ' + varClass(d.variationMontantEncaisse)">
+                            {{ fmtMontantVar(d.variationMontantEncaisse) }} vs période préc.
+                          </span>
+                        </div>
+
                       </div>
                     </div>
                   </td>

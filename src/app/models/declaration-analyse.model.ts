@@ -52,6 +52,23 @@ export interface DeclarationAnalyseDto {
   montantValide: number;
   montantNonValide: number;
   variationMontant: number | null;
+
+  // -----------------------------------------------------------------------
+  // Recouvrement — cross-link avec Cotisationencaissement (même plage)
+  // KPI securdc : empRecouvre = distinct employeurs ayant payé
+  // -----------------------------------------------------------------------
+  /** Employeurs distincts ayant effectué au moins un encaissement sur la période */
+  employeursAyantPaye: number;
+  /** (employeursAyantPaye / nombreEmployeursDeclares) × 100 */
+  tauxRecouvrement: number;
+  /** Montant total encaissé (champ Montant de Cotisationencaissement) */
+  montantEncaisse: number;
+  montantPrincipalEncaisse: number;
+  montantMajorationEncaisse: number;
+  montantTaxationEncaisse: number;
+  /** Variation du montant encaissé vs la période précédente */
+  variationMontantEncaisse: number | null;
+
   /** Ventilation par devise */
   montantsParDevise: MontantParDeviseDto[];
   /** Calculés côté serveur */

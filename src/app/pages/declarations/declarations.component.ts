@@ -91,6 +91,10 @@ export class DeclarationsComponent implements OnInit {
       montantValide:               data.reduce((s, d) => s + (d.montantValide ?? 0), 0),
       montantNonValide:            data.reduce((s, d) => s + (d.montantNonValide ?? 0), 0),
       montantsParDevise,
+      // Recouvrement (cross-link Cotisationencaissement)
+      totalEmployeursDeclares:  data.reduce((s, d) => s + (d.nombreEmployeursDeclares ?? 0), 0),
+      totalEmployeursAyantPaye: data.reduce((s, d) => s + (d.employeursAyantPaye ?? 0), 0),
+      montantEncaisse:          data.reduce((s, d) => s + (d.montantEncaisse ?? 0), 0),
     };
   });
 

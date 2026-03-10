@@ -120,4 +120,16 @@ export class CentreDetailComponent implements OnInit {
       },
     ];
   }
+
+  /**
+   * Breakdown dynamique par statut depuis Referentielstatutemploye.
+   * Libellés réels depuis la DB — remplace le hardcodage 1=Actif / 2=Inactif.
+   */
+  get statutBreakdown(): { label: string; value: number; pct: number }[] {
+    return (this.employeStats?.breakdownParStatut ?? []).map(s => ({
+      label: s.statutLibelle ?? s.statutCode ?? `Statut ${s.statutId}`,
+      value: s.nombre,
+      pct:   s.pourcentage,
+    }));
+  }
 }

@@ -15,6 +15,10 @@ import {
   DeclarationFilterDto,
 } from '../models/declaration-analyse.model';
 import {
+  EncaissementAnalyseDto,
+  EncaissementFilterDto,
+} from '../models/encaissement-analyse.model';
+import {
   DossierAnalyseDto,
   DossierFilterDto,
 } from '../models/dossier-analyse.model';
@@ -137,5 +141,23 @@ export class CentreDeGestionService {
     if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
     if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
     return this.http.get<DossierAnalyseDto[]>(`${this.base}/dossiers/analyse`, { params });
+  }
+
+  /**
+   * Analyse des encaissements de cotisations (Cotisationencaissement) par période.
+   * Correspond à : GET /api/CentreDeGestion/encaissements/analyse
+   *
+   * Si aucune borne d'année n'est fournie, le backend retourne l'année courante.
+   */
+  getEncaissementAnalyse(filter: EncaissementFilterDto = {}): Observable<EncaissementAnalyseDto[]> {
+    let params = new HttpParams();
+    if (filter.anneeDebut        != null) params = params.set('anneeDebut',        filter.anneeDebut.toString());
+    if (filter.anneeFin          != null) params = params.set('anneeFin',          filter.anneeFin.toString());
+    if (filter.moisDebut)                 params = params.set('moisDebut',         filter.moisDebut);
+    if (filter.moisFin)                   params = params.set('moisFin',           filter.moisFin);
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    return this.http.get<EncaissementAnalyseDto[]>(`${this.base}/encaissements/analyse`, { params });
   }
 }

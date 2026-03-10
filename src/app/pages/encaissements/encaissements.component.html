@@ -1,0 +1,448 @@
+<div class="encaissements-page">
+  <div class="page-header">
+    <div class="page-header-main">
+      <div>
+        <h1>Analyse des encaissements</h1>
+        <p>Suivi des cotisations encaissées par période — montants principal, majorations, taxations et tendances</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       Filtre
+       ========================================================= -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+
+      <label>
+        Année début
+        <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2100" />
+      </label>
+
+      <label>
+        Mois début
+        <select [(ngModel)]="filter.moisDebut">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        Année fin
+        <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2100" />
+      </label>
+
+      <label>
+        Mois fin
+        <select [(ngModel)]="filter.moisFin">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        Détail par centre
+        <select [(ngModel)]="filter.avecDetailParCentre">
+          <option [ngValue]="false">Non</option>
+          <option [ngValue]="true">Oui</option>
+        </select>
+      </label>
+
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Appliquer' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =========================================================
+       États : chargement / erreur
+       ========================================================= -->
+  @if (loading()) {
+    <div class="state-loading">
+      <div class="spinner"></div>
+      <span>Chargement des données…</span>
+    </div>
+  }
+
+  @if (!loading() && error()) {
+    <div class="state-error">
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- =========================================================
+         Cartes de synthèse globale
+         ========================================================= -->
+    @if (totaux(); as t) {
+      <div class="summary-grid">
+
+        <div class="summary-card">
+          <div class="label">Total encaissements</div>
+          <div class="value">{{ t.totalEncaissements | number }}</div>
+          <div class="sub">enregistrements actifs</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="label">Employeurs ayant payé</div>
+          <div class="value teal">{{ t.totalEmployeurs | number }}</div>
+          <div class="sub">distincts sur la période</div>
+        </div>
+
+        <div class="summary-card highlight-amount">
+          <div class="label">Montant total encaissé</div>
+          <div class="value teal">{{ fmtMontant(t.montant) }}</div>
+          <div class="sub">{{ t.hasMixedCurrencies ? 'équivalent monnaie locale' : 'champ Montant direct' }}</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="label">Principal</div>
+          <div class="value">{{ fmtMontant(t.montantPrincipal) }}</div>
+          <div class="sub">{{ t.hasMixedCurrencies ? 'éq. local — multi-devises' : 'MontantPrincipal' }}</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="label">Majorations</div>
+          <div class="value orange">{{ fmtMontant(t.montantMajoration) }}</div>
+          <div class="sub">{{ t.hasMixedCurrencies ? 'éq. local — multi-devises' : 'MontantMajoration' }}</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="label">Taxations</div>
+          <div class="value red">{{ fmtMontant(t.montantTaxation) }}</div>
+          <div class="sub">{{ t.hasMixedCurrencies ? 'éq. local — multi-devises' : 'MontantTaxation' }}</div>
+        </div>
+
+        <div class="summary-card highlight-amount">
+          <div class="label">Composantes (P + M + T)</div>
+          <div class="value blue">{{ fmtMontant(t.montantPrincipal + t.montantMajoration + t.montantTaxation) }}</div>
+          <div class="sub">{{ t.hasMixedCurrencies ? 'éq. local — multi-devises' : 'principal + majorations + taxations' }}</div>
+        </div>
+
+      </div>
+
+      <!-- Avertissement multi-devises -->
+      @if (t.hasMixedCurrencies) {
+        <div class="currency-warning">
+          ⚠ Certaines périodes contiennent des encaissements en plusieurs devises.
+          Les montants agrégés ci-dessus sont des <strong>équivalents en monnaie locale</strong>
+          (convertis via le taux de change au moment de l'opération dans securdc).
+          Consultez la ventilation par devise dans le panneau de détail de chaque période.
+        </div>
+      }
+
+      <!-- Histogramme Chart.js -->
+      @if (encaissements().length > 1) {
+        <div class="chart-section">
+          <div class="section-header">
+            <h2>Évolution des encaissements</h2>
+            <div class="histogram-legend">
+              <span class="hleg hleg-up">&#8593; Hausse</span>
+              <span class="hleg hleg-down">&#8595; Baisse</span>
+              <span class="hleg hleg-stable">&#8594; Stable</span>
+              <span class="hleg hleg-none">&#8212; 1re&nbsp;période</span>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas baseChart
+              [data]="chartData()"
+              [options]="chartOptions"
+              type="bar"
+            ></canvas>
+          </div>
+        </div>
+      }
+
+    }<!-- end @if totaux -->
+
+    <!-- =========================================================
+         Tableau des périodes
+         ========================================================= -->
+    @if (encaissements().length === 0) {
+      <div class="state-empty">
+        <span>Aucun encaissement trouvé pour les critères sélectionnés.</span>
+      </div>
+    } @else {
+      <div class="table-section">
+        <div class="section-header">
+          <h2>Détail par période</h2>
+          <span class="period-count">{{ encaissements().length }} période(s)</span>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th class="center">Tendance</th>
+                <th class="right">Total enc.</th>
+                <th class="center">Variation</th>
+                <th class="center">Croissance</th>
+                <th class="right">Emp. ayant payé</th>
+                <th class="right">Principal</th>
+                <th class="right">Majorations</th>
+                <th class="right">Taxations</th>
+                <th class="right">Montant total</th>
+                <th class="center">Var. montant</th>
+                @if (filter.avecDetailParCentre) {
+                  <th class="center">Centres</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of encaissements(); track d.annee + '-' + d.mois) {
+                <tr
+                  class="data-row"
+                  [class.row-selected]="selectedPeriode() === d"
+                  (click)="toggleDetail(d)"
+                >
+                  <td class="periode-cell">{{ moisLabel(d.mois) }} {{ d.annee }}</td>
+
+                  <td class="center">
+                    @if (d.tendance) {
+                      <span [class]="'trend-badge ' + tendanceClass(d.tendance)">
+                        {{ tendanceIcon(d.tendance) }} {{ d.tendance }}
+                      </span>
+                    } @else {
+                      <span class="trend-badge trend-none">—</span>
+                    }
+                  </td>
+
+                  <td class="right"><strong>{{ d.totalEncaissements | number }}</strong></td>
+
+                  <td class="center">
+                    <span [class]="'var-chip ' + varClass(d.variationEncaissements)">
+                      {{ fmt(d.variationEncaissements) }}
+                    </span>
+                  </td>
+
+                  <td class="center">
+                    @if (d.tauxCroissance !== null) {
+                      <span [class]="'var-chip ' + varClass(d.tauxCroissance)">
+                        {{ fmt(d.tauxCroissance) }} %
+                      </span>
+                    } @else {
+                      <span class="var-chip var-none">—</span>
+                    }
+                  </td>
+
+                  <td class="right">{{ d.nombreEmployeursAyantPaye | number }}</td>
+                  <td class="right amount-cell" [title]="d.hasMultipleCurrencies ? 'Équivalent monnaie locale (multi-devises)' : ''">{{ fmtMontant(d.montantPrincipal) }}</td>
+                  <td class="right amount-cell orange" [title]="d.hasMultipleCurrencies ? 'Équivalent monnaie locale (multi-devises)' : ''">{{ fmtMontant(d.montantMajoration) }}</td>
+                  <td class="right amount-cell red" [title]="d.hasMultipleCurrencies ? 'Équivalent monnaie locale (multi-devises)' : ''">{{ fmtMontant(d.montantTaxation) }}</td>
+                  <td class="right amount-cell teal" [title]="d.hasMultipleCurrencies ? 'Équivalent monnaie locale (multi-devises)' : ''">
+                    {{ fmtMontant(d.montant) }}
+                    @if (d.hasMultipleCurrencies) { <span class="currency-mix-badge" title="montants convertis depuis plusieurs devises">éq.</span> }
+                  </td>
+
+                  <td class="center">
+                    <span [class]="'var-chip ' + varClass(d.variationMontant)">
+                      {{ fmtMontantVar(d.variationMontant) }}
+                    </span>
+                  </td>
+
+                  @if (filter.avecDetailParCentre) {
+                    <td class="center">{{ d.parCentre.length }}</td>
+                  }
+                </tr>
+
+                <!-- Panneau de tendance détaillé -->
+                @if (selectedPeriode() === d) {
+                  <tr class="trend-panel-row">
+                    <td [attr.colspan]="filter.avecDetailParCentre ? 12 : 11">
+                      <div class="trend-panel">
+                        <div class="trend-panel-title">
+                          Tendance — {{ moisLabel(d.mois) }} {{ d.annee }}
+                        </div>
+                        <div class="trend-panel-grid">
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Encaissements</span>
+                            <span class="tm-value">{{ d.totalEncaissements | number }}</span>
+                            <span [class]="'tm-delta ' + varClass(d.variationEncaissements)">
+                              {{ fmt(d.variationEncaissements) }} vs période préc.
+                            </span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Croissance</span>
+                            <span [class]="'tm-value ' + varClass(d.tauxCroissance)">
+                              {{ d.tauxCroissance !== null ? (fmt(d.tauxCroissance) + ' %') : '—' }}
+                            </span>
+                            <span class="tm-note">vs période précédente</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Employeurs ayant payé</span>
+                            <span class="tm-value teal">{{ d.nombreEmployeursAyantPaye | number }}</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Montant total</span>
+                            <span class="tm-value teal">{{ fmtMontant(d.montant) }}</span>
+                            <span [class]="'tm-delta ' + varClass(d.variationMontant)">
+                              {{ fmtMontantVar(d.variationMontant) }} vs période préc.
+                            </span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Principal</span>
+                            <span class="tm-value">{{ fmtMontant(d.montantPrincipal) }}</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Majorations</span>
+                            <span class="tm-value orange">{{ fmtMontant(d.montantMajoration) }}</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Taxations</span>
+                            <span class="tm-value red">{{ fmtMontant(d.montantTaxation) }}</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Composantes (P+M+T)</span>
+                            <span class="tm-value blue">{{ fmtMontant(d.montantComposantes) }}</span>
+                          </div>
+
+                        </div>
+
+                        <!-- Mode de paiement breakdown -->
+                        @if (d.parModePaiement && d.parModePaiement.length > 0) {
+                          <div class="mode-paiement-section">
+                            <div class="mode-paiement-title">Ventilation par mode de paiement</div>
+                            <table class="mode-paiement-table">
+                              <thead>
+                                <tr>
+                                  <th>Mode</th>
+                                  <th>Nature</th>
+                                  <th class="right">Encaissements</th>
+                                  <th class="right">Principal</th>
+                                  <th class="right">Majorations</th>
+                                  <th class="right">Taxations</th>
+                                  <th class="right">Montant</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (mp of d.parModePaiement; track mp.modePaiementId) {
+                                  <tr>
+                                    <td><strong>{{ mp.modeCode ?? '—' }}</strong></td>
+                                    <td class="text-muted">{{ mp.modeNature ?? '—' }}</td>
+                                    <td class="right">{{ mp.totalEncaissements | number }}</td>
+                                    <td class="right amount-cell">{{ fmtMontant(mp.montantPrincipal) }}</td>
+                                    <td class="right amount-cell orange">{{ fmtMontant(mp.montantMajoration) }}</td>
+                                    <td class="right amount-cell red">{{ fmtMontant(mp.montantTaxation) }}</td>
+                                    <td class="right amount-cell teal">{{ fmtMontant(mp.montant) }}</td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        }
+
+                        <!-- Ventilation par devise (montants origines + équivalent local) -->
+                        @if (d.montantsParDevise && d.montantsParDevise.length > 0) {
+                          <div class="mode-paiement-section">
+                            <div class="mode-paiement-title">Ventilation par devise</div>
+                            <table class="mode-paiement-table">
+                              <thead>
+                                <tr>
+                                  <th>Devise</th>
+                                  <th class="right">Enreg.</th>
+                                  <th class="right">Principal (devise)</th>
+                                  <th class="right">Majorations (devise)</th>
+                                  <th class="right">Taxations (devise)</th>
+                                  <th class="right">Total devise</th>
+                                  <th class="right">Equiv. local</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (dv of d.montantsParDevise; track dv.deviseId) {
+                                  <tr>
+                                    <td>
+                                      <strong>{{ dv.deviseCode ?? 'Monnaie locale' }}</strong>
+                                      @if (dv.deviseLibelle) {
+                                        <span class="text-muted"> — {{ dv.deviseLibelle }}</span>
+                                      }
+                                    </td>
+                                    <td class="right">{{ dv.totalEncaissements | number }}</td>
+                                    <td class="right amount-cell">{{ dv.deviseId === 0 ? '—' : fmtMontant(dv.montantPrincipalDevise) }}</td>
+                                    <td class="right amount-cell orange">{{ dv.deviseId === 0 ? '—' : fmtMontant(dv.montantMajorationDevise) }}</td>
+                                    <td class="right amount-cell red">{{ dv.deviseId === 0 ? '—' : fmtMontant(dv.montantTaxationDevise) }}</td>
+                                    <td class="right amount-cell blue">{{ dv.deviseId === 0 ? '—' : fmtMontant(dv.montantDevise) }}</td>
+                                    <td class="right amount-cell teal">{{ fmtMontant(dv.montantLocal) }}</td>
+                                  </tr>
+                                }
+                              </tbody>
+                              @if (d.montantsParDevise.length > 1) {
+                                <tfoot>
+                                  <tr>
+                                    <td colspan="7" class="devise-footnote">
+                                      ⚠ Les montants en devise d'origine (colonnes « devise ») ne peuvent pas être additionnés entre devises différentes.
+                                      Seule la colonne <em>Equiv. local</em> est comparable (montants convertis en monnaie locale via le taux de change).
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              }
+                            </table>
+                          </div>
+                        }
+
+                      </div>
+                    </td>
+                  </tr>
+                }
+
+                <!-- Sous-lignes de détail par centre -->
+                @if (filter.avecDetailParCentre && d.parCentre.length > 0) {
+                  <tr class="centre-detail-row">
+                    <td colspan="11">
+                      <div class="centre-detail-inner">
+                        <table class="centre-table">
+                          <thead>
+                            <tr>
+                              <th>Centre</th>
+                              <th class="right">Encaissements</th>
+                              <th class="right">Employeurs</th>
+                              <th class="right">Principal</th>
+                              <th class="right">Majorations</th>
+                              <th class="right">Taxations</th>
+                              <th class="right">Montant</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (c of d.parCentre; track c.centreId) {
+                              <tr>
+                                <td>
+                                  <strong>{{ c.centreCode }}</strong>
+                                  @if (c.centreLibelle) { — {{ c.centreLibelle }} }
+                                </td>
+                                <td class="right">{{ c.totalEncaissements | number }}</td>
+                                <td class="right">{{ c.nombreEmployeurs | number }}</td>
+                                <td class="right amount-cell">{{ fmtMontant(c.montantPrincipal) }}</td>
+                                <td class="right amount-cell orange">{{ fmtMontant(c.montantMajoration) }}</td>
+                                <td class="right amount-cell red">{{ fmtMontant(c.montantTaxation) }}</td>
+                                <td class="right amount-cell teal">{{ fmtMontant(c.montant) }}</td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>

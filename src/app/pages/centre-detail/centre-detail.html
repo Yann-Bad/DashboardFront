@@ -80,7 +80,7 @@
             <span class="emp-total-sub">sur {{ employeStats.totalEmployes | number }} immatriculé(s)</span>
           </div>
 
-          <!-- Barres de répartition -->
+          <!-- Barres de répartition (Actif / Inactif) -->
           @for (r of employeRepartition; track r.label) {
             <div class="emp-bar-card" [attr.data-color]="r.color">
               <div class="emp-bar-header">
@@ -97,6 +97,33 @@
 
         </div>
       </div>
+
+      <!-- Breakdown par statut (Referentielstatutemploye) -->
+      @if (statutBreakdown.length > 0) {
+        <div class="emp-stats-section">
+          <h2 class="section-title">Détail par statut d'employé</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Statut</th>
+                <th>Code</th>
+                <th class="text-right">Nombre</th>
+                <th class="text-right">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of statutBreakdown; track s.label) {
+                <tr>
+                  <td>{{ s.label }}</td>
+                  <td class="text-muted"></td>
+                  <td class="text-right">{{ s.value | number }}</td>
+                  <td class="text-right">{{ s.pct | number:'1.1-1' }} %</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     }
 
     <!-- Details grid -->

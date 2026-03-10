@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -57,10 +58,24 @@ export class LoginComponent {
           this.router.navigate(['/dashboard']);
         }
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        const serverMsg = err?.error?.error_description;
-        this.errorMsg.set(serverMsg ?? 'Invalid username or password. Please try again.');
+
+        if (err.error?.error === 'access_denied') {
+          // User authenticated but has no roles for this application.
+          this.errorMsg.set(
+            err.error.error_description ?? 'Votre compte n\'a pas encore de rôle attribué pour cette application. Veuillez contacter votre administrateur.'
+          );
+        } else if (err.status === 400 && err.error?.error === 'invalid_grant') {
+          // Wrong username or password.
+          this.errorMsg.set(
+            err.error.error_description ?? 'Identifiants invalides. Veuillez vérifier votre nom d\'utilisateur et mot de passe.'
+          );
+        } else {
+          this.errorMsg.set(
+            err?.error?.error_description ?? 'Une erreur inattendue s\'est produite. Veuillez réessayer.'
+          );
+        }
       },
     });
   }

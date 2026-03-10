@@ -251,3 +251,78 @@
 .rank-badge[data-rank='1'] { background: #fef3c7; color: #d97706; }
 .rank-badge[data-rank='2'] { background: #f3f4f6; color: #374151; }
 .rank-badge[data-rank='3'] { background: #fde8d8; color: #c2621a; }
+
+/* ── Section Recouvrement annuel ─────────────────────────────────── */
+.recouvrement-section { margin-bottom: 1.5rem; }
+
+.recouv-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Barre de taux */
+.recouv-rate { display: flex; flex-direction: column; gap: 0.4rem; }
+.recouv-rate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #64748b);
+}
+.recouv-rate-header strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.recouv-rate-header strong.green  { color: #16a34a; }
+.recouv-rate-header strong.orange { color: #d97706; }
+.recouv-rate-header strong.red    { color: #dc2626; }
+
+.recouv-bar {
+  transition: width 0.45s ease;
+}
+.emp-bar-fill.green  { background: #22c55e; }
+.emp-bar-fill.orange { background: #f97316; }
+.emp-bar-fill.red    { background: #ef4444; }
+
+.recouv-rate-sub {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #64748b);
+}
+
+/* Grille de montants */
+.montant-enc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+.montant-enc-tile {
+  background: var(--color-bg, #f9fafb);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.montant-enc-tile.total-tile {
+  border-left: 3px solid #0d9488;
+  background: #f0fdfa;
+}
+.montant-enc-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.montant-enc-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  font-variant-numeric: tabular-nums;
+}
+.montant-enc-value.orange { color: #d97706; }
+.montant-enc-value.red    { color: #dc2626; }
+.montant-enc-value.teal   { color: #0d9488; }
+/* ── fin recouvrement ─────────────────────────────────────────────── */

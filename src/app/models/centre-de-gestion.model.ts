@@ -46,6 +46,17 @@ export interface CentreEmployeStatsDto {
   /** Pourcentages calcules cote backend */
   pourcentageActif: number;
   pourcentageInactif: number;
+  /** Breakdown dynamique par statut avec libellés depuis Referentielstatutemploye */
+  breakdownParStatut: StatutEmployeDetailDto[];
+}
+
+/** Détail d'un statut d'employé avec libellé réel depuis la DB */
+export interface StatutEmployeDetailDto {
+  statutId: number;
+  statutCode: string | null;
+  statutLibelle: string | null;
+  nombre: number;
+  pourcentage: number;
 }
 
 export interface CentreDeGestionDto {
@@ -142,6 +153,29 @@ export interface DashboardStatsDto {
   pourcentageEmployesActifs: number;
   pourcentageEmployesInactifs: number;
 
+  // Encaissements — montants agrégés (Cotisationencaissement actifs, non supprimés)
+  montantPrincipalEncaisse: number;
+  montantMajorationEncaisse: number;
+  montantTaxationEncaisse: number;
+  /** Calculé côté backend = Principal + Majoration + Taxation */
+  montantTotalEncaisse: number;
+
+  // Taux de recouvrement annuel (année courante)
+  /** Employeurs distincts ayant déclaré sur l'année courante */
+  employeursDeclares: number;
+  /** Employeurs distincts ayant effectué au moins un encaissement sur l'année courante */
+  employeursAyantPaye: number;
+  /** Calculé côté backend = (employeursAyantPaye / employeursDeclares) × 100 */
+  tauxRecouvrementAnnuel: number;
+
   // Classements
   top5CentresParEmployeurs: CentreDeGestionSummaryDto[];
+
+  // Effectifs déclarés (Immatriculationeffectif — snapshots périodiques)
+  /** Somme de EffectifTotal — effectifs réels déclarés par les employeurs */
+  effectifDeclareTotal: number;
+  /** Somme de EffectifEmploye (hors assimilés) */
+  effectifEmployeDeclare: number;
+  /** Somme de EffectifEmployeAssimile */
+  effectifAssimileDeclare: number;
 }

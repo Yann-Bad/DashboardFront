@@ -35,13 +35,10 @@ export class DashboardComponent implements OnInit {
   get statCards(): { label: string; value: number; icon: string; color: string }[] {
     if (!this.stats) return [];
     return [
-      { label: 'Centres de Gestion',  value: this.stats.totalCentres,           icon: '🏢', color: 'blue'   },
-      { label: 'Employeurs',          value: this.stats.totalEmployeurs,         icon: '👔', color: 'green'  },
-      { label: 'Employés',            value: this.stats.totalEmployes,           icon: '👤', color: 'purple' },
-      // { label: 'Cotisations Compte',  value: this.stats.totalCotisationsCompte,  icon: '💼', color: 'orange' },
-      // { label: 'Encaissements',       value: this.stats.totalEncaissements,      icon: '💰', color: 'teal'   },
-      // { label: 'Majorations',         value: this.stats.totalMajorations,        icon: '📈', color: 'red'    },
-      // { label: 'Taxations',           value: this.stats.totalTaxations,          icon: '🧾', color: 'indigo' },
+      { label: 'Centres de Gestion',    value: this.stats.totalCentres,              icon: '🏢', color: 'blue'   },
+      { label: 'Employeurs',            value: this.stats.totalEmployeurs,           icon: '👔', color: 'green'  },
+      { label: 'Employés déclarés',     value: this.stats.totalEmployes,             icon: '👤', color: 'purple' },
+      { label: 'Effectifs déclarés',    value: this.stats.effectifDeclareTotal ?? 0, icon: '📋', color: 'teal'   },
     ];
   }
 
@@ -99,5 +96,16 @@ export class DashboardComponent implements OnInit {
         icon:        '🚫',
       },
     ];
+  }
+
+  /** Formate un montant avec séparateurs (ex : 1 234 567) */
+  fmtMontant(v: number | null | undefined): string {
+    if (v === null || v === undefined) return '—';
+    return v.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  /** Bloque une valeur entre 0 et 100 pour les barres de progression */
+  clampPct(v: number): number {
+    return Math.min(100, Math.max(0, v ?? 0));
   }
 }

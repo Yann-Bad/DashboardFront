@@ -98,6 +98,95 @@
       </div>
     </div>
 
+    <!-- ============================================================         Section : Effectifs déclarés (snapshots Immatriculationeffectif)
+         ============================================================ -->
+    @if (stats.effectifDeclareTotal > 0) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Effectifs déclarés</h2>
+          <span class="text-muted">Cumul des déclarations périodiques (Immatriculationeffectif)</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card" data-color="teal">
+            <div class="stat-icon">📋</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.effectifDeclareTotal | number }}</span>
+              <span class="stat-label">Effectif total déclaré</span>
+            </div>
+          </div>
+          <div class="stat-card" data-color="blue">
+            <div class="stat-icon">👤</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.effectifEmployeDeclare | number }}</span>
+              <span class="stat-label">Employés déclarés</span>
+            </div>
+          </div>
+          <div class="stat-card" data-color="purple">
+            <div class="stat-icon">👥</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.effectifAssimileDeclare | number }}</span>
+              <span class="stat-label">Assimilés déclarés</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ============================================================         Section : Recouvrement & Encaissements (KPI annuels)
+         ============================================================ -->
+    <div class="section-card recouvrement-section">
+      <div class="section-header">
+        <h2>Recouvrement annuel</h2>
+        <a routerLink="/encaissements" class="btn-link">Analyse détaillée →</a>
+      </div>
+
+      <div class="recouv-body">
+        <!-- Taux de recouvrement -->
+        <div class="recouv-rate">
+          <div class="recouv-rate-header">
+            <span>Taux de recouvrement (année courante)</span>
+            <strong
+              [class.green]="stats.tauxRecouvrementAnnuel >= 70"
+              [class.orange]="stats.tauxRecouvrementAnnuel >= 40 && stats.tauxRecouvrementAnnuel < 70"
+              [class.red]="stats.tauxRecouvrementAnnuel < 40"
+            >{{ stats.tauxRecouvrementAnnuel | number:'1.1-1' }} %</strong>
+          </div>
+          <div class="emp-bar-track">
+            <div class="emp-bar-fill recouv-bar"
+              [class.green]="stats.tauxRecouvrementAnnuel >= 70"
+              [class.orange]="stats.tauxRecouvrementAnnuel >= 40 && stats.tauxRecouvrementAnnuel < 70"
+              [class.red]="stats.tauxRecouvrementAnnuel < 40"
+              [style.width.%]="clampPct(stats.tauxRecouvrementAnnuel)">
+            </div>
+          </div>
+          <div class="recouv-rate-sub">
+            {{ stats.employeursAyantPaye | number }} employeur(s) ayant payé
+            sur {{ stats.employeursDeclares | number }} déclarant(s)
+          </div>
+        </div>
+
+        <!-- Montants encaissés -->
+        <div class="montant-enc-grid">
+          <div class="montant-enc-tile">
+            <span class="montant-enc-label">Principal</span>
+            <span class="montant-enc-value">{{ fmtMontant(stats.montantPrincipalEncaisse) }}</span>
+          </div>
+          <div class="montant-enc-tile">
+            <span class="montant-enc-label">Majorations</span>
+            <span class="montant-enc-value orange">{{ fmtMontant(stats.montantMajorationEncaisse) }}</span>
+          </div>
+          <div class="montant-enc-tile">
+            <span class="montant-enc-label">Taxations</span>
+            <span class="montant-enc-value red">{{ fmtMontant(stats.montantTaxationEncaisse) }}</span>
+          </div>
+          <div class="montant-enc-tile total-tile">
+            <span class="montant-enc-label">Total encaissé</span>
+            <span class="montant-enc-value teal">{{ fmtMontant(stats.montantTotalEncaisse) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Top 5 table -->
     <div class="section-card">
       <div class="section-header">

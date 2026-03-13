@@ -81,6 +81,31 @@ export interface DeclarationAnalyseDto {
   variationTauxValidation: number | null;
   tauxCroissance: number | null;
   tendance: 'hausse' | 'baisse' | 'stable' | null;
+
+  // -----------------------------------------------------------------------
+  // Déclaré vs. Calculé (Cotisationfactmontantdeclare / calcule)
+  // -----------------------------------------------------------------------
+  /** Somme de MontantDeclare (via FK MontantDeclareId) */
+  montantDeclare: number;
+  /** Somme de MontantCalcule (via FK MntCalculeId) */
+  montantCalcule: number;
+  /** Somme de MontantBrut déclaré */
+  montantBrutDeclare: number;
+  /** Somme de MontantBrut calculé */
+  montantBrutCalcule: number;
+  /** Somme de MontantCotise déclaré */
+  montantCotiseDeclare: number;
+  /** Somme de MontantCotise calculé */
+  montantCotiseCalcule: number;
+  /** Écart Déclaré - Calculé (calculé côté serveur) */
+  ecartDeclareCalcule: number;
+  /** Taux d'écart en % (null si calculé = 0) */
+  tauxEcart: number | null;
+  /** Somme des employés/mois déclarés */
+  nbEmpMoisTotal: number;
+  /** Somme des employés assurés/mois déclarés */
+  nbEmpAssMoisTotal: number;
+
   /** Détail par centre — vide sauf si avecDetailParCentre = true */
   parCentre: DeclarationParCentreDto[];
 }

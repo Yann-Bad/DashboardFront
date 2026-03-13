@@ -5,6 +5,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
 import { CentreDeGestionService } from '../../services/centre-de-gestion.service';
 import { DossierAnalyseDto, DossierFilterDto } from '../../models/dossier-analyse.model';
+import { CentreLookupDto, TypeDossierLookupDto, EtatDossierLookupDto } from '../../models/lookups.model';
 
 @Component({
   selector: 'app-dossiers',
@@ -28,6 +29,38 @@ export class DossiersComponent implements OnInit {
 
   /** Panneau d'aide / guide des métriques */
   readonly showGuide = signal(false);
+
+  // -------------------------------------------------------------------------
+  // Lookups — données de référence pour les filtres
+  // -------------------------------------------------------------------------
+  readonly centres     = signal<CentreLookupDto[]>([]);
+  readonly allTypes    = signal<TypeDossierLookupDto[]>([]);
+  readonly allEtats    = signal<EtatDossierLookupDto[]>([]);
+
+  /** Périmètre sélectionné (filtre les types puis les états en cascade) */
+  selectedNature: string | null = null;
+
+  /** Natures distinctes extraites des types de dossier */
+  readonly natures = computed(() => {
+    const set = new Set(this.allTypes().map(t => t.nature));
+    return [...set].sort();
+  });
+
+  /** Types filtrés par nature sélectionnée */
+  readonly filteredTypes = computed(() => {
+    const all = this.allTypes();
+    if (!this.selectedNature) return all;
+    return all.filter(t => t.nature === this.selectedNature);
+  });
+
+  /** États filtrés par type sélectionné (si le type a des états dédiés) */
+  readonly filteredEtats = computed(() => {
+    const all = this.allEtats();
+    const typeId = this.filter.typeDossierId;
+    if (!typeId) return all;
+    const specific = all.filter(e => e.typeDossierId === typeId);
+    return specific.length > 0 ? specific : all;
+  });
 
   // -------------------------------------------------------------------------
   // Filtre courant — initialisé sur l'année courante
@@ -66,13 +99,24 @@ export class DossiersComponent implements OnInit {
     const data = this.dossiers();
     if (!data.length) return null;
     return {
-      totalDossiers:      data.reduce((s, d) => s + d.totalDossiers,      0),
-      dossiersComplets:   data.reduce((s, d) => s + d.dossiersComplets,   0),
-      dossiersFermes:     data.reduce((s, d) => s + d.dossiersFermes,     0),
-      dossiersRejetes:    data.reduce((s, d) => s + d.dossiersRejetes,    0),
-      dossiersDepot:      data.reduce((s, d) => s + d.dossiersDepot,      0),
-      dossiersReuverts:   data.reduce((s, d) => s + d.dossiersReuverts,   0),
-      dossiersRattrapage: data.reduce((s, d) => s + d.dossiersRattrapage, 0),
+      totalDossiers:             data.reduce((s, d) => s + d.totalDossiers,             0),
+      dossiersComplets:          data.reduce((s, d) => s + d.dossiersComplets,          0),
+      dossiersFermes:            data.reduce((s, d) => s + d.dossiersFermes,            0),
+      dossiersRejetes:           data.reduce((s, d) => s + d.dossiersRejetes,           0),
+      dossiersDepot:             data.reduce((s, d) => s + d.dossiersDepot,             0),
+      dossiersReuverts:          data.reduce((s, d) => s + d.dossiersReuverts,          0),
+      dossiersRattrapage:        data.reduce((s, d) => s + d.dossiersRattrapage,        0),
+      dossiersPrisEnCharge:      data.reduce((s, d) => s + d.dossiersPrisEnCharge,      0),
+      dossiersEnAttenteValidation: data.reduce((s, d) => s + d.dossiersEnAttenteValidation, 0),
+      dossiersValidesATraiter:    data.reduce((s, d) => s + d.dossiersValidesATraiter,    0),
+      dossiersBonPourLiquidation: data.reduce((s, d) => s + d.dossiersBonPourLiquidation, 0),
+      dossiersDroitActive:        data.reduce((s, d) => s + d.dossiersDroitActive,        0),
+      dossiersLiquides:           data.reduce((s, d) => s + d.dossiersLiquides,           0),
+      dossiersClotures:           data.reduce((s, d) => s + d.dossiersClotures,           0),
+      dossiersAccidentTrajet:     data.reduce((s, d) => s + d.dossiersAccidentTrajet,     0),
+      dossiersAccidentTravail:    data.reduce((s, d) => s + d.dossiersAccidentTravail,    0),
+      dossiersAnticipeVolontaire: data.reduce((s, d) => s + d.dossiersAnticipeVolontaire, 0),
+      dossiersAnticipeParUsure:   data.reduce((s, d) => s + d.dossiersAnticipeParUsure,   0),
     };
   });
 
@@ -195,6 +239,13 @@ export class DossiersComponent implements OnInit {
   // Cycle de vie
   // -------------------------------------------------------------------------
   ngOnInit(): void {
+    this.service.getLookups().subscribe({
+      next: lk => {
+        this.centres.set(lk.centres);
+        this.allTypes.set(lk.typesDossier);
+        this.allEtats.set(lk.etatsDossier);
+      },
+    });
     this.load();
   }
 
@@ -256,5 +307,19 @@ export class DossiersComponent implements OnInit {
   fmt(v: number | null): string {
     if (v === null || v === undefined) return '—';
     return v > 0 ? `+${v}` : `${v}`;
+  }
+
+  onNatureChange(): void {
+    this.filter.typeDossierId = null;
+    this.filter.etatDossierId = null;
+  }
+
+  onTypeChange(): void {
+    this.filter.etatDossierId = null;
+  }
+
+  /** Résout la nature (périmètre) d'un type de dossier depuis les lookups */
+  natureOfType(typeId: number): string | null {
+    return this.allTypes().find(t => t.id === typeId)?.nature ?? null;
   }
 }

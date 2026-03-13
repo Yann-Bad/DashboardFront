@@ -1,0 +1,365 @@
+<div class="recouvrement-page">
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div class="page-header-main">
+      <div>
+        <h1>Recouvrement</h1>
+        <p>Analyse facturation, paiements, soldes impayés, balances et avis de liaison</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Guide des métriques
+      </button>
+    </div>
+  </div>
+
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer le guide">&#10005;</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Facturation &amp; Recouvrement</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge indigo">Facturation</span><div><strong>Total facturation</strong><p>Somme de <code>Facturation</code> dans <code>Tableautabcotisrecouv</code> — montant total facturé aux employeurs.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Recouvrement</span><div><strong>Total recouvrement</strong><p>Somme de <code>Recouvrement</code> — montant effectivement perçu des employeurs.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">Solde impayé</span><div><strong>Solde impayé</strong><p>Somme de <code>Solde</code> — facturation moins recouvrement. Décomposé en solde débit et crédit.</p></div></div>
+          <div class="guide-item"><span class="guide-badge amber">Taux recouvr.</span><div><strong>Taux de recouvrement</strong><p><code>(Recouvrement / Facturation) × 100</code>. Indicateur principal d'efficacité de recouvrement.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Employeurs</span><div><strong>Nombre d'employeurs</strong><p>Employeurs distincts ayant des lignes de recouvrement sur la période.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot amber"></span>Balances</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge red">Débit rpt</span><div><strong>Report débits</strong><p>Somme de <code>MontantRptDeb</code> dans <code>Cotisationbalance</code> — encours reportés des périodes antérieures.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Crédit rpt</span><div><strong>Report crédits</strong><p>Somme de <code>MontantRptCred</code> — excédents reportés.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">Débit mvt</span><div><strong>Mouvement débits</strong><p>Somme de <code>MontantMvtDeb</code> — cotisations dues sur la période courante.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Crédit mvt</span><div><strong>Mouvement crédits</strong><p>Somme de <code>MontantMvtCred</code> — paiements enregistrés sur la période courante.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Solde rpt / mvt</span><div><strong>Soldes nets</strong><p>Différence débit - crédit pour les reports et les mouvements respectivement.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot blue"></span>Avis de liaison</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge blue">Liaisons</span><div><strong>Nombre d'avis de liaison</strong><p>Lignes <code>Cotisationavisliaison</code> — synthèses comptables envoyées aux employeurs.</p></div></div>
+          <div class="guide-item"><span class="guide-badge amber">Global</span><div><strong>Montant global</strong><p>Somme de <code>MontantGlobal</code> — total dû affiché sur les avis de liaison.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Partage</span><div><strong>Montant partage</strong><p>Somme de <code>MontantPartage</code> — répartition entre sous-entités.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Restant</span><div><strong>Montant restant</strong><p>Somme de <code>MontantRestant</code> — montant encore à percevoir.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Validées</span><div><strong>Liaisons validées</strong><p>Avis de liaison dont <code>TagValidate = 1</code>.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Payées</span><div><strong>Liaisons payées</strong><p>Avis de liaison dont <code>TagPaye = 1</code>.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot slate"></span>Ventilations (optionnel)</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Par centre</span><div><strong>Détail par centre</strong><p>Activé via le filtre. Ventile facturation, recouvrement et soldes par centre de gestion.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Top impayés</span><div><strong>Top employeurs impayés</strong><p>Classement des N employeurs ayant les plus gros soldes impayés (solde décroissant).</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Tendances</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Var. facturation</span><div><strong>Variation facturation</strong><p>Différence du montant facturé vs période précédente.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Var. recouvrement</span><div><strong>Variation recouvrement</strong><p>Différence du montant recouvré vs période précédente.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Tendance</span><div><strong>Tendance globale</strong><p>Comparaison du volume de recouvrement vs période précédente. Hausse (vert), baisse (rouge).</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+  <!-- ── Filtres ── -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+      <label>Année début
+        <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2099">
+      </label>
+      <label>Année fin
+        <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2099">
+      </label>
+      <label>Mois début
+        <input type="number" [(ngModel)]="filter.moisDebut" min="1" max="12">
+      </label>
+      <label>Mois fin
+        <input type="number" [(ngModel)]="filter.moisFin" min="1" max="12">
+      </label>
+      <label>Centre de gestion
+        <select [(ngModel)]="filter.centreDeGestionId">
+          <option [ngValue]="undefined">— Tous —</option>
+          @for (c of centres(); track c.id) {
+            <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+          }
+        </select>
+      </label>
+      <label>Top employeurs
+        <input type="number" [(ngModel)]="filter.topEmployeurs" min="0" max="50">
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="filter.avecDetailParCentre">
+        Détail par centre
+      </label>
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">Appliquer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading / Error / Empty ── -->
+  @if (loading()) {
+    <div class="state-loading"><div class="spinner"></div><span>Chargement…</span></div>
+  } @else if (error()) {
+    <div class="state-error">⚠ {{ error() }}</div>
+  } @else if (data().length === 0) {
+    <div class="state-empty">Aucune donnée pour la période sélectionnée</div>
+  } @else {
+
+    <!-- ── 6 Summary cards ── -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="label">Total Facturation</div>
+        <div class="value indigo">{{ fmtNombre(totaux().facturation) }}</div>
+        <div class="sub">{{ fmtNombre(totaux().employeurs) }} employeurs</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Total Recouvrement</div>
+        <div class="value green">{{ fmtNombre(totaux().recouvrement) }}</div>
+        <div class="sub">Encaissé</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Solde Impayé</div>
+        <div class="value red">{{ fmtNombre(totaux().solde) }}</div>
+        <div class="sub">Débit {{ fmtNombre(totaux().soldeDebit) }} · Crédit {{ fmtNombre(totaux().soldeCredit) }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Taux de Recouvrement</div>
+        <div class="value" [class]="tauxGlobal() >= 80 ? 'green' : tauxGlobal() >= 50 ? 'amber' : 'red'">
+          {{ fmtPct(tauxGlobal()) }}
+        </div>
+        <div class="sub">Recouvrement / Facturation</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Avis de Liaison</div>
+        <div class="value sky">{{ fmtNombre(totaux().liaisons) }}</div>
+        <div class="sub">Validés {{ fmtNombre(totaux().liaisonsValidees) }} · Payés {{ fmtNombre(totaux().liaisonsPayees) }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Balances</div>
+        <div class="value teal">{{ fmtNombre(totaux().balances) }}</div>
+        <div class="sub">Liaisons restant {{ fmtNombre(totaux().montantRestant) }}</div>
+      </div>
+    </div>
+
+    <!-- ── Taux de recouvrement progress ── -->
+    <div class="progress-bars-panel">
+      <div>
+        <div class="reco-label">
+          <span>Taux de recouvrement global</span>
+          <strong>{{ fmtPct(tauxGlobal()) }}</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill green" [style.width]="barWidth(tauxGlobal())"></div>
+        </div>
+      </div>
+      <div>
+        <div class="reco-label">
+          <span>Liaisons validées</span>
+          <strong>{{ fmtPct(tauxLiaisonValidation()) }}</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill indigo" [style.width]="barWidth(tauxLiaisonValidation())"></div>
+        </div>
+      </div>
+      <div>
+        <div class="reco-label">
+          <span>Liaisons payées</span>
+          <strong>{{ fmtPct(tauxLiaisonPaiement()) }}</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill sky" [style.width]="barWidth(tauxLiaisonPaiement())"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Chart ── -->
+    <div class="chart-section">
+      <div class="section-header">
+        <h2>Évolution Facturation / Recouvrement / Solde</h2>
+      </div>
+      <div class="chart-canvas-wrap">
+        <canvas baseChart [data]="chartData()" [options]="chartOptions" type="bar"></canvas>
+      </div>
+    </div>
+
+    <!-- ── Tableau détaillé par période ── -->
+    <div class="table-section">
+      <div class="section-header">
+        <h2>Détail par période</h2>
+        <span class="period-count">{{ data().length }} période(s)</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th class="right">Facturation</th>
+              <th class="right">Recouvrement</th>
+              <th class="right">Solde</th>
+              <th class="right">Taux</th>
+              <th class="right">Liaisons</th>
+              <th class="right">Balances</th>
+              <th class="center">Tendance</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of data(); track row.annee * 100 + row.mois; let i = $index) {
+              <tr class="data-row" [class.row-selected]="selectedRow() === i" (click)="toggleRow(i)">
+                <td class="periode-cell">
+                  <span class="mois">{{ row.periode.split(' ')[0] }}</span>
+                  <span class="annee">{{ row.annee }}</span>
+                </td>
+                <td class="right indigo">{{ fmtNombre(row.totalFacturation) }}</td>
+                <td class="right green">{{ fmtNombre(row.totalRecouvrement) }}</td>
+                <td class="right red">{{ fmtNombre(row.totalSolde) }}</td>
+                <td class="right" [class]="row.tauxRecouvrement >= 80 ? 'right green' : row.tauxRecouvrement >= 50 ? 'right amber' : 'right red'">
+                  {{ fmtPct(row.tauxRecouvrement) }}
+                </td>
+                <td class="right sky">{{ fmtNombre(row.nombreLiaisons) }}</td>
+                <td class="right teal">{{ fmtNombre(row.nombreBalances) }}</td>
+                <td class="center">
+                  <span class="trend-badge" [class]="tendanceClass(row.tendance)">
+                    {{ tendanceIcon(row.tendance) }} {{ row.tendance || '—' }}
+                  </span>
+                </td>
+              </tr>
+
+              <!-- Expanded detail -->
+              @if (selectedRow() === i) {
+                <tr class="trend-panel-row">
+                  <td colspan="8">
+                    <div class="trend-panel">
+                      <div class="trend-panel-title">Détails — {{ row.periode }}</div>
+                      <div class="trend-panel-grid">
+                        <div class="trend-metric">
+                          <span class="tm-label">Facturation</span>
+                          <span class="tm-value indigo">{{ fmtNombre(row.totalFacturation) }}</span>
+                        </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Recouvrement</span>
+                          <span class="tm-value green">{{ fmtNombre(row.totalRecouvrement) }}</span>
+                        </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Solde Impayé</span>
+                          <span class="tm-value red">{{ fmtNombre(row.totalSolde) }}</span>
+                        </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Solde Débit</span>
+                          <span class="tm-value amber">{{ fmtNombre(row.totalSoldeDebit) }}</span>
+                        </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Solde Crédit</span>
+                          <span class="tm-value teal">{{ fmtNombre(row.totalSoldeCredit) }}</span>
+                        </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Liaisons (V/P)</span>
+                          <span class="tm-value sky">{{ row.liaisonsValidees }}/{{ row.liaisonsPayees }}/{{ row.nombreLiaisons }}</span>
+                        </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Montant Liaison</span>
+                          <span class="tm-value sky">{{ fmtNombre(row.totalMontantLiaison) }}</span>
+                        </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Variation Recouv.</span>
+                          <span class="tm-value" [class]="varClass(row.variationRecouvrement)">{{ fmt(row.variationRecouvrement) }}</span>
+                        </div>
+                        <div class="trend-metric">
+                          <span class="tm-label">Variation Solde</span>
+                          <span class="tm-value" [class]="varClass(row.variationSolde)">{{ fmt(row.variationSolde) }}</span>
+                        </div>
+                      </div>
+
+                      <!-- Top employeurs impayés -->
+                      @if (row.topEmployeursImpaye && row.topEmployeursImpaye.length > 0) {
+                        <div class="sub-detail-inner">
+                          <div class="sub-detail-title">Top employeurs impayés</div>
+                          <table class="sub-detail-table">
+                            <thead>
+                              <tr>
+                                <th>N° Employeur</th>
+                                <th>Raison Sociale</th>
+                                <th class="right">Facturation</th>
+                                <th class="right">Recouvrement</th>
+                                <th class="right">Solde</th>
+                                <th class="right">Taux</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (emp of row.topEmployeursImpaye; track emp.employeurId) {
+                                <tr>
+                                  <td><span class="centre-code">{{ emp.noEmployeur }}</span></td>
+                                  <td class="centre-lib">{{ emp.raisonSociale }}</td>
+                                  <td class="right indigo">{{ fmtNombre(emp.facturation) }}</td>
+                                  <td class="right green">{{ fmtNombre(emp.recouvrement) }}</td>
+                                  <td class="right red">{{ fmtNombre(emp.solde) }}</td>
+                                  <td class="right" [class]="emp.tauxRecouvrement >= 80 ? 'right green' : emp.tauxRecouvrement >= 50 ? 'right amber' : 'right red'">
+                                    {{ fmtPct(emp.tauxRecouvrement) }}
+                                  </td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </div>
+                      }
+
+                      <!-- Détail par centre -->
+                      @if (row.parCentre && row.parCentre.length > 0) {
+                        <div class="sub-detail-inner">
+                          <div class="sub-detail-title">Répartition par centre</div>
+                          <table class="sub-detail-table">
+                            <thead>
+                              <tr>
+                                <th>Centre</th>
+                                <th class="right">Facturation</th>
+                                <th class="right">Recouvrement</th>
+                                <th class="right">Solde</th>
+                                <th class="right">Taux</th>
+                                <th class="right">Employeurs</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (c of row.parCentre; track c.centreId) {
+                                <tr>
+                                  <td><span class="centre-code">{{ c.centreCode }}</span> <span class="centre-lib">{{ c.centreLibelle }}</span></td>
+                                  <td class="right indigo">{{ fmtNombre(c.facturation) }}</td>
+                                  <td class="right green">{{ fmtNombre(c.recouvrement) }}</td>
+                                  <td class="right red">{{ fmtNombre(c.solde) }}</td>
+                                  <td class="right" [class]="c.tauxRecouvrement >= 80 ? 'right green' : c.tauxRecouvrement >= 50 ? 'right amber' : 'right red'">
+                                    {{ fmtPct(c.tauxRecouvrement) }}
+                                  </td>
+                                  <td class="right teal">{{ fmtNombre(c.nombreEmployeurs) }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  }
+</div>

@@ -723,3 +723,61 @@ tbody td.center { text-align: center; }
   border-color: #c4b5fd;
   background: linear-gradient(135deg, #faf5ff 0%, #fff 60%);
 }
+
+/* ---- Déclaré vs. Calculé — section de comparaison ---- */
+.compare-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.compare-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.compare-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.compare-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.compare-value.indigo { color: #6366f1; }
+.compare-value.teal   { color: #0d9488; }
+.compare-value.red    { color: #dc2626; }
+.compare-value.green  { color: #16a34a; }
+
+.compare-sub {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.compare-sub.red   { color: #dc2626; }
+.compare-sub.green { color: #16a34a; }
+
+/* ---- trend-metric color variants ---- */
+.tm-value.indigo { color: #6366f1; }
+.tm-value.teal   { color: #0d9488; }
+.tm-note.red     { color: #dc2626; font-weight: 600; }
+.tm-note.green   { color: #16a34a; font-weight: 600; }

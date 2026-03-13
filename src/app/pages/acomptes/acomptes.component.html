@@ -1,0 +1,345 @@
+<div class="acomptes-page">
+
+  <div class="page-header">
+    <div class="page-header-main">
+      <div>
+        <h1>Acomptes</h1>
+        <p>Avances sur cotisations — montants versés, consommés, soldes restants et recouvrement</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Guide des métriques
+      </button>
+    </div>
+  </div>
+
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer le guide">&#10005;</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Compteurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Acomptes</span><div><strong>Nombre d'acomptes</strong><p>Lignes <code>Cotisationacompte</code> sur la période. Chaque ligne représente une avance versée par un employeur.</p></div></div>
+          <div class="guide-item"><span class="guide-badge blue">Employeurs</span><div><strong>Nombre d'employeurs</strong><p>Employeurs distincts ayant versé au moins un acompte sur la période.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot amber"></span>Montants</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge indigo">Initial</span><div><strong>Montant initial</strong><p>Somme de <code>MontantInitial</code> — total des avances versées à l'origine.</p></div></div>
+          <div class="guide-item"><span class="guide-badge amber">Consommé</span><div><strong>Montant consommé</strong><p>Somme de <code>MontantConsomme</code> — part des acomptes imputée sur des cotisations dues.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Restant</span><div><strong>Solde restant</strong><p>Somme de <code>MontantRestant</code> — avances encore disponibles, non imputées.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Recouvrement</span><div><strong>Montant recouvré</strong><p>Total des acomptes effectivement recouvrés. Le taux = Recouvré / Initial × 100.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Indicateurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge amber">Taux conso.</span><div><strong>Taux de consommation</strong><p><code>(Consommé / Initial) × 100</code>. Un taux élevé indique que les avances sont bien utilisées.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Taux recouvr.</span><div><strong>Taux de recouvrement</strong><p><code>(Recouvré / Initial) × 100</code>. Mesure l'efficacité du recouvrement sur les acomptes.</p></div></div>
+          <div class="guide-item"><span class="guide-badge slate">Consommés / Non</span><div><strong>Statut de consommation</strong><p>Nombre d'acomptes entièrement consommés vs encore partiellement ou non consommés.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Tendance</span><div><strong>Tendance mensuelle</strong><p>Évolution du nombre d'acomptes par rapport à la période précédente.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Par centre</span><div><strong>Détail par centre</strong><p>Activé via le filtre. Ventile les acomptes par centre de gestion.</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+  <!-- =========================================================
+       Filtre
+       ========================================================= -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+      <label>
+        Année début
+        <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois début
+        <select [(ngModel)]="filter.moisDebut">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Année fin
+        <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois fin
+        <select [(ngModel)]="filter.moisFin">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Centre de gestion
+        <select [(ngModel)]="filter.centreDeGestionId">
+          <option [ngValue]="null">Tous les centres</option>
+          @for (c of centres(); track c.id) {
+            <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Détail par centre
+        <select [(ngModel)]="filter.avecDetailParCentre">
+          <option [ngValue]="false">Non</option>
+          <option [ngValue]="true">Oui</option>
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Appliquer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       États
+       ========================================================= -->
+  @if (loading()) {
+    <div class="state-loading"><div class="spinner"></div><span>Chargement…</span></div>
+  }
+  @if (!loading() && error()) {
+    <div class="state-error"><span>{{ error() }}</span></div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- =========================================================
+         Cartes de synthèse
+         ========================================================= -->
+    @if (totaux(); as t) {
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="label">Acomptes émis</div>
+          <div class="value indigo">{{ t.nombreAcomptes | number }}</div>
+          <div class="sub">avances versées</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Montant initial</div>
+          <div class="value indigo">{{ fmtMontant(t.montantInitial) }}</div>
+          <div class="sub">FCFA versés</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Montant consommé</div>
+          <div class="value amber">{{ fmtMontant(t.montantConsomme) }}</div>
+          <div class="sub">{{ fmtPct(tauxConsommationGlobal()) }} consommés</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Solde restant</div>
+          <div class="value green">{{ fmtMontant(t.montantRestant) }}</div>
+          <div class="sub">disponible</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Non consommés</div>
+          <div class="value teal">{{ t.nonConsommes | number }}</div>
+          <div class="sub">{{ t.consommes | number }} consommés</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Recouvrement</div>
+          <div class="value green">{{ fmtMontant(t.montantRecouvre) }}</div>
+          <div class="sub">{{ fmtPct(tauxRecouvrementGlobal()) }} du montant initial</div>
+        </div>
+      </div>
+
+      <!-- Barres de consommation et recouvrement -->
+      <div class="progress-bars-panel">
+        <div class="reco-item">
+          <div class="reco-label">
+            <span>Taux de consommation</span>
+            <strong>{{ fmtPct(tauxConsommationGlobal()) }}</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill amber"
+              [style.width]="barWidth(tauxConsommationGlobal() ?? 0)"></div>
+          </div>
+        </div>
+        <div class="reco-item">
+          <div class="reco-label">
+            <span>Taux de recouvrement</span>
+            <strong>{{ fmtPct(tauxRecouvrementGlobal()) }}</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill green"
+              [style.width]="barWidth(tauxRecouvrementGlobal() ?? 0)"></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Histogramme
+         ========================================================= -->
+    @if (data().length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Évolution des acomptes</h2>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartData()"
+            [options]="chartOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Tableau des périodes
+         ========================================================= -->
+    @if (data().length === 0) {
+      <div class="state-empty"><span>Aucun acompte trouvé pour les critères sélectionnés.</span></div>
+    } @else {
+      <div class="table-section">
+        <div class="section-header">
+          <h2>Détail par période</h2>
+          <span class="period-count">{{ data().length }} période(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Tendance</th>
+                <th class="right">Nb</th>
+                <th class="right">Initial</th>
+                <th class="right">Consommé</th>
+                <th class="right">Restant</th>
+                <th class="right">Taux conso.</th>
+                <th class="right">Recouvrement</th>
+                @if (filter.avecDetailParCentre) {
+                  <th class="center">Centres</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of data(); track d.mois + d.annee) {
+                <tr class="data-row"
+                  [class.row-selected]="isSelected(d)"
+                  (click)="toggleDetail(d)">
+                  <td class="periode-cell">
+                    <span class="mois">{{ moisLabel(d.mois) }}</span>
+                    <span class="annee">{{ d.annee }}</span>
+                  </td>
+                  <td>
+                    <span [class]="'trend-badge ' + tendanceClass(d)">
+                      {{ tendanceIcon(d) }} {{ d.tendance ?? '1re pér.' }}
+                    </span>
+                  </td>
+                  <td class="right indigo">{{ d.nombreAcomptes | number }}</td>
+                  <td class="right"><strong>{{ fmtMontant(d.montantInitial) }}</strong></td>
+                  <td class="right amber">{{ fmtMontant(d.montantConsomme) }}</td>
+                  <td class="right green">{{ fmtMontant(d.montantRestant) }}</td>
+                  <td class="right">{{ fmtPct(d.tauxConsommation) }}</td>
+                  <td class="right green">{{ fmtMontant(d.montantAcompteRecouvre) }}</td>
+                  @if (filter.avecDetailParCentre) {
+                    <td class="center"><span class="period-count">{{ d.parCentre.length }}</span></td>
+                  }
+                </tr>
+
+                <!-- Panneau détail -->
+                @if (isSelected(d)) {
+                  <tr class="trend-panel-row">
+                    <td [attr.colspan]="filter.avecDetailParCentre ? 9 : 8">
+                      <div class="trend-panel">
+                        <div class="trend-panel-title">
+                          {{ moisLabel(d.mois) }} {{ d.annee }} — détail
+                        </div>
+                        <div class="trend-panel-grid">
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Employeurs</span>
+                            <span class="tm-value">{{ d.nombreEmployeurs | number }}</span>
+                            <span class="tm-note">avec acompte</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Non consommés</span>
+                            <span class="tm-value teal">{{ d.nonConsommes | number }}</span>
+                            <span class="tm-note">tag = 1</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Consommés</span>
+                            <span class="tm-value amber">{{ d.consommes | number }}</span>
+                            <span class="tm-note">tag = 0</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Taux recouvrement</span>
+                            <span class="tm-value green">{{ fmtPct(d.tauxRecouvrement) }}</span>
+                            <span class="tm-note">du montant initial</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Variation initial</span>
+                            <span [class]="'tm-value ' + varClass(d.variationMontantInitial)">
+                              {{ fmt(d.variationMontantInitial) }}
+                            </span>
+                            <span class="tm-note">vs période prec.</span>
+                          </div>
+
+                        </div>
+
+                        <!-- Détail par centre -->
+                        @if (filter.avecDetailParCentre && d.parCentre.length) {
+                          <div class="centre-detail-inner">
+                            <table class="centre-detail-table">
+                              <thead>
+                                <tr>
+                                  <th>Centre</th>
+                                  <th class="right">Nb</th>
+                                  <th class="right">Initial</th>
+                                  <th class="right">Consommé</th>
+                                  <th class="right">Restant</th>
+                                  <th class="right">Taux conso.</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (c of d.parCentre; track c.centreId) {
+                                  <tr>
+                                    <td>
+                                      <span class="centre-code">{{ c.centreCode ?? '—' }}</span>
+                                      <span class="centre-lib">{{ c.centreLibelle }}</span>
+                                    </td>
+                                    <td class="right indigo">{{ c.nombreAcomptes | number }}</td>
+                                    <td class="right">{{ fmtMontant(c.montantInitial) }}</td>
+                                    <td class="right amber">{{ fmtMontant(c.montantConsomme) }}</td>
+                                    <td class="right green">{{ fmtMontant(c.montantRestant) }}</td>
+                                    <td class="right">{{ fmtPct(c.tauxConsommation) }}</td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  }<!-- end !loading && !error -->
+
+</div>

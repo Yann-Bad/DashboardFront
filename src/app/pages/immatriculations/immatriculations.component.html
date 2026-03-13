@@ -1,0 +1,371 @@
+<div class="immatriculations-page">
+
+  <div class="page-header">
+    <div class="page-header-main">
+      <div>
+        <h1>Immatriculations</h1>
+        <p>Enregistrement des employeurs et employés — nouvelles inscriptions, validations et effectifs</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Guide des métriques
+      </button>
+    </div>
+  </div>
+
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer le guide">&#10005;</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Employeurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge indigo">Nouveaux</span><div><strong>Nouveaux employeurs</strong><p>Nombre d'employeurs enregistrés (<code>Immatriculationemployeur</code>) sur la période, basé sur <code>DateCreated</code>.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Validés</span><div><strong>Employeurs validés</strong><p>Employeurs dont <code>TagValidate = 1</code> — immatriculation confirmée et opérationnelle.</p></div></div>
+          <div class="guide-item"><span class="guide-badge orange">En attente</span><div><strong>Employeurs en attente</strong><p>Employeurs dont <code>TagValidate ≠ 1</code> — immatriculation en cours de traitement.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot blue"></span>Employés</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge blue">Nouveaux</span><div><strong>Nouveaux employés</strong><p>Nombre d'employés enregistrés (<code>Immatriculationemploye</code>) sur la période.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Validés</span><div><strong>Employés validés</strong><p>Employés dont <code>TagValidate = 1</code> — inscription confirmée.</p></div></div>
+          <div class="guide-item"><span class="guide-badge orange">En attente</span><div><strong>Employés en attente</strong><p>Employés dont <code>TagValidate ≠ 1</code> — en attente de validation.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">Sorties</span><div><strong>Sorties</strong><p>Nombre de départs enregistrés (radiations, fins de contrat) via <code>Immatriculationdeclarationmouvement</code>.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot amber"></span>Effectifs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge amber">Effectif total</span><div><strong>Effectif total déclaré</strong><p>Somme de <code>EffectifTotal</code> dans <code>Immatriculationeffectif</code> — snapshot périodique des effectifs.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Employés</span><div><strong>Effectif employés</strong><p>Somme de <code>EffectifEmploye</code> — salariés sous contrat classique.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Assimilés</span><div><strong>Effectif assimilés</strong><p>Somme de <code>EffectifEmployeAssimile</code> — travailleurs assimilés (stagiaires, contractuels…).</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot slate"></span>Indicateurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge green">Taux valid. eur</span><div><strong>Taux de validation employeurs</strong><p><code>(Validés / Nouveaux employeurs) × 100</code>. Mesure l'efficacité du traitement des inscriptions.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Taux valid. emp</span><div><strong>Taux de validation employés</strong><p><code>(Validés / Nouveaux employés) × 100</code>.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Tendance</span><div><strong>Tendance mensuelle</strong><p>Évolution du nombre d'inscriptions par rapport à la période précédente.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Par centre</span><div><strong>Détail par centre</strong><p>Activé via le filtre. Ventile les immatriculations par centre de gestion.</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+  <!-- =========================================================
+       Filtre
+       ========================================================= -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+      <label>
+        Année début
+        <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois début
+        <select [(ngModel)]="filter.moisDebut">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Année fin
+        <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois fin
+        <select [(ngModel)]="filter.moisFin">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Centre de gestion
+        <select [(ngModel)]="filter.centreDeGestionId">
+          <option [ngValue]="null">Tous les centres</option>
+          @for (c of centres(); track c.id) {
+            <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Détail par centre
+        <select [(ngModel)]="filter.avecDetailParCentre">
+          <option [ngValue]="false">Non</option>
+          <option [ngValue]="true">Oui</option>
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Appliquer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       États
+       ========================================================= -->
+  @if (loading()) {
+    <div class="state-loading"><div class="spinner"></div><span>Chargement…</span></div>
+  }
+  @if (!loading() && error()) {
+    <div class="state-error"><span>{{ error() }}</span></div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- =========================================================
+         Cartes de synthèse
+         ========================================================= -->
+    @if (totaux(); as t) {
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="label">Nouveaux employeurs</div>
+          <div class="value indigo">{{ t.nouveauxEmployeurs | number }}</div>
+          <div class="sub">{{ t.employeursValides | number }} validés</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Nouveaux employés</div>
+          <div class="value sky">{{ t.nouveauxEmployes | number }}</div>
+          <div class="sub">{{ t.employesValides | number }} validés</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Sorties</div>
+          <div class="value red">{{ t.sorties | number }}</div>
+          <div class="sub">départs enregistrés</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Effectif total</div>
+          <div class="value teal">{{ t.effectifTotal | number }}</div>
+          <div class="sub">{{ t.effectifEmploye | number }} emp. + {{ t.effectifAssimile | number }} assim.</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">En attente (employeurs)</div>
+          <div class="value amber">{{ t.employeursEnAttente | number }}</div>
+          <div class="sub">non validés</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">En attente (employés)</div>
+          <div class="value amber">{{ t.employesEnAttente | number }}</div>
+          <div class="sub">non validés</div>
+        </div>
+      </div>
+
+      <!-- Barres de validation -->
+      <div class="progress-bars-panel">
+        <div class="reco-item">
+          <div class="reco-label">
+            <span>Taux de validation employeurs</span>
+            <strong>{{ fmtPct(tauxValidationEmployeurs()) }}</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill indigo"
+              [style.width]="barWidth(tauxValidationEmployeurs() ?? 0)"></div>
+          </div>
+        </div>
+        <div class="reco-item">
+          <div class="reco-label">
+            <span>Taux de validation employés</span>
+            <strong>{{ fmtPct(tauxValidationEmployes()) }}</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill sky"
+              [style.width]="barWidth(tauxValidationEmployes() ?? 0)"></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Histogramme
+         ========================================================= -->
+    @if (data().length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Évolution des immatriculations</h2>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartData()"
+            [options]="chartOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Tableau des périodes
+         ========================================================= -->
+    @if (data().length === 0) {
+      <div class="state-empty"><span>Aucune immatriculation trouvée pour les critères sélectionnés.</span></div>
+    } @else {
+      <div class="table-section">
+        <div class="section-header">
+          <h2>Détail par période</h2>
+          <span class="period-count">{{ data().length }} période(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Tendance</th>
+                <th class="right">Employeurs</th>
+                <th class="right">Employés</th>
+                <th class="right">Sorties</th>
+                <th class="right">Effectif</th>
+                <th class="right">Valid. eur</th>
+                <th class="right">Valid. emp</th>
+                @if (filter.avecDetailParCentre) {
+                  <th class="center">Centres</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of data(); track d.mois + d.annee) {
+                <tr class="data-row"
+                  [class.row-selected]="isSelected(d)"
+                  (click)="toggleDetail(d)">
+                  <td class="periode-cell">
+                    <span class="mois">{{ moisLabel(d.mois) }}</span>
+                    <span class="annee">{{ d.annee }}</span>
+                  </td>
+                  <td>
+                    <span [class]="'trend-badge ' + tendanceClass(d)">
+                      {{ tendanceIcon(d) }} {{ d.tendance ?? '1re pér.' }}
+                    </span>
+                  </td>
+                  <td class="right indigo">{{ d.nouveauxEmployeurs | number }}</td>
+                  <td class="right sky">{{ d.nouveauxEmployes | number }}</td>
+                  <td class="right red">{{ d.sorties | number }}</td>
+                  <td class="right teal">{{ d.effectifTotal | number }}</td>
+                  <td class="right">{{ d.employeursValides | number }}/{{ d.nouveauxEmployeurs | number }}</td>
+                  <td class="right">{{ d.employesValides | number }}/{{ d.nouveauxEmployes | number }}</td>
+                  @if (filter.avecDetailParCentre) {
+                    <td class="center"><span class="period-count">{{ d.parCentre.length }}</span></td>
+                  }
+                </tr>
+
+                <!-- Panneau détail -->
+                @if (isSelected(d)) {
+                  <tr class="trend-panel-row">
+                    <td [attr.colspan]="filter.avecDetailParCentre ? 9 : 8">
+                      <div class="trend-panel">
+                        <div class="trend-panel-title">
+                          {{ moisLabel(d.mois) }} {{ d.annee }} — détail
+                        </div>
+                        <div class="trend-panel-grid">
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Employeurs validés</span>
+                            <span class="tm-value indigo">{{ d.employeursValides | number }}</span>
+                            <span class="tm-note">sur {{ d.nouveauxEmployeurs }}</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Employeurs en attente</span>
+                            <span class="tm-value amber">{{ d.employeursEnAttente | number }}</span>
+                            <span class="tm-note">non validés</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Employés validés</span>
+                            <span class="tm-value sky">{{ d.employesValides | number }}</span>
+                            <span class="tm-note">sur {{ d.nouveauxEmployes }}</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Employés en attente</span>
+                            <span class="tm-value amber">{{ d.employesEnAttente | number }}</span>
+                            <span class="tm-note">non validés</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Effectif régulier</span>
+                            <span class="tm-value teal">{{ d.effectifEmploye | number }}</span>
+                            <span class="tm-note">employés</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Effectif assimilé</span>
+                            <span class="tm-value teal">{{ d.effectifAssimile | number }}</span>
+                            <span class="tm-note">apprentis / stagiaires</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Var. employeurs</span>
+                            <span [class]="'tm-value ' + varClass(d.variationEmployeurs)">
+                              {{ fmt(d.variationEmployeurs) }}
+                            </span>
+                            <span class="tm-note">vs période préc.</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Var. employés</span>
+                            <span [class]="'tm-value ' + varClass(d.variationEmployes)">
+                              {{ fmt(d.variationEmployes) }}
+                            </span>
+                            <span class="tm-note">vs période préc.</span>
+                          </div>
+
+                        </div>
+
+                        <!-- Détail par centre -->
+                        @if (filter.avecDetailParCentre && d.parCentre.length) {
+                          <div class="sub-detail-inner">
+                            <div class="sub-detail-title">Par centre de gestion</div>
+                            <table class="sub-detail-table">
+                              <thead>
+                                <tr>
+                                  <th>Centre</th>
+                                  <th class="right">Employeurs</th>
+                                  <th class="right">Employés</th>
+                                  <th class="right">Effectif</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (c of d.parCentre; track c.centreId) {
+                                  <tr>
+                                    <td>
+                                      <span class="centre-code">{{ c.centreCode ?? '—' }}</span>
+                                      <span class="centre-lib">{{ c.centreLibelle }}</span>
+                                    </td>
+                                    <td class="right indigo">{{ c.nouveauxEmployeurs | number }}</td>
+                                    <td class="right sky">{{ c.nouveauxEmployes | number }}</td>
+                                    <td class="right teal">{{ c.effectifTotal | number }}</td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  }<!-- end !loading && !error -->
+
+</div>

@@ -65,6 +65,60 @@
 
         </div>
       </div>
+
+      <!-- Profil employeurs : forme juridique / régime / secteur -->
+      @if (topFormesJuridiques.length || topRegimes.length || topSecteurs.length) {
+        <div class="emp-stats-section">
+          <h2 class="section-title">Profil des employeurs</h2>
+          <div class="breakdown-grid">
+            @if (topFormesJuridiques.length) {
+              <div class="breakdown-panel">
+                <h3 class="breakdown-title">Par forme juridique</h3>
+                @for (item of topFormesJuridiques; track item.id) {
+                  <div class="breakdown-row">
+                    <span class="breakdown-label" [title]="item.code ?? ''">{{ item.libelle ?? item.code ?? '—' }}</span>
+                    <div class="breakdown-bar-track">
+                      <div class="breakdown-bar-fill" [style.width.%]="clampPct(item.pourcentage)"></div>
+                    </div>
+                    <span class="breakdown-count">{{ item.nombre | number }}</span>
+                    <span class="breakdown-pct">{{ item.pourcentage }} %</span>
+                  </div>
+                }
+              </div>
+            }
+            @if (topRegimes.length) {
+              <div class="breakdown-panel">
+                <h3 class="breakdown-title">Par régime</h3>
+                @for (item of topRegimes; track item.id) {
+                  <div class="breakdown-row">
+                    <span class="breakdown-label" [title]="item.code ?? ''">{{ item.libelle ?? item.code ?? '—' }}</span>
+                    <div class="breakdown-bar-track">
+                      <div class="breakdown-bar-fill" [style.width.%]="clampPct(item.pourcentage)"></div>
+                    </div>
+                    <span class="breakdown-count">{{ item.nombre | number }}</span>
+                    <span class="breakdown-pct">{{ item.pourcentage }} %</span>
+                  </div>
+                }
+              </div>
+            }
+            @if (topSecteurs.length) {
+              <div class="breakdown-panel">
+                <h3 class="breakdown-title">Par secteur d'activité</h3>
+                @for (item of topSecteurs; track item.id) {
+                  <div class="breakdown-row">
+                    <span class="breakdown-label" [title]="item.code ?? ''">{{ item.libelle ?? item.code ?? '—' }}</span>
+                    <div class="breakdown-bar-track">
+                      <div class="breakdown-bar-fill" [style.width.%]="clampPct(item.pourcentage)"></div>
+                    </div>
+                    <span class="breakdown-count">{{ item.nombre | number }}</span>
+                    <span class="breakdown-pct">{{ item.pourcentage }} %</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
     }
 
     <!-- Section : Répartition des employés -->

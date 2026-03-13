@@ -95,6 +95,15 @@ export class DeclarationsComponent implements OnInit {
       totalEmployeursDeclares:  data.reduce((s, d) => s + (d.nombreEmployeursDeclares ?? 0), 0),
       totalEmployeursAyantPaye: data.reduce((s, d) => s + (d.employeursAyantPaye ?? 0), 0),
       montantEncaisse:          data.reduce((s, d) => s + (d.montantEncaisse ?? 0), 0),
+      // Déclaré vs. Calculé
+      montantDeclare:       data.reduce((s, d) => s + (d.montantDeclare ?? 0), 0),
+      montantCalcule:       data.reduce((s, d) => s + (d.montantCalcule ?? 0), 0),
+      montantBrutDeclare:   data.reduce((s, d) => s + (d.montantBrutDeclare ?? 0), 0),
+      montantBrutCalcule:   data.reduce((s, d) => s + (d.montantBrutCalcule ?? 0), 0),
+      montantCotiseDeclare: data.reduce((s, d) => s + (d.montantCotiseDeclare ?? 0), 0),
+      montantCotiseCalcule: data.reduce((s, d) => s + (d.montantCotiseCalcule ?? 0), 0),
+      nbEmpMoisTotal:       data.reduce((s, d) => s + (d.nbEmpMoisTotal ?? 0), 0),
+      nbEmpAssMoisTotal:    data.reduce((s, d) => s + (d.nbEmpAssMoisTotal ?? 0), 0),
     };
   });
 

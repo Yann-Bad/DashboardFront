@@ -1,0 +1,275 @@
+<div class="soldes-page">
+
+  <div class="page-header">
+    <div class="page-header-main">
+      <div>
+        <h1>Soldes employeurs</h1>
+        <p>Vue consolidée des balances comptables — débits, crédits, soldes nets et employeurs en dette</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Guide des métriques
+      </button>
+    </div>
+  </div>
+
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer le guide">&#10005;</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Situation employeurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Employeurs</span><div><strong>Total employeurs</strong><p>Nombre d'employeurs ayant une ligne de balance dans <code>Cotisationbalance</code>.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">En dette</span><div><strong>Employeurs en dette</strong><p>Employeurs dont le solde mouvement est positif (débit &gt; crédit) — ils doivent de l'argent.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Créditeurs</span><div><strong>Employeurs créditeurs</strong><p>Employeurs dont le solde mouvement est négatif — ils ont un excédent de paiement.</p></div></div>
+          <div class="guide-item"><span class="guide-badge slate">Solde nul</span><div><strong>Employeurs à solde nul</strong><p>Employeurs dont le solde mouvement est exactement zéro — compte équilibré.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot amber"></span>Montants mouvements</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge red">Débit mvt</span><div><strong>Débits mouvements</strong><p>Somme de <code>MontantMvtDeb</code> — total des cotisations dues sur la période courante.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Crédit mvt</span><div><strong>Crédits mouvements</strong><p>Somme de <code>MontantMvtCred</code> — total des paiements enregistrés sur la période courante.</p></div></div>
+          <div class="guide-item"><span class="guide-badge amber">Solde net mvt</span><div><strong>Solde net mouvement</strong><p>Débit - Crédit mouvement. Positif = dette collective, négatif = excédent collectif.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot slate"></span>Montants reportés</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge red">Débit rpt</span><div><strong>Débits reportés</strong><p>Somme de <code>MontantRptDeb</code> — soldes débiteurs reportés des périodes précédentes.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Crédit rpt</span><div><strong>Crédits reportés</strong><p>Somme de <code>MontantRptCred</code> — soldes créditeurs reportés des périodes précédentes.</p></div></div>
+          <div class="guide-item"><span class="guide-badge slate">Solde net rpt</span><div><strong>Solde net reporté</strong><p>Débit - Crédit reporté. Représente l'encours historique accumulé.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot purple"></span>Indicateurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge red">Taux endett.</span><div><strong>Taux d'endettement</strong><p><code>(En dette / Total employeurs) × 100</code>. Seuils : &lt; 30 % = vert, 30–60 % = orange, &gt; 60 % = rouge.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Par centre</span><div><strong>Répartition par centre</strong><p>Ventilation des balances par centre de gestion, avec compteurs et soldes individuels.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Top employeurs</span><div><strong>Top N employeurs en dette</strong><p>Classement des employeurs par solde mouvement décroissant (les plus gros débiteurs en tête).</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+  <!-- Filtre -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+      <label>
+        Centre de gestion
+        <select [(ngModel)]="filter.centreDeGestionId">
+          <option [ngValue]="null">Tous les centres</option>
+          @for (c of centres(); track c.id) {
+            <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Top N employeurs
+        <input type="number" [(ngModel)]="filter.topN" min="1" max="50" />
+      </label>
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Appliquer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- États -->
+  @if (loading()) {
+    <div class="state-loading">
+      <div class="spinner"></div>
+      <span>Chargement des données…</span>
+    </div>
+  }
+
+  @if (!loading() && error()) {
+    <div class="state-error"><span>{{ error() }}</span></div>
+  }
+
+  @if (!loading() && !error() && data(); as d) {
+
+    <!-- =========================================================
+         Cartes de synthèse
+         ========================================================= -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="label">Employeurs</div>
+        <div class="value">{{ d.nombreEmployeurs | number }}</div>
+        <div class="sub">avec une ligne de balance</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">En dette</div>
+        <div class="value red">{{ d.employeursEnDette | number }}</div>
+        <div class="sub">solde mouvement &gt; 0</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Créditeurs</div>
+        <div class="value green">{{ d.employeursCrediteurs | number }}</div>
+        <div class="sub">solde mouvement &lt; 0</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Solde nul</div>
+        <div class="value slate">{{ d.employeursSoldeNul | number }}</div>
+        <div class="sub">aucun solde</div>
+      </div>
+    </div>
+
+    <!-- Taux d'endettement -->
+    <div class="taux-global">
+      <div class="taux-label">
+        <span>Taux d'endettement (employeurs en dette / total)</span>
+        <strong>{{ tauxDette() | number:'1.1-1' }} %</strong>
+      </div>
+      <div class="progress-track">
+        <div
+          class="progress-fill"
+          [class.red]="tauxDette() >= 50"
+          [class.orange]="tauxDette() >= 25 && tauxDette() < 50"
+          [class.green]="tauxDette() < 25"
+          [style.width]="tauxDette() + '%'"
+        ></div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         Montants globaux
+         ========================================================= -->
+    <div class="amounts-section">
+      <div class="section-header"><h2>Montants agrégés</h2></div>
+      <div class="amounts-grid">
+        <div class="amount-card">
+          <span class="amount-label">Débits mouvements</span>
+          <span class="amount-value red">{{ fmtMontant(d.totalMvtDebit) }}</span>
+        </div>
+        <div class="amount-card">
+          <span class="amount-label">Crédits mouvements</span>
+          <span class="amount-value green">{{ fmtMontant(d.totalMvtCredit) }}</span>
+        </div>
+        <div class="amount-card highlight">
+          <span class="amount-label">Solde net mouvement</span>
+          <span class="amount-value" [class.red]="d.soldeNetMouvement > 0" [class.green]="d.soldeNetMouvement <= 0">
+            {{ fmtMontant(d.soldeNetMouvement) }}
+          </span>
+        </div>
+        <div class="amount-card">
+          <span class="amount-label">Débits reportés</span>
+          <span class="amount-value">{{ fmtMontant(d.totalRptDebit) }}</span>
+        </div>
+        <div class="amount-card">
+          <span class="amount-label">Crédits reportés</span>
+          <span class="amount-value">{{ fmtMontant(d.totalRptCredit) }}</span>
+        </div>
+        <div class="amount-card highlight">
+          <span class="amount-label">Solde net reporté</span>
+          <span class="amount-value" [class.red]="d.soldeNetReporte > 0" [class.green]="d.soldeNetReporte <= 0">
+            {{ fmtMontant(d.soldeNetReporte) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         Ventilation par centre
+         ========================================================= -->
+    @if (topCentres().length) {
+      <div class="table-section">
+        <div class="section-header">
+          <h2>Par centre de gestion</h2>
+          <span class="period-count">{{ d.parCentre.length }} centre(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Centre</th>
+                <th class="right">Employeurs</th>
+                <th class="right">En dette</th>
+                <th class="right">Créditeurs</th>
+                <th class="right">Débit mvt</th>
+                <th class="right">Crédit mvt</th>
+                <th class="right">Solde mvt</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of topCentres(); track c.centreId) {
+                <tr>
+                  <td>
+                    <span class="centre-code">{{ c.centreCode ?? '—' }}</span>
+                    <span class="centre-lib">{{ c.centreLibelle }}</span>
+                  </td>
+                  <td class="right">{{ c.nombreEmployeurs | number }}</td>
+                  <td class="right red">{{ c.employeursEnDette | number }}</td>
+                  <td class="right green">{{ c.employeursCrediteurs | number }}</td>
+                  <td class="right">{{ fmtMontant(c.totalMvtDebit) }}</td>
+                  <td class="right">{{ fmtMontant(c.totalMvtCredit) }}</td>
+                  <td class="right" [class.red]="c.soldeNet > 0" [class.green]="c.soldeNet <= 0">
+                    <strong>{{ fmtMontant(c.soldeNet) }}</strong>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Top employeurs en dette
+         ========================================================= -->
+    @if (d.topEmployeursEnDette.length) {
+      <div class="table-section">
+        <div class="section-header">
+          <h2>Top employeurs en dette</h2>
+          <span class="period-count">{{ d.topEmployeursEnDette.length }} employeur(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>N° Compte</th>
+                <th>Raison sociale</th>
+                <th>Centre</th>
+                <th class="right">Débit mvt</th>
+                <th class="right">Crédit mvt</th>
+                <th class="right">Solde mvt</th>
+                <th>Proportion</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (e of d.topEmployeursEnDette; track e.employeurId) {
+                <tr>
+                  <td><code>{{ e.noCompte ?? '—' }}</code></td>
+                  <td>{{ e.raisonSociale ?? '—' }}</td>
+                  <td>{{ e.centreLibelle ?? '—' }}</td>
+                  <td class="right">{{ fmtMontant(e.mvtDebit) }}</td>
+                  <td class="right">{{ fmtMontant(e.mvtCredit) }}</td>
+                  <td class="right red"><strong>{{ fmtMontant(e.soldeMvt) }}</strong></td>
+                  <td>
+                    <div class="bar-mini">
+                      <div class="bar-mini-fill red" [style.width]="barWidth(e.soldeMvt, d.topEmployeursEnDette[0].soldeMvt)"></div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  } <!-- end @if data -->
+
+</div>

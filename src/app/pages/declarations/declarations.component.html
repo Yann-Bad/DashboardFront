@@ -407,6 +407,51 @@
       </div>
     </div>
 
+    <!-- Déclaré vs. Calculé — comparaison montants -->
+    @if (totaux(); as t) {
+      @if (t.montantDeclare > 0 || t.montantCalcule > 0) {
+        <div class="compare-section">
+          <div class="section-header"><h2>Déclaré vs. Calculé</h2></div>
+          <div class="compare-grid">
+            <div class="compare-card">
+              <span class="compare-label">Montant déclaré</span>
+              <span class="compare-value indigo">{{ fmtMontant(t.montantDeclare) }}</span>
+            </div>
+            <div class="compare-card">
+              <span class="compare-label">Montant calculé</span>
+              <span class="compare-value teal">{{ fmtMontant(t.montantCalcule) }}</span>
+            </div>
+            <div class="compare-card">
+              <span class="compare-label">Écart</span>
+              <span class="compare-value" [class.red]="t.montantDeclare - t.montantCalcule > 0" [class.green]="t.montantDeclare - t.montantCalcule < 0">
+                {{ fmtMontant(t.montantDeclare - t.montantCalcule) }}
+              </span>
+              @if (t.montantCalcule > 0) {
+                <span class="compare-sub" [class.red]="t.montantDeclare - t.montantCalcule > 0" [class.green]="t.montantDeclare - t.montantCalcule < 0">
+                  {{ (((t.montantDeclare - t.montantCalcule) / t.montantCalcule) * 100) | number:'1.2-2' }} %
+                </span>
+              }
+            </div>
+            <div class="compare-card">
+              <span class="compare-label">Brut déclaré</span>
+              <span class="compare-value">{{ fmtMontant(t.montantBrutDeclare) }}</span>
+              <span class="compare-sub">calculé : {{ fmtMontant(t.montantBrutCalcule) }}</span>
+            </div>
+            <div class="compare-card">
+              <span class="compare-label">Cotisé déclaré</span>
+              <span class="compare-value">{{ fmtMontant(t.montantCotiseDeclare) }}</span>
+              <span class="compare-sub">calculé : {{ fmtMontant(t.montantCotiseCalcule) }}</span>
+            </div>
+            <div class="compare-card">
+              <span class="compare-label">Effectifs déclarés/mois</span>
+              <span class="compare-value">{{ t.nbEmpMoisTotal | number }}</span>
+              <span class="compare-sub">dont assurés : {{ t.nbEmpAssMoisTotal | number }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    }
+
     <!-- Histogramme Chart.js — évolution mensuelle -->
     @if (declarations().length > 1) {
       <div class="chart-section">
@@ -695,6 +740,30 @@
                             {{ fmtMontantVar(d.variationMontantEncaisse) }} vs période préc.
                           </span>
                         </div>
+
+                        @if (d.montantDeclare > 0 || d.montantCalcule > 0) {
+                          <div class="trend-metric">
+                            <span class="tm-label">Déclaré (montant)</span>
+                            <span class="tm-value indigo">{{ fmtMontant(d.montantDeclare) }}</span>
+                            <span class="tm-note">brut : {{ fmtMontant(d.montantBrutDeclare) }}</span>
+                          </div>
+                          <div class="trend-metric">
+                            <span class="tm-label">Calculé (montant)</span>
+                            <span class="tm-value teal">{{ fmtMontant(d.montantCalcule) }}</span>
+                            <span class="tm-note">brut : {{ fmtMontant(d.montantBrutCalcule) }}</span>
+                          </div>
+                          <div class="trend-metric">
+                            <span class="tm-label">Écart décl. − calc.</span>
+                            <span class="tm-value" [class.red]="d.ecartDeclareCalcule > 0" [class.green]="d.ecartDeclareCalcule < 0">
+                              {{ fmtMontant(d.ecartDeclareCalcule) }}
+                            </span>
+                            @if (d.tauxEcart !== null) {
+                              <span class="tm-note" [class.red]="d.tauxEcart! > 0" [class.green]="d.tauxEcart! < 0">
+                                {{ d.tauxEcart | number:'1.2-2' }} %
+                              </span>
+                            }
+                          </div>
+                        }
 
                       </div>
                     </div>

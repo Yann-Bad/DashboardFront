@@ -1,0 +1,132 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Trésorerie — Vue d'ensemble</h1>
+    <p class="subtitle">Synthèse des comptes, opérations et soldes</p>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p>Chargement…</p>
+    </div>
+  } @else if (error) {
+    <div class="error-banner">{{ error }}</div>
+  } @else if (summary) {
+
+    <!-- Stat cards -->
+    <!-- 🏦 Banques -->
+    @if (soldesBanque.length > 0) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>🏦 Banques</h2>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Devise</th>
+                <th class="text-right">Solde Disponible</th>
+                <th class="text-right">Solde Émis</th>
+                <th class="text-right">Solde Encaissé</th>
+                <th class="text-right">Solde Réel</th>
+                <th class="text-right">Solde Prévisionnel</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of soldesBanque; track s.monnaie) {
+                <tr>
+                  <td><strong>{{ s.monnaie }}</strong></td>
+                  <td class="text-right" [class.text-negative]="s.soldeDisponible < 0">{{ fmtMontant(s.soldeDisponible) }}</td>
+                  <td class="text-right" [class.text-negative]="s.soldeEmis < 0">{{ fmtMontant(s.soldeEmis) }}</td>
+                  <td class="text-right" [class.text-negative]="s.soldeEncaisse < 0">{{ fmtMontant(s.soldeEncaisse) }}</td>
+                  <td class="text-right" [class.text-negative]="s.soldeReel < 0">{{ fmtMontant(s.soldeReel) }}</td>
+                  <td class="text-right" [class.text-negative]="s.soldePrevisionnel < 0">{{ fmtMontant(s.soldePrevisionnel) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- 💰 Caisses -->
+    @if (soldesCaisse.length > 0) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>💰 Caisses</h2>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Devise</th>
+                <th class="text-right">Solde Disponible</th>
+                <th class="text-right">Solde Émis</th>
+                <th class="text-right">Solde Encaissé</th>
+                <th class="text-right">Solde Réel</th>
+                <th class="text-right">Solde Prévisionnel</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of soldesCaisse; track s.monnaie) {
+                <tr>
+                  <td><strong>{{ s.monnaie }}</strong></td>
+                  <td class="text-right" [class.text-negative]="s.soldeDisponible < 0">{{ fmtMontant(s.soldeDisponible) }}</td>
+                  <td class="text-right" [class.text-negative]="s.soldeEmis < 0">{{ fmtMontant(s.soldeEmis) }}</td>
+                  <td class="text-right" [class.text-negative]="s.soldeEncaisse < 0">{{ fmtMontant(s.soldeEncaisse) }}</td>
+                  <td class="text-right" [class.text-negative]="s.soldeReel < 0">{{ fmtMontant(s.soldeReel) }}</td>
+                  <td class="text-right" [class.text-negative]="s.soldePrevisionnel < 0">{{ fmtMontant(s.soldePrevisionnel) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- Exercices -->
+    @if (exercices.length > 0) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Exercices Comptables</h2>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Période</th>
+                <th class="text-right">Opérations</th>
+                <th class="text-right">Documents</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (e of exercices; track e.id) {
+                <tr>
+                  <td>{{ e.id }}</td>
+                  <td>{{ e.periodecomptable ?? '—' }}</td>
+                  <td class="text-right">{{ e.nombreOperations | number }}</td>
+                  <td class="text-right">{{ e.nombreDocuments | number }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- Navigation -->
+    <div class="nav-cards">
+      <a routerLink="/trends" class="nav-card">
+        <span class="nav-card-icon">📈</span>
+        <span class="nav-card-label">Tendances</span>
+        <span class="nav-card-desc">Analyse des flux par période</span>
+      </a>
+      <a routerLink="/summary-accounts" class="nav-card">
+        <span class="nav-card-icon">📊</span>
+        <span class="nav-card-label">Comptes Résumés</span>
+        <span class="nav-card-desc">Synthèse détaillée par compte</span>
+      </a>
+    </div>
+  }
+</div>

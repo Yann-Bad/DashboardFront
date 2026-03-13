@@ -19,6 +19,7 @@ export class EncaissementsComponent implements OnInit {
   // -------------------------------------------------------------------------
   // Signaux d'état
   // -------------------------------------------------------------------------
+  readonly showGuide = signal(false);
   readonly encaissements = signal<EncaissementAnalyseDto[]>([]);
   readonly loading        = signal(false);
   readonly error          = signal<string | null>(null);

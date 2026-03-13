@@ -1,6 +1,15 @@
 // Modèles de données pour le module Centre de Gestion.
 // Chaque interface correspond au DTO exposé par l'API backend (DashboardCore).
 
+/** Élément générique de ventilation (forme juridique, régime, secteur, état, type…) */
+export interface BreakdownItemDto {
+  id: number;
+  code: string | null;
+  libelle: string | null;
+  nombre: number;
+  pourcentage: number;
+}
+
 /**
  * Statistiques des employeurs d'un centre de gestion par état métier.
  * Retourné par GET /api/CentreDeGestion/:centreId/stats/employeurs
@@ -25,6 +34,10 @@ export interface CentreEmployeurStatsDto {
   pourcentageEnActivite: number;
   pourcentageEnCessation: number;
   pourcentageInactif: number;
+  /** Ventilations par forme juridique, régime et secteur */
+  breakdownParFormeJuridique: BreakdownItemDto[];
+  breakdownParRegime: BreakdownItemDto[];
+  breakdownParSecteur: BreakdownItemDto[];
 }
 
 /**
@@ -45,8 +58,12 @@ export interface CentreEmployeStatsDto {
   inactif: number;
   /** Pourcentages calcules cote backend */
   pourcentageActif: number;
-  pourcentageInactif: number;
-  /** Breakdown dynamique par statut avec libellés depuis Referentielstatutemploye */
+  pourcentageInactif: number;  /** Retraités — TagRetraite = 0, TagDeces = 0 */
+  retraites: number;
+  /** Décédés — TagDeces = 1 */
+  decedes: number;
+  pourcentageRetraites: number;
+  pourcentageDecedes: number;  /** Breakdown dynamique par statut avec libellés depuis Referentielstatutemploye */
   breakdownParStatut: StatutEmployeDetailDto[];
 }
 
@@ -152,6 +169,10 @@ export interface DashboardStatsDto {
   employesInactifs: number;
   pourcentageEmployesActifs: number;
   pourcentageEmployesInactifs: number;
+  employesRetraites: number;
+  employesDecedes: number;
+  pourcentageEmployesRetraites: number;
+  pourcentageEmployesDecedes: number;
 
   // Encaissements — montants agrégés (Cotisationencaissement actifs, non supprimés)
   montantPrincipalEncaisse: number;
@@ -178,4 +199,8 @@ export interface DashboardStatsDto {
   effectifEmployeDeclare: number;
   /** Somme de EffectifEmployeAssimile */
   effectifAssimileDeclare: number;
+  /** Ventilations des employeurs par forme juridique, régime et secteur */
+  breakdownParFormeJuridique: BreakdownItemDto[];
+  breakdownParRegime: BreakdownItemDto[];
+  breakdownParSecteur: BreakdownItemDto[];
 }

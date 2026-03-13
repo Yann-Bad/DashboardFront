@@ -5,8 +5,62 @@
         <h1>Analyse des encaissements</h1>
         <p>Suivi des cotisations encaissées par période — montants principal, majorations, taxations et tendances</p>
       </div>
+      <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Guide des métriques
+      </button>
     </div>
   </div>
+
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer le guide">&#10005;</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Compteurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Total</span><div><strong>Total encaissements</strong><p>Nombre de lignes <code>Cotisationencaissement</code> sur la période. Chaque ligne correspond à un paiement reçu d'un employeur.</p></div></div>
+          <div class="guide-item"><span class="guide-badge blue">Employeurs</span><div><strong>Employeurs ayant payé</strong><p>Nombre distinct d'employeurs (<code>EmployeurId</code>) ayant effectué au moins un paiement sur la période.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot amber"></span>Montants financiers</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge amber">Montant total</span><div><strong>Montant total encaissé</strong><p>Somme du champ <code>Montant</code> — total brut perçu sur la période, toutes composantes confondues.</p></div></div>
+          <div class="guide-item"><span class="guide-badge indigo">Principal</span><div><strong>Montant principal</strong><p>Somme de <code>MontantPrincipal</code> — cotisations de base versées (hors pénalités et taxes).</p></div></div>
+          <div class="guide-item"><span class="guide-badge orange">Majorations</span><div><strong>Montant majorations</strong><p>Somme de <code>MontantMajoration</code> — pénalités de retard encaissées.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">Taxations</span><div><strong>Montant taxations</strong><p>Somme de <code>MontantTaxation</code> — obligations fiscales complémentaires encaissées.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Composantes</span><div><strong>P + M + T</strong><p>Vérification de cohérence : Principal + Majorations + Taxations doit égaler le Montant total.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Tendances &amp; Variations</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge green">Tendance</span><div><strong>Tendance mensuelle</strong><p>Comparaison du nombre d'encaissements vs période précédente : hausse (vert), baisse (rouge), stable (orange).</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Var. enc.</span><div><strong>Variation encaissements</strong><p>Différence brute du nombre d'encaissements par rapport à la période précédente.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Var. montant</span><div><strong>Variation du montant</strong><p>Différence en valeur absolue du montant total encaissé vs période précédente.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Croissance</span><div><strong>Taux de croissance</strong><p>Pourcentage d'évolution du nombre d'encaissements par rapport à la période précédente.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot slate"></span>Ventilations (panneau détail)</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Par devise</span><div><strong>Ventilation par devise</strong><p>Détail des montants par devise (FCFA, USD…). La devise locale (sans <code>DeviseId</code>) est regroupée sous « Monnaie locale ».</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Par mode</span><div><strong>Par mode de paiement</strong><p>Répartition des montants par mode (virement, chèque, espèces…) via <code>ModePaiementId</code>.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Par centre</span><div><strong>Détail par centre</strong><p>Activé via le filtre. Ventile les encaissements par centre de gestion (<code>CentreDeGestionId</code>).</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
 
   <!-- =========================================================
        Filtre

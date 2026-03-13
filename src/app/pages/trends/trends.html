@@ -1,0 +1,187 @@
+<div class="page">
+  <div class="page-header">
+    <h1>📈 Tendances des Opérations</h1>
+    <p class="subtitle">Analyse des flux de trésorerie par période</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Du</label>
+      <input type="date" [(ngModel)]="filter.dateFrom" />
+    </div>
+    <div class="filter-group">
+      <label>Au</label>
+      <input type="date" [(ngModel)]="filter.dateTo" />
+    </div>
+    <div class="filter-group">
+      <label>Granularité</label>
+      <select [(ngModel)]="filter.granularity">
+        <option value="daily">Journalier</option>
+        <option value="weekly">Hebdomadaire</option>
+        <option value="monthly">Mensuel</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Type</label>
+      <select [(ngModel)]="filter.typeBank">
+        <option value="">Tous</option>
+        <option value="B">Banques</option>
+        <option value="C">Caisses</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Devise</label>
+      <select [(ngModel)]="filter.monnaie">
+        <option value="CDF">CDF</option>
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+      </select>
+    </div>
+    <button class="btn-apply" (click)="load()">Appliquer</button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement des tendances…</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-state">
+      <p>{{ error }}</p>
+      <button (click)="load()">Réessayer</button>
+    </div>
+  }
+
+  @if (!loading && !error && result) {
+    <!-- Chart 1: Flux de trésorerie -->
+    <div class="chart-section">
+      <h2>Flux de Trésorerie</h2>
+      <p class="chart-desc">Encaissements vs Décaissements par période</p>
+      <ngx-charts-line-chart
+        [view]="view"
+        [results]="fluxData"
+        [scheme]="fluxColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Période"
+        yAxisLabel="Montant"
+        [autoScale]="true"
+        [animations]="true">
+      </ngx-charts-line-chart>
+    </div>
+
+    <!-- Chart 2: Evolution des soldes -->
+    <div class="chart-section">
+      <h2>Évolution des Soldes</h2>
+      <p class="chart-desc">Solde Disponible et Solde Réel cumulés</p>
+      <ngx-charts-area-chart
+        [view]="view"
+        [results]="soldeData"
+        [scheme]="soldeColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Période"
+        yAxisLabel="Solde"
+        [autoScale]="true"
+        [animations]="true">
+      </ngx-charts-area-chart>
+    </div>
+
+    <!-- Chart 3: Prévisionnel vs Exécuté -->
+    <div class="chart-section">
+      <h2>Prévisionnel vs Exécuté</h2>
+      <p class="chart-desc">Comparaison des montants prévus et exécutés (sorties & entrées)</p>
+      <ngx-charts-bar-horizontal-2d
+        [view]="view"
+        [results]="prevExeData"
+        [scheme]="prevExeColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Montant"
+        yAxisLabel="Période"
+        [animations]="true">
+      </ngx-charts-bar-horizontal-2d>
+    </div>
+
+    <!-- Chart 4: Cash flow net -->
+    <div class="chart-section">
+      <h2>Cash Flow Net</h2>
+      <p class="chart-desc">Flux net par période (Encaissements − Décaissements)</p>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [results]="netData"
+        [scheme]="netColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Période"
+        yAxisLabel="Flux Net"
+        [animations]="true">
+      </ngx-charts-bar-vertical>
+    </div>
+
+    <!-- Chart 5: Volume d'opérations -->
+    <div class="chart-section">
+      <h2>Volume d'Opérations</h2>
+      <p class="chart-desc">Nombre d'opérations par période</p>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [results]="volumeData"
+        [scheme]="soldeColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Période"
+        yAxisLabel="Nombre"
+        [animations]="true">
+      </ngx-charts-bar-vertical>
+    </div>
+
+    <!-- Chart 6: Répartition par catégorie -->
+    <div class="chart-section">
+      <h2>Répartition par Catégorie</h2>
+      <p class="chart-desc">Distribution des montants par type d'opération</p>
+      <div class="pie-container">
+        <ngx-charts-pie-chart
+          [view]="[500, 350]"
+          [results]="pieData"
+          [scheme]="pieColors"
+          [legend]="true"
+          [legendTitle]="'Catégories'"
+          [labels]="true"
+          [doughnut]="true"
+          [arcWidth]="0.45"
+          [animations]="true">
+        </ngx-charts-pie-chart>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="nav-cards">
+      <a routerLink="/treasury" class="nav-card">
+        <span class="nav-card-icon">💰</span>
+        <span class="nav-card-label">Trésorerie</span>
+        <span class="nav-card-desc">Vue d'ensemble</span>
+      </a>
+      <a routerLink="/summary-accounts" class="nav-card">
+        <span class="nav-card-icon">📊</span>
+        <span class="nav-card-label">Comptes Résumés</span>
+        <span class="nav-card-desc">Synthèse par compte</span>
+      </a>
+    </div>
+  }
+</div>

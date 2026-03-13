@@ -15,6 +15,32 @@
 .page-header h1  { font-size: 1.4rem; font-weight: 600; color: #1e293b; margin: 0 0 0.25rem; }
 .page-header p   { font-size: 0.875rem; color: #64748b; margin: 0; }
 
+/* ---- Bouton guide ---- */
+.btn-guide { display:inline-flex;align-items:center;gap:0.35rem;padding:0.4rem 0.85rem;border-radius:8px;border:1px solid #c7d2fe;background:#eef2ff;color:#4338ca;font-size:0.8rem;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s;white-space:nowrap; }
+.btn-guide:hover  { background:#e0e7ff;border-color:#a5b4fc; }
+.btn-guide.active { background:#6366f1;color:#fff;border-color:#6366f1; }
+.btn-guide svg    { flex-shrink:0; }
+
+/* ---- Guide panel ---- */
+.guide-panel{background:#fff;border:1px solid #c7d2fe;border-radius:12px;margin-bottom:1.5rem;overflow:hidden;box-shadow:0 2px 8px rgba(99,102,241,.07)}
+.guide-header{display:flex;justify-content:space-between;align-items:center;padding:.9rem 1.4rem;background:#eef2ff;border-bottom:1px solid #c7d2fe}
+.guide-header h2{font-size:.95rem;font-weight:700;color:#3730a3;margin:0}
+.guide-close{background:none;border:none;color:#6366f1;font-size:1rem;cursor:pointer;padding:.2rem .4rem;border-radius:4px;line-height:1;transition:background .12s}
+.guide-close:hover{background:#c7d2fe}
+.guide-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:0}
+.guide-group{padding:1.1rem 1.4rem;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}
+.guide-group-title{display:flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:.05em;margin:0 0 .85rem}
+.guide-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.guide-dot.indigo{background:#6366f1}.guide-dot.amber{background:#f59e0b}.guide-dot.slate{background:#64748b}.guide-dot.purple{background:#8b5cf6}.guide-dot.blue{background:#3b82f6}.guide-dot.red{background:#ef4444}
+.guide-items{display:flex;flex-direction:column;gap:.7rem}
+.guide-item{display:flex;gap:.7rem;align-items:flex-start}
+.guide-item>div{flex:1;min-width:0}
+.guide-item strong{display:block;font-size:.83rem;font-weight:600;color:#1e293b;margin-bottom:.15rem}
+.guide-item p{font-size:.78rem;color:#64748b;margin:0;line-height:1.5}
+.guide-item p code{background:#f1f5f9;border-radius:3px;padding:0 .25rem;font-size:.74rem;color:#7c3aed}
+.guide-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:.18rem .5rem;border-radius:6px;font-size:.7rem;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;height:fit-content;min-width:58px;text-align:center}
+.guide-badge.green{background:#dcfce7;color:#15803d}.guide-badge.red{background:#fee2e2;color:#b91c1c}.guide-badge.orange{background:#ffedd5;color:#c2410c}.guide-badge.blue{background:#dbeafe;color:#1d4ed8}.guide-badge.amber{background:#fef3c7;color:#b45309}.guide-badge.slate{background:#f1f5f9;color:#475569}.guide-badge.purple{background:#f3e8ff;color:#7c3aed}.guide-badge.teal{background:#ccfbf1;color:#0d9488}.guide-badge.indigo{background:#e0e7ff;color:#4338ca}
+
 /* ---- Filtre ---- */
 .filter-panel {
   background: var(--color-surface, #fff);

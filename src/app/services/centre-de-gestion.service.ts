@@ -22,6 +22,31 @@ import {
   DossierAnalyseDto,
   DossierFilterDto,
 } from '../models/dossier-analyse.model';
+import {
+  BalanceAnalyseDto,
+  BalanceFilterDto,
+} from '../models/balance-analyse.model';
+import { LookupsDto } from '../models/lookups.model';
+import {
+  MajorationTaxationAnalyseDto,
+  MajorationTaxationFilterDto,
+} from '../models/majoration-taxation-analyse.model';
+import {
+  AcompteAnalyseDto,
+  AcompteFilterDto,
+} from '../models/acompte-analyse.model';
+import {
+  PrestationAnalyseDto,
+  PrestationFilterDto,
+} from '../models/prestation-analyse.model';
+import {
+  ImmatriculationAnalyseDto,
+  ImmatriculationFilterDto,
+} from '../models/immatriculation-analyse.model';
+import {
+  RecouvrementAnalyseDto,
+  RecouvrementFilterDto,
+} from '../models/recouvrement-analyse.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -159,5 +184,113 @@ export class CentreDeGestionService {
     if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
     if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
     return this.http.get<EncaissementAnalyseDto[]>(`${this.base}/encaissements/analyse`, { params });
+  }
+
+  /**
+   * Analyse des soldes employeurs (Cotisationbalance).
+   * Correspond à : GET /api/CentreDeGestion/balance/analyse
+   */
+  getBalanceAnalyse(filter: BalanceFilterDto = {}): Observable<BalanceAnalyseDto> {
+    let params = new HttpParams();
+    if (filter.centreDeGestionId != null)
+      params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.tenantId != null)
+      params = params.set('tenantId', filter.tenantId.toString());
+    if (filter.topN != null)
+      params = params.set('topN', filter.topN.toString());
+    return this.http.get<BalanceAnalyseDto>(`${this.base}/balance/analyse`, { params });
+  }
+
+  /** GET /api/CentreDeGestion/lookups — reference data for dropdowns */
+  getLookups(): Observable<LookupsDto> {
+    return this.http.get<LookupsDto>(`${this.base}/lookups`);
+  }
+
+  /** GET /api/CentreDeGestion/majorations-taxations/analyse */
+  getMajorationTaxationAnalyse(
+    filter: MajorationTaxationFilterDto = {},
+  ): Observable<MajorationTaxationAnalyseDto[]> {
+    let params = new HttpParams();
+    if (filter.anneeDebut        != null) params = params.set('anneeDebut',        filter.anneeDebut.toString());
+    if (filter.anneeFin          != null) params = params.set('anneeFin',          filter.anneeFin.toString());
+    if (filter.moisDebut)                 params = params.set('moisDebut',         filter.moisDebut);
+    if (filter.moisFin)                   params = params.set('moisFin',           filter.moisFin);
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    return this.http.get<MajorationTaxationAnalyseDto[]>(
+      `${this.base}/majorations-taxations/analyse`, { params },
+    );
+  }
+
+  /** GET /api/CentreDeGestion/acomptes/analyse */
+  getAcompteAnalyse(
+    filter: AcompteFilterDto = {},
+  ): Observable<AcompteAnalyseDto[]> {
+    let params = new HttpParams();
+    if (filter.anneeDebut        != null) params = params.set('anneeDebut',        filter.anneeDebut.toString());
+    if (filter.anneeFin          != null) params = params.set('anneeFin',          filter.anneeFin.toString());
+    if (filter.moisDebut)                 params = params.set('moisDebut',         filter.moisDebut);
+    if (filter.moisFin)                   params = params.set('moisFin',           filter.moisFin);
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    return this.http.get<AcompteAnalyseDto[]>(
+      `${this.base}/acomptes/analyse`, { params },
+    );
+  }
+
+  /** GET /api/CentreDeGestion/prestations/analyse */
+  getPrestationAnalyse(
+    filter: PrestationFilterDto = {},
+  ): Observable<PrestationAnalyseDto[]> {
+    let params = new HttpParams();
+    if (filter.anneeDebut        != null) params = params.set('anneeDebut',        filter.anneeDebut.toString());
+    if (filter.anneeFin          != null) params = params.set('anneeFin',          filter.anneeFin.toString());
+    if (filter.moisDebut)                 params = params.set('moisDebut',         filter.moisDebut);
+    if (filter.moisFin)                   params = params.set('moisFin',           filter.moisFin);
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.typePfId          != null) params = params.set('typePfId',          filter.typePfId.toString());
+    if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.avecDetailParType)         params = params.set('avecDetailParType', 'true');
+    if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    return this.http.get<PrestationAnalyseDto[]>(
+      `${this.base}/prestations/analyse`, { params },
+    );
+  }
+
+  /** GET /api/CentreDeGestion/immatriculations/analyse */
+  getImmatriculationAnalyse(
+    filter: ImmatriculationFilterDto = {},
+  ): Observable<ImmatriculationAnalyseDto[]> {
+    let params = new HttpParams();
+    if (filter.anneeDebut        != null) params = params.set('anneeDebut',        filter.anneeDebut.toString());
+    if (filter.anneeFin          != null) params = params.set('anneeFin',          filter.anneeFin.toString());
+    if (filter.moisDebut)                 params = params.set('moisDebut',         filter.moisDebut);
+    if (filter.moisFin)                   params = params.set('moisFin',           filter.moisFin);
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    return this.http.get<ImmatriculationAnalyseDto[]>(
+      `${this.base}/immatriculations/analyse`, { params },
+    );
+  }
+
+  /** GET /api/CentreDeGestion/recouvrement/analyse */
+  getRecouvrementAnalyse(
+    filter: RecouvrementFilterDto = {},
+  ): Observable<RecouvrementAnalyseDto[]> {
+    let params = new HttpParams();
+    if (filter.anneeDebut        != null) params = params.set('anneeDebut',        filter.anneeDebut.toString());
+    if (filter.anneeFin          != null) params = params.set('anneeFin',          filter.anneeFin.toString());
+    if (filter.moisDebut         != null) params = params.set('moisDebut',         filter.moisDebut.toString());
+    if (filter.moisFin           != null) params = params.set('moisFin',           filter.moisFin.toString());
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.topEmployeurs     != null) params = params.set('topEmployeurs',     filter.topEmployeurs.toString());
+    if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    return this.http.get<RecouvrementAnalyseDto[]>(
+      `${this.base}/recouvrement/analyse`, { params },
+    );
   }
 }

@@ -1,0 +1,130 @@
+<div class="list-page">
+  <div class="page-header">
+    <h1>Soldes des Comptes</h1>
+    <p class="subtitle">Situation des comptes bancaires à une date donnée</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label for="filterTypeSearch">Recherche</label>
+        <select id="filterTypeSearch" [(ngModel)]="filter.typeSearch" (change)="onSearch()">
+          @for (opt of typeSearchOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="filterMonnaie">Monnaie</label>
+        <select id="filterMonnaie" [(ngModel)]="filter.monnaie">
+          <option value="">— Toutes —</option>
+          <option value="USD">USD</option>
+          <option value="CDF">CDF</option>
+          <option value="EURO">EURO</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="filterCodebank">Type</label>
+        <select id="filterCodebank" [(ngModel)]="filter.typeBank"> 
+          <option value="B">Banque</option>
+          <option value="C">Caisse</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="filterDate">Date situation</label>
+        <input id="filterDate" type="date" [(ngModel)]="filter.dateoperation" />
+      </div>
+      <div class="filter-actions">
+        <button class="btn-primary" (click)="onSearch()">Rechercher</button>
+        <button class="btn-secondary" (click)="onReset()">Réinitialiser</button>
+        <button class="btn-export" (click)="exportExcel()" [disabled]="exporting || loading">
+          {{ exporting ? 'Export…' : 'Exporter Excel' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p>Chargement…</p>
+    </div>
+  } @else if (error) {
+    <div class="error-banner">{{ error }}</div>
+  } @else if (data.length === 0) {
+    <div class="empty-state">Aucun compte bancaire trouvé pour ces critères.</div>
+  } @else {
+
+    <!-- Accounts table -->
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Dénomination Compte</th>
+            <!-- <th>N° Compte</th> -->
+            <!-- <th>Monnaie</th> -->
+            <th class="text-right">Solde Dispo.</th>
+            <th class="text-right">Solde Émis</th>
+            <th class="text-right">Solde Enc.</th>
+            <th class="text-right">Solde Réel</th>
+            <th class="text-right">Solde Prév.</th>
+            <!-- <th class="text-right">Encaiss.</th>
+            <th class="text-right">Décaiss.</th>
+            <th class="text-right">Ops</th> -->
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of data; track a.comptebanqueId) {
+            <tr>
+              <td>
+                <div class="bank-name">{{ a.libelleBank ?? '—' }}</div>
+                <div class="bank-code"><code>{{ a.numeroBank ?? '' }}</code></div>
+              </td>
+              <!-- <td><code>{{ a.numeroBank ?? '—' }}</code></td> -->
+              <!-- <td>{{ a.monnaie ?? '—' }}</td> -->
+              <td class="text-right text-bold" [class.text-negative]="a.soldeDisponible < 0">{{ fmtMontant(a.soldeDisponible) }}</td>
+              <td class="text-right" [class.text-negative]="a.soldeEmis < 0">{{ fmtMontant(a.soldeEmis) }}</td>
+              <td class="text-right" [class.text-negative]="a.soldeEncaisse < 0">{{ fmtMontant(a.soldeEncaisse) }}</td>
+              <td class="text-right text-bold" [class.text-negative]="a.soldeReel < 0">{{ fmtMontant(a.soldeReel) }}</td>
+              <td class="text-right" [class.text-negative]="a.soldePrevisionnel < 0">{{ fmtMontant(a.soldePrevisionnel) }}</td>
+              <!-- <td class="text-right text-credit">{{ fmtMontant(a.totalEncaissements) }}</td>
+              <td class="text-right text-debit">{{ fmtMontant(a.totalDecaissements) }}</td>
+              <td class="text-right">{{ a.nombreOperations | number }}</td> -->
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar">
+      <div class="pagination-info">
+        <span>{{ totalCount }} compte(s) — page {{ filter.page }} / {{ totalPages }}</span>
+        <label class="page-size-label">
+          Lignes
+          <select [(ngModel)]="filter.pageSize" (change)="onPageSizeChange()">
+            @for (size of pageSizeOptions; track size) {
+              <option [value]="size">{{ size }}</option>
+            }
+          </select>
+        </label>
+      </div>
+      @if (totalPages > 1) {
+        <div class="pagination-controls">
+          <button class="page-btn" [disabled]="filter.page === 1" (click)="goToPage(1)" title="Première page">&laquo;</button>
+          <button class="page-btn" [disabled]="filter.page === 1" (click)="goToPage(filter.page - 1)" title="Page précédente">&lsaquo;</button>
+          @for (p of pages; track $index) {
+            @if (p === -1) {
+              <span class="page-ellipsis">&hellip;</span>
+            } @else {
+              <button class="page-btn" [class.active]="p === filter.page" (click)="goToPage(p)">{{ p }}</button>
+            }
+          }
+          <button class="page-btn" [disabled]="filter.page === totalPages" (click)="goToPage(filter.page + 1)" title="Page suivante">&rsaquo;</button>
+          <button class="page-btn" [disabled]="filter.page === totalPages" (click)="goToPage(totalPages)" title="Dernière page">&raquo;</button>
+        </div>
+      }
+    </div>
+  }
+</div>

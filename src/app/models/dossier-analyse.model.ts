@@ -1,3 +1,5 @@
+import { BreakdownItemDto } from './centre-de-gestion.model';
+
 // ---------------------------------------------------------------------------
 // Modèles TypeScript pour l'analyse des dossiers (Frontofficedossier)
 // Correspondent aux DTOs C# : DossierAnalyseDto, DossierParCentreDto,
@@ -46,6 +48,28 @@ export interface DossierAnalyseDto {
 
   /** Détail par centre — vide sauf si avecDetailParCentre = true */
   parCentre: DossierParCentreDto[];
+  /** Ventilation par état de dossier (code + libellé depuis Frontofficeetatdossier) */
+  breakdownParEtat: BreakdownItemDto[];
+  /** Ventilation par type de dossier (code + libellé depuis Frontofficetypedossier) */
+  breakdownParType: BreakdownItemDto[];
+
+  /** Compteurs nommés par état réel (EtatDossier.Code) */
+  dossiersDeposes:             number;
+  dossiersPrisEnCharge:        number;
+  dossiersEnAttenteValidation: number;
+  dossiersDeclarationRejetes:  number;  // code 03
+  dossiersValidesATraiter:     number;
+  dossiersBonPourLiquidation:  number;  // code 05 — DECOMPTE EFFECTUE, BON POUR LIQUIDATION
+  dossiersDroitActive:         number;  // code 06 — DROIT ACTIVE
+  dossiersLiquides:            number;  // code 07
+  dossiersDroitDesactive:      number;  // code 10
+  dossiersClotures:            number;  // code 20 — DOSSIER CLOTURE
+  dossiersAccidentTrajet:      number;
+  dossiersAccidentTravail:     number;
+  dossiersAnticipeVolontaire:  number;
+  dossiersAnticipeParUsure:    number;
+  breakdownParTypeAccident:    BreakdownItemDto[];
+  breakdownParTypeAnticipe:    BreakdownItemDto[];
 }
 
 /** Critères de filtrage envoyés au backend */

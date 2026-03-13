@@ -47,9 +47,33 @@
       </div>
 
       <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot slate"></span>Workflow par état (EtatDossier.Code)</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">00</span><div><strong>Déposé, non pris en charge</strong><p>Dossier reçu physiquement au guichet mais pas encore attribué à un agent.</p></div></div>
+          <div class="guide-item"><span class="guide-badge blue">01</span><div><strong>Pris en charge</strong><p>Décision d'instruction prise — en attente de déclaration complète.</p></div></div>
+          <div class="guide-item"><span class="guide-badge orange">02</span><div><strong>Déclaration saisie</strong><p>Déclaration enregistrée dans le système, en attente de validation.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">03</span><div><strong>Déclaration rejetée</strong><p>Dossier refusé suite à contrôle de conformité ou pièces manquantes.</p></div></div>
+          <div class="guide-item"><span class="guide-badge amber">04</span><div><strong>Validé, à traiter</strong><p>Déclaration validée par le contrôleur — liquidation en cours.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">05 / 20</span><div><strong>Cloturé</strong><p>Dossier traitement terminé (<code>CLOTURE DOSSIER</code> ou <code>DOSSIER CLOTURE</code>). Cumul des codes 05 et 20.</p></div></div>
+          <div class="guide-item"><span class="guide-badge slate">06</span><div><strong>Droit suspendu</strong><p>Droits du bénéficiaire temporairement bloqués.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">07</span><div><strong>Liquidé</strong><p><em>Liquidation effectuée, bon pour paiement</em> — dossier financèrement aprés calcul.</p></div></div>
+          <div class="guide-item"><span class="guide-badge slate">10</span><div><strong>Droit désactivé</strong><p>Droits définitivement révoqués.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
         <h3 class="guide-group-title"><span class="guide-dot slate"></span>Détail par centre (optionnel)</h3>
         <div class="guide-items">
           <div class="guide-item"><span class="guide-badge">Centres</span><div><strong>Répartition par centre</strong><p>Activé via le filtre « Détail par centre → Oui ». Ventile chaque période par centre de gestion (<code>CentreDeGestionId</code>), avec compteurs et taux de complétude individuels.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot purple"></span>Tags vs États vs Types</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge purple">Tags</span><div><strong>Indicateurs opérationnels (cartes de synthèse)</strong><p>Drapeaux binaires (<code>TagComplet, TagFerme, TagRejete…</code>) posés par les agents au fil du traitement. Ils ne sont <strong>pas exclusifs</strong> : un dossier peut être à la fois complet et fermé. C'est ce que montrent les cartes de synthèse ci-dessus.</p></div></div>
+          <div class="guide-item"><span class="guide-badge teal">État</span><div><strong>Étape du workflow (ventilation « par état »)</strong><p>L'<code>EtatDossier</code> représente l'étape formelle : <strong>Déposé → En instruction → En attente → Rejeté / Clos</strong>. Chaque dossier n'a qu'un seul état à la fois. Le panneau « par état de dossier » montre cette progression.</p></div></div>
+          <div class="guide-item"><span class="guide-badge indigo">Type</span><div><strong>Nature / périmètre métier (ventilation « par type »)</strong><p>Le <code>TypeDossier</code> détermine la nature métier du dossier, regroupée en périmètres : <strong>Cotisation/Recouvrement, Prestation, Risque professionnel, Immatriculation</strong>. Le panneau « par type de dossier » montre cette ventilation catégorielle.</p></div></div>
         </div>
       </div>
 
@@ -89,12 +113,40 @@
       </select>
     </label>
     <label>
-      Id Type dossier
-      <input type="number" [(ngModel)]="filter.typeDossierId" placeholder="Tous" />
+      Périmètre (nature)
+      <select [(ngModel)]="selectedNature" (ngModelChange)="onNatureChange()">
+        <option [ngValue]="null">Tous les périmètres</option>
+        @for (n of natures(); track n) {
+          <option [value]="n">{{ n }}</option>
+        }
+      </select>
     </label>
     <label>
-      Id État dossier
-      <input type="number" [(ngModel)]="filter.etatDossierId" placeholder="Tous" />
+      Type de dossier
+      <select [(ngModel)]="filter.typeDossierId" (ngModelChange)="onTypeChange()">
+        <option [ngValue]="null">Tous les types</option>
+        @for (t of filteredTypes(); track t.id) {
+          <option [ngValue]="t.id">{{ t.code }} — {{ t.libelle }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      État de dossier
+      <select [(ngModel)]="filter.etatDossierId">
+        <option [ngValue]="null">Tous les états</option>
+        @for (e of filteredEtats(); track e.id) {
+          <option [ngValue]="e.id">{{ e.code }} — {{ e.libelle }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Centre de gestion
+      <select [(ngModel)]="filter.centreDeGestionId">
+        <option [ngValue]="null">Tous les centres</option>
+        @for (c of centres(); track c.id) {
+          <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+        }
+      </select>
     </label>
     <label>
       Détail par centre
@@ -146,25 +198,25 @@
       <div class="summary-card">
         <div class="label">Complets</div>
         <div class="value green">{{ t.dossiersComplets | number }}</div>
-        <div class="sub">TagComplet = 1</div>
+        <div class="sub">état 04</div>
       </div>
 
       <div class="summary-card">
         <div class="label">Fermés</div>
         <div class="value slate">{{ t.dossiersFermes | number }}</div>
-        <div class="sub">TagFerme = 1</div>
+        <div class="sub">état 20 (TagFerme)</div>
       </div>
 
       <div class="summary-card">
         <div class="label">Rejetés</div>
         <div class="value red">{{ t.dossiersRejetes | number }}</div>
-        <div class="sub">TagRejete = 1</div>
+        <div class="sub">état 03</div>
       </div>
 
       <div class="summary-card">
         <div class="label">Dépôts</div>
         <div class="value blue">{{ t.dossiersDepot | number }}</div>
-        <div class="sub">TagDepot = 1</div>
+        <div class="sub">état 00</div>
       </div>
 
       <div class="summary-card">
@@ -178,6 +230,74 @@
         <div class="value orange">{{ t.dossiersRattrapage | number }}</div>
         <div class="sub">TagRattrapage = 1</div>
       </div>
+
+      <div class="summary-card">
+        <div class="label">Pris en charge</div>
+        <div class="value blue">{{ t.dossiersPrisEnCharge | number }}</div>
+        <div class="sub">état 01</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">En attente valid.</div>
+        <div class="value orange">{{ t.dossiersEnAttenteValidation | number }}</div>
+        <div class="sub">état 02</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Validés à traiter</div>
+        <div class="value green">{{ t.dossiersValidesATraiter | number }}</div>
+        <div class="sub">état 04</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Bon pour liquid.</div>
+        <div class="value green">{{ t.dossiersBonPourLiquidation | number }}</div>
+        <div class="sub">état 05</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Droit activé</div>
+        <div class="value green">{{ t.dossiersDroitActive | number }}</div>
+        <div class="sub">état 06</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Liquidés</div>
+        <div class="value slate">{{ t.dossiersLiquides | number }}</div>
+        <div class="sub">état 07</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Clôturés</div>
+        <div class="value slate">{{ t.dossiersClotures | number }}</div>
+        <div class="sub">état 20</div>
+      </div>
+
+      @if (t.dossiersAccidentTrajet + t.dossiersAccidentTravail > 0) {
+        <div class="summary-card">
+          <div class="label">Acc. trajet</div>
+          <div class="value orange">{{ t.dossiersAccidentTrajet | number }}</div>
+          <div class="sub">TypeAccident = Trajet</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Acc. travail</div>
+          <div class="value orange">{{ t.dossiersAccidentTravail | number }}</div>
+          <div class="sub">TypeAccident = Travail</div>
+        </div>
+      }
+
+      @if (t.dossiersAnticipeVolontaire + t.dossiersAnticipeParUsure > 0) {
+        <div class="summary-card">
+          <div class="label">Anticipé volont.</div>
+          <div class="value blue">{{ t.dossiersAnticipeVolontaire | number }}</div>
+          <div class="sub">TypeAnticipe = Volontaire</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Anticipé par usure</div>
+          <div class="value blue">{{ t.dossiersAnticipeParUsure | number }}</div>
+          <div class="sub">TypeAnticipe = Par usure</div>
+        </div>
+      }
 
     </div>
 
@@ -383,6 +503,53 @@
                         </div>
 
                       </div>
+
+                      <!-- Ventilation par état & type de dossier -->
+                      @if (d.breakdownParEtat.length || d.breakdownParType.length) {
+                        <div class="breakdown-duo">
+
+                          @if (d.breakdownParEtat.length) {
+                            <div class="breakdown-panel-sm">
+                              <div class="breakdown-title-sm">Par état de dossier <span class="breakdown-hint">(workflow)</span></div>
+                              <div class="breakdown-sub-hint">Déposé → En instruction → En attente → Rejeté / Clos</div>
+                              @for (b of d.breakdownParEtat; track b.id) {
+                                <div class="breakdown-row-sm">
+                                  <span class="breakdown-label-sm" [title]="b.code ?? ''">{{ b.libelle ?? b.code ?? '—' }}</span>
+                                  <div class="breakdown-bar-track-sm">
+                                    <div class="breakdown-bar-fill-sm etat" [style.width]="barWidth(b.pourcentage)"></div>
+                                  </div>
+                                  <span class="breakdown-count-sm">{{ b.nombre | number }}</span>
+                                  <span class="breakdown-pct-sm">{{ b.pourcentage | number:'1.1-1' }}%</span>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                          @if (d.breakdownParType.length) {
+                            <div class="breakdown-panel-sm">
+                              <div class="breakdown-title-sm">Par type de dossier <span class="breakdown-hint">(périmètre)</span></div>
+                              <div class="breakdown-sub-hint">Cotisation, Prestation, Risque professionnel, Immatriculation</div>
+                              @for (b of d.breakdownParType; track b.id) {
+                                <div class="breakdown-row-sm">
+                                  <span class="breakdown-label-sm" [title]="b.code ?? ''">
+                                    {{ b.libelle ?? b.code ?? '—' }}
+                                    @if (natureOfType(b.id); as nat) {
+                                      <span class="nature-badge">{{ nat }}</span>
+                                    }
+                                  </span>
+                                  <div class="breakdown-bar-track-sm">
+                                    <div class="breakdown-bar-fill-sm dtype" [style.width]="barWidth(b.pourcentage)"></div>
+                                  </div>
+                                  <span class="breakdown-count-sm">{{ b.nombre | number }}</span>
+                                  <span class="breakdown-pct-sm">{{ b.pourcentage | number:'1.1-1' }}%</span>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                        </div>
+                      }
+
                     </div>
                   </td>
                 </tr>

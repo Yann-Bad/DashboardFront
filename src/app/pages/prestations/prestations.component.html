@@ -1,0 +1,408 @@
+<div class="prestations-page">
+
+  <div class="page-header">
+    <div class="page-header-main">
+      <div>
+        <h1>Prestations</h1>
+        <p>Liquidations, paiements, arriérés — suivi des prestations par période et type</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Guide des métriques
+      </button>
+    </div>
+  </div>
+
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer le guide">&#10005;</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Compteurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Liquidations</span><div><strong>Nombre de liquidations</strong><p>Lignes de prestation liquidées sur la période. Chaque liquidation représente un calcul de droit pour un employé.</p></div></div>
+          <div class="guide-item"><span class="guide-badge blue">Employés</span><div><strong>Nombre d'employés bénéficiaires</strong><p>Employés distincts ayant bénéficié d'au moins une liquidation sur la période.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Enfants</span><div><strong>Enfants couverts</strong><p>Somme de <code>NombreEnfants</code> — nombre total d'enfants pris en charge par les prestations.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot amber"></span>Montants</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge indigo">Liquidé</span><div><strong>Montant liquidé</strong><p>Somme de <code>MontantLiquide</code> — total calculé des droits sur la période.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Payé</span><div><strong>Montant payé</strong><p>Somme de <code>MontantPaye</code> — total effectivement versé aux bénéficiaires.</p></div></div>
+          <div class="guide-item"><span class="guide-badge orange">Arriérés</span><div><strong>Montant arriérés</strong><p>Somme de <code>MontantArriere</code> — montants dus mais non encore payés (retard de paiement).</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot indigo"></span>Workflow &amp; Indicateurs</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge green">Calculées</span><div><strong>Prestations calculées</strong><p>Nombre de liquidations dont le calcul est terminé — droits déterminés.</p></div></div>
+          <div class="guide-item"><span class="guide-badge blue">Payées</span><div><strong>Prestations payées</strong><p>Nombre de liquidations effectivement réglées aux bénéficiaires.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">Annulées</span><div><strong>Prestations annulées</strong><p>Nombre de liquidations annulées — erreur de calcul ou changement de situation.</p></div></div>
+          <div class="guide-item"><span class="guide-badge amber">Taux paiement</span><div><strong>Taux de paiement</strong><p><code>(Montant payé / Montant liquidé) × 100</code>. Un taux &lt; 100 % signale des arriérés.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Tendance</span><div><strong>Tendance mensuelle</strong><p>Évolution du nombre de liquidations par rapport à la période précédente.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot slate"></span>Ventilations (optionnel)</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge">Par type</span><div><strong>Par type de prestation</strong><p>Activé via le filtre. Ventile les liquidations par type de prestation (code et libellé).</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Par centre</span><div><strong>Par centre de gestion</strong><p>Activé via le filtre. Ventile les liquidations par centre de gestion.</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+  <!-- =========================================================
+       Filtre
+       ========================================================= -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+      <label>
+        Année début
+        <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois début
+        <select [(ngModel)]="filter.moisDebut">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Année fin
+        <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois fin
+        <select [(ngModel)]="filter.moisFin">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Centre de gestion
+        <select [(ngModel)]="filter.centreDeGestionId">
+          <option [ngValue]="null">Tous les centres</option>
+          @for (c of centres(); track c.id) {
+            <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Type de prestation
+        <select [(ngModel)]="filter.typePfId">
+          <option [ngValue]="null">Tous les types</option>
+          @for (tp of typesPf(); track tp.id) {
+            <option [ngValue]="tp.id">{{ tp.code }} — {{ tp.libelle }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Détail par type
+        <select [(ngModel)]="filter.avecDetailParType">
+          <option [ngValue]="false">Non</option>
+          <option [ngValue]="true">Oui</option>
+        </select>
+      </label>
+      <label>
+        Détail par centre
+        <select [(ngModel)]="filter.avecDetailParCentre">
+          <option [ngValue]="false">Non</option>
+          <option [ngValue]="true">Oui</option>
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Appliquer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       États
+       ========================================================= -->
+  @if (loading()) {
+    <div class="state-loading"><div class="spinner"></div><span>Chargement…</span></div>
+  }
+  @if (!loading() && error()) {
+    <div class="state-error"><span>{{ error() }}</span></div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- =========================================================
+         Cartes de synthèse
+         ========================================================= -->
+    @if (totaux(); as t) {
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="label">Liquidations</div>
+          <div class="value indigo">{{ t.nombreLiquidations | number }}</div>
+          <div class="sub">prestations liquidées</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Employés</div>
+          <div class="value teal">{{ t.nombreEmployes | number }}</div>
+          <div class="sub">bénéficiaires</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Montant liquidé</div>
+          <div class="value indigo">{{ fmtMontant(t.montantLiquide) }}</div>
+          <div class="sub">CDF calculés</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Montant payé</div>
+          <div class="value green">{{ fmtMontant(t.montantPaye) }}</div>
+          <div class="sub">{{ fmtPct(tauxPaiementGlobal()) }} du liquidé</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Arriérés</div>
+          <div class="value amber">{{ fmtMontant(t.montantArriere) }}</div>
+          <div class="sub">montant arriéré</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Enfants</div>
+          <div class="value teal">{{ t.totalEnfants | number }}</div>
+          <div class="sub">couverts</div>
+        </div>
+      </div>
+
+      <!-- Workflow + Paiement barres -->
+      <div class="progress-bars-panel">
+        <div class="workflow-row">
+          <div class="workflow-metric">
+            <span class="wf-label">Calculées</span>
+            <span class="wf-value indigo">{{ t.calculees | number }}</span>
+          </div>
+          <div class="workflow-metric">
+            <span class="wf-label">Payées</span>
+            <span class="wf-value green">{{ t.payees | number }}</span>
+          </div>
+          <div class="workflow-metric">
+            <span class="wf-label">Annulées</span>
+            <span class="wf-value red">{{ t.annulees | number }}</span>
+          </div>
+        </div>
+        <div class="reco-item">
+          <div class="reco-label">
+            <span>Taux de paiement</span>
+            <strong>{{ fmtPct(tauxPaiementGlobal()) }}</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill green"
+              [style.width]="barWidth(tauxPaiementGlobal() ?? 0)"></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Histogramme
+         ========================================================= -->
+    @if (data().length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Évolution des prestations</h2>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartData()"
+            [options]="chartOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Tableau des périodes
+         ========================================================= -->
+    @if (data().length === 0) {
+      <div class="state-empty"><span>Aucune prestation trouvée pour les critères sélectionnés.</span></div>
+    } @else {
+      <div class="table-section">
+        <div class="section-header">
+          <h2>Détail par période</h2>
+          <span class="period-count">{{ data().length }} période(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Tendance</th>
+                <th class="right">Liquidations</th>
+                <th class="right">Employés</th>
+                <th class="right">Montant liquidé</th>
+                <th class="right">Montant payé</th>
+                <th class="right">Taux paie.</th>
+                <th class="right">Enfants</th>
+                @if (filter.avecDetailParType) {
+                  <th class="center">Types</th>
+                }
+                @if (filter.avecDetailParCentre) {
+                  <th class="center">Centres</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of data(); track d.mois + d.annee) {
+                <tr class="data-row"
+                  [class.row-selected]="isSelected(d)"
+                  (click)="toggleDetail(d)">
+                  <td class="periode-cell">
+                    <span class="mois">{{ moisLabel(d.mois) }}</span>
+                    <span class="annee">{{ d.annee }}</span>
+                  </td>
+                  <td>
+                    <span [class]="'trend-badge ' + tendanceClass(d)">
+                      {{ tendanceIcon(d) }} {{ d.tendance ?? '1re pér.' }}
+                    </span>
+                  </td>
+                  <td class="right indigo">{{ d.nombreLiquidations | number }}</td>
+                  <td class="right teal">{{ d.nombreEmployes | number }}</td>
+                  <td class="right"><strong>{{ fmtMontant(d.montantLiquide) }}</strong></td>
+                  <td class="right green">{{ fmtMontant(d.montantPaye) }}</td>
+                  <td class="right">{{ fmtPct(d.tauxPaiement) }}</td>
+                  <td class="right teal">{{ d.totalEnfants | number }}</td>
+                  @if (filter.avecDetailParType) {
+                    <td class="center"><span class="period-count">{{ d.parType.length }}</span></td>
+                  }
+                  @if (filter.avecDetailParCentre) {
+                    <td class="center"><span class="period-count">{{ d.parCentre.length }}</span></td>
+                  }
+                </tr>
+
+                <!-- Panneau détail -->
+                @if (isSelected(d)) {
+                  <tr class="trend-panel-row">
+                    <td [attr.colspan]="8 + (filter.avecDetailParType ? 1 : 0) + (filter.avecDetailParCentre ? 1 : 0)">
+                      <div class="trend-panel">
+                        <div class="trend-panel-title">
+                          {{ moisLabel(d.mois) }} {{ d.annee }} — détail
+                        </div>
+                        <div class="trend-panel-grid">
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Calculées</span>
+                            <span class="tm-value indigo">{{ d.calculees | number }}</span>
+                            <span class="tm-note">tag décompte</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Payées</span>
+                            <span class="tm-value green">{{ d.payees | number }}</span>
+                            <span class="tm-note">tag payé</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Annulées</span>
+                            <span class="tm-value red">{{ d.annulees | number }}</span>
+                            <span class="tm-note">tag annulé</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Arriérés</span>
+                            <span class="tm-value amber">{{ fmtMontant(d.montantArriere) }}</span>
+                            <span class="tm-note">CDF</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Variation montant</span>
+                            <span [class]="'tm-value ' + varClass(d.variationMontant)">
+                              {{ fmt(d.variationMontant) }}
+                            </span>
+                            <span class="tm-note">vs période préc.</span>
+                          </div>
+
+                        </div>
+
+                        <!-- Détail par type -->
+                        @if (filter.avecDetailParType && d.parType.length) {
+                          <div class="sub-detail-inner">
+                            <div class="sub-detail-title">Par type de prestation</div>
+                            <table class="sub-detail-table">
+                              <thead>
+                                <tr>
+                                  <th>Type</th>
+                                  <th class="right">Liquidations</th>
+                                  <th class="right">Montant liquidé</th>
+                                  <th class="right">Montant payé</th>
+                                  <th class="right">Enfants</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (tp of d.parType; track tp.typePfId) {
+                                  <tr>
+                                    <td>
+                                      <span class="centre-code">{{ tp.code ?? '—' }}</span>
+                                      <span class="centre-lib">{{ tp.libelle }}</span>
+                                    </td>
+                                    <td class="right indigo">{{ tp.nombreLiquidations | number }}</td>
+                                    <td class="right">{{ fmtMontant(tp.montantLiquide) }}</td>
+                                    <td class="right green">{{ fmtMontant(tp.montantPaye) }}</td>
+                                    <td class="right teal">{{ tp.totalEnfants | number }}</td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        }
+
+                        <!-- Détail par centre -->
+                        @if (filter.avecDetailParCentre && d.parCentre.length) {
+                          <div class="sub-detail-inner">
+                            <div class="sub-detail-title">Par centre de gestion</div>
+                            <table class="sub-detail-table">
+                              <thead>
+                                <tr>
+                                  <th>Centre</th>
+                                  <th class="right">Liquidations</th>
+                                  <th class="right">Montant liquidé</th>
+                                  <th class="right">Montant payé</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (c of d.parCentre; track c.centreId) {
+                                  <tr>
+                                    <td>
+                                      <span class="centre-code">{{ c.centreCode ?? '—' }}</span>
+                                      <span class="centre-lib">{{ c.centreLibelle }}</span>
+                                    </td>
+                                    <td class="right indigo">{{ c.nombreLiquidations | number }}</td>
+                                    <td class="right">{{ fmtMontant(c.montantLiquide) }}</td>
+                                    <td class="right green">{{ fmtMontant(c.montantPaye) }}</td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  }<!-- end !loading && !error -->
+
+</div>

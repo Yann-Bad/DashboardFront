@@ -7,6 +7,7 @@ import {
   CentreDeGestionDto,
   CentreEmployeurStatsDto,
   CentreEmployeStatsDto,
+  BreakdownItemDto,
 } from '../../models/centre-de-gestion.model';
 
 @Component({
@@ -102,7 +103,7 @@ export class CentreDetailComponent implements OnInit {
    */
   get employeRepartition(): { label: string; value: number; pct: number; color: string; icon: string }[] {
     const s = this.employeStats;
-    if (!s || (s.actif + s.inactif) === 0) return [];
+    if (!s || (s.actif + s.inactif + s.retraites + s.decedes) === 0) return [];
     return [
       {
         label: 'Actifs',
@@ -118,6 +119,20 @@ export class CentreDetailComponent implements OnInit {
         color: 'red',
         icon: '🚫',
       },
+      {
+        label: 'Retraités',
+        value: s.retraites,
+        pct: s.pourcentageRetraites,
+        color: 'blue',
+        icon: '👴',
+      },
+      {
+        label: 'Décédés',
+        value: s.decedes,
+        pct: s.pourcentageDecedes,
+        color: 'slate',
+        icon: '✝️',
+      },
     ];
   }
 
@@ -131,5 +146,24 @@ export class CentreDetailComponent implements OnInit {
       value: s.nombre,
       pct:   s.pourcentage,
     }));
+  }
+
+  /** Top 5 formes juridiques des employeurs de ce centre */
+  get topFormesJuridiques(): BreakdownItemDto[] {
+    return (this.employeurStats?.breakdownParFormeJuridique ?? []).slice(0, 5);
+  }
+
+  /** Top 5 régimes des employeurs de ce centre */
+  get topRegimes(): BreakdownItemDto[] {
+    return (this.employeurStats?.breakdownParRegime ?? []).slice(0, 5);
+  }
+
+  /** Top 5 secteurs des employeurs de ce centre */
+  get topSecteurs(): BreakdownItemDto[] {
+    return (this.employeurStats?.breakdownParSecteur ?? []).slice(0, 5);
+  }
+
+  clampPct(v: number): number {
+    return Math.min(100, Math.max(0, v ?? 0));
   }
 }

@@ -72,6 +72,62 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/encaissements/encaissements.component').then(m => m.EncaissementsComponent),
   },
+  {
+    path: 'soldes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/soldes/soldes.component').then(m => m.SoldesComponent),
+  },
+  {
+    path: 'majorations',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/majorations/majorations.component').then(m => m.MajorationsComponent),
+  },
+  {
+    path: 'acomptes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/acomptes/acomptes.component').then(m => m.AcomptesComponent),
+  },
+  {
+    path: 'prestations',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/prestations/prestations.component').then(m => m.PrestationsComponent),
+  },
+  {
+    path: 'immatriculations',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/immatriculations/immatriculations.component').then(m => m.ImmatriculationsComponent),
+  },
+  {
+    path: 'recouvrement',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/recouvrement/recouvrement.component').then(m => m.RecouvrementComponent),
+  },
+
+  // ── Financial / Summary Account ──────────────────────────────────────
+  {
+    path: 'treasury',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/treasury-summary/treasury-summary').then(m => m.TreasurySummaryComponent),
+  },
+  {
+    path: 'summary-accounts',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/summary-accounts/summary-accounts').then(m => m.ReconciliationComponent),
+  },
+  {
+    path: 'trends',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/trends/trends').then(m => m.TrendsComponent),
+  },
 
   // ── Protected (Admin + Manager only) ─────────────────────────────────
   // Example for a future stats-management or config route:

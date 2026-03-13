@@ -1,0 +1,355 @@
+<div class="majorations-page">
+
+  <div class="page-header">
+    <div class="page-header-main">
+      <div>
+        <h1>Majorations &amp; Taxations</h1>
+        <p>Pénalités de retard et obligations fiscales supplémentaires — montants émis, recouvrés et tendances</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Guide des métriques
+      </button>
+    </div>
+  </div>
+
+@if (showGuide()) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>Guide des métriques</h2>
+      <button class="guide-close" (click)="showGuide.set(false)" aria-label="Fermer le guide">&#10005;</button>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot orange"></span>Majorations (pénalités de retard)</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge orange">Nb majorations</span><div><strong>Nombre de majorations émises</strong><p>Lignes <code>Cotisationmajoration</code> sur la période. Chaque ligne est une pénalité liée à un retard de paiement.</p></div></div>
+          <div class="guide-item"><span class="guide-badge orange">Montant</span><div><strong>Montant majorations</strong><p>Somme de <code>Montant</code> des majorations — total des pénalités émises.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Base</span><div><strong>Montant de base</strong><p>Somme de <code>MontantBase</code> — montant de référence sur lequel la pénalité est calculée.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Taux moyen</span><div><strong>Taux moyen de majoration</strong><p>Moyenne pondérée du <code>Taux</code> de majoration sur les enregistrements de la période.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Recouvrées</span><div><strong>Majorations recouvrées</strong><p>Montant effectivement encaissé via <code>Cotisationencaissement.MontantMajoration</code>. Le taux de recouvrement = Recouvré / Émis × 100.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot red"></span>Taxations (obligations fiscales)</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge red">Nb taxations</span><div><strong>Nombre de taxations émises</strong><p>Lignes <code>Cotisationtaxation</code> sur la période. Obligations fiscales complémentaires.</p></div></div>
+          <div class="guide-item"><span class="guide-badge red">Montant</span><div><strong>Montant taxations</strong><p>Somme de <code>Montant</code> des taxations émises.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Validées</span><div><strong>Taxations validées</strong><p>Taxations dont le statut est confirmé — <code>TagValidate = 1</code>.</p></div></div>
+          <div class="guide-item"><span class="guide-badge slate">Annulées</span><div><strong>Taxations annulées</strong><p>Taxations dont le statut est annulé — retirées du processus de recouvrement.</p></div></div>
+          <div class="guide-item"><span class="guide-badge green">Recouvrées</span><div><strong>Taxations recouvrées</strong><p>Montant effectivement encaissé via <code>Cotisationencaissement.MontantTaxation</code>.</p></div></div>
+        </div>
+      </div>
+
+      <div class="guide-group">
+        <h3 class="guide-group-title"><span class="guide-dot amber"></span>Totaux &amp; Tendances</h3>
+        <div class="guide-items">
+          <div class="guide-item"><span class="guide-badge amber">Total pénalités</span><div><strong>Total pénalités</strong><p>Somme des montants majorations + taxations. Représente le volume total de pénalités émises.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Tendance</span><div><strong>Tendance mensuelle</strong><p>Comparaison du total pénalités vs période précédente. Baisse = amélioration de la conformité.</p></div></div>
+          <div class="guide-item"><span class="guide-badge">Par centre</span><div><strong>Détail par centre</strong><p>Activé via le filtre. Ventile majorations et taxations par centre de gestion.</p></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+  <!-- =========================================================
+       Filtre
+       ========================================================= -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+      <label>
+        Année début
+        <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois début
+        <select [(ngModel)]="filter.moisDebut">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Année fin
+        <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois fin
+        <select [(ngModel)]="filter.moisFin">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Centre de gestion
+        <select [(ngModel)]="filter.centreDeGestionId">
+          <option [ngValue]="null">Tous les centres</option>
+          @for (c of centres(); track c.id) {
+            <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Détail par centre
+        <select [(ngModel)]="filter.avecDetailParCentre">
+          <option [ngValue]="false">Non</option>
+          <option [ngValue]="true">Oui</option>
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Appliquer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       États
+       ========================================================= -->
+  @if (loading()) {
+    <div class="state-loading"><div class="spinner"></div><span>Chargement…</span></div>
+  }
+  @if (!loading() && error()) {
+    <div class="state-error"><span>{{ error() }}</span></div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- =========================================================
+         Cartes de synthèse
+         ========================================================= -->
+    @if (totaux(); as t) {
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="label">Majorations émises</div>
+          <div class="value red">{{ t.nombreMajorations | number }}</div>
+          <div class="sub">{{ fmtMontant(t.montantMajoration) }} FCFA</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Taxations émises</div>
+          <div class="value amber">{{ t.nombreTaxations | number }}</div>
+          <div class="sub">{{ fmtMontant(t.montantTaxation) }} FCFA</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Total pénalités</div>
+          <div class="value indigo">{{ fmtMontant(t.montantTotal) }}</div>
+          <div class="sub">majorations + taxations</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Majorations recouvrées</div>
+          <div class="value green">{{ fmtMontant(t.montantMajorationRecouvre) }}</div>
+          <div class="sub">{{ fmtPct(tauxRecouvrementGlobalMaj()) }} du montant émis</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Taxations recouvrées</div>
+          <div class="value green">{{ fmtMontant(t.montantTaxationRecouvre) }}</div>
+          <div class="sub">{{ fmtPct(tauxRecouvrementGlobalTax()) }} du montant émis</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Taxations validées</div>
+          <div class="value teal">{{ t.taxationsValidees | number }}</div>
+          <div class="sub">{{ t.taxationsAnnulees | number }} annulées</div>
+        </div>
+      </div>
+
+      <!-- Taux de recouvrement barres -->
+      <div class="recouvrement-bars">
+        <div class="reco-item">
+          <div class="reco-label">
+            <span>Recouvrement majorations</span>
+            <strong>{{ fmtPct(tauxRecouvrementGlobalMaj()) }}</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill red"
+              [style.width]="barWidth(tauxRecouvrementGlobalMaj() ?? 0)"></div>
+          </div>
+        </div>
+        <div class="reco-item">
+          <div class="reco-label">
+            <span>Recouvrement taxations</span>
+            <strong>{{ fmtPct(tauxRecouvrementGlobalTax()) }}</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill amber"
+              [style.width]="barWidth(tauxRecouvrementGlobalTax() ?? 0)"></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Histogramme
+         ========================================================= -->
+    @if (data().length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Évolution des pénalités</h2>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartData()"
+            [options]="chartOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Tableau des périodes
+         ========================================================= -->
+    @if (data().length === 0) {
+      <div class="state-empty"><span>Aucune majoration ou taxation trouvée pour les critères sélectionnés.</span></div>
+    } @else {
+      <div class="table-section">
+        <div class="section-header">
+          <h2>Détail par période</h2>
+          <span class="period-count">{{ data().length }} période(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Tendance</th>
+                <th class="right">Nb Maj.</th>
+                <th class="right">Montant Maj.</th>
+                <th class="right">Nb Tax.</th>
+                <th class="right">Montant Tax.</th>
+                <th class="right">Total</th>
+                <th class="right">Recouvr. Maj.</th>
+                <th class="right">Recouvr. Tax.</th>
+                @if (filter.avecDetailParCentre) {
+                  <th class="center">Centres</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of data(); track d.mois + d.annee) {
+                <tr class="data-row"
+                  [class.row-selected]="isSelected(d)"
+                  (click)="toggleDetail(d)">
+                  <td class="periode-cell">
+                    <span class="mois">{{ moisLabel(d.mois) }}</span>
+                    <span class="annee">{{ d.annee }}</span>
+                  </td>
+                  <td>
+                    <span [class]="'trend-badge ' + tendanceClass(d)">
+                      {{ tendanceIcon(d) }} {{ d.tendance ?? '1re pér.' }}
+                    </span>
+                  </td>
+                  <td class="right red">{{ d.nombreMajorations | number }}</td>
+                  <td class="right"><strong>{{ fmtMontant(d.montantMajoration) }}</strong></td>
+                  <td class="right amber">{{ d.nombreTaxations | number }}</td>
+                  <td class="right"><strong>{{ fmtMontant(d.montantTaxation) }}</strong></td>
+                  <td class="right indigo"><strong>{{ fmtMontant(d.montantTotal) }}</strong></td>
+                  <td class="right green">{{ fmtMontant(d.montantMajorationRecouvre) }}</td>
+                  <td class="right green">{{ fmtMontant(d.montantTaxationRecouvre) }}</td>
+                  @if (filter.avecDetailParCentre) {
+                    <td class="center"><span class="period-count">{{ d.parCentre.length }}</span></td>
+                  }
+                </tr>
+
+                <!-- Panneau détail -->
+                @if (isSelected(d)) {
+                  <tr class="trend-panel-row">
+                    <td [attr.colspan]="filter.avecDetailParCentre ? 10 : 9">
+                      <div class="trend-panel">
+                        <div class="trend-panel-title">
+                          {{ moisLabel(d.mois) }} {{ d.annee }} — détail
+                        </div>
+                        <div class="trend-panel-grid">
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Taux moyen maj.</span>
+                            <span class="tm-value">{{ fmtTaux(d.tauxMoyenMajoration) }}</span>
+                            <span class="tm-note">sur {{ d.nombreEmployeursMajores | number }} employeur(s)</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Base majorations</span>
+                            <span class="tm-value">{{ fmtMontant(d.montantBaseMajoration) }}</span>
+                            <span class="tm-note">montant de base</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Taux moyen tax.</span>
+                            <span class="tm-value">{{ fmtTaux(d.tauxMoyenTaxation) }}</span>
+                            <span class="tm-note">sur {{ d.nombreEmployeursTaxes | number }} employeur(s)</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Base taxations</span>
+                            <span class="tm-value">{{ fmtMontant(d.montantBaseTaxation) }}</span>
+                            <span class="tm-note">montant de base</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Taxations validées</span>
+                            <span class="tm-value teal">{{ d.taxationsValidees | number }}</span>
+                            <span class="tm-note">{{ d.taxationsAnnulees | number }} annulées</span>
+                          </div>
+
+                          <div class="trend-metric">
+                            <span class="tm-label">Variation maj.</span>
+                            <span [class]="'tm-value ' + varClass(d.variationMontantMajoration)">
+                              {{ fmt(d.variationMontantMajoration) }}
+                            </span>
+                            <span class="tm-note">vs période prec.</span>
+                          </div>
+
+                        </div>
+
+                        <!-- Détail par centre -->
+                        @if (filter.avecDetailParCentre && d.parCentre.length) {
+                          <div class="centre-detail-inner">
+                            <table class="centre-detail-table">
+                              <thead>
+                                <tr>
+                                  <th>Centre</th>
+                                  <th class="right">Nb Maj.</th>
+                                  <th class="right">Montant Maj.</th>
+                                  <th class="right">Nb Tax.</th>
+                                  <th class="right">Montant Tax.</th>
+                                  <th class="right">Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (c of d.parCentre; track c.centreId) {
+                                  <tr>
+                                    <td>
+                                      <span class="centre-code">{{ c.centreCode ?? '—' }}</span>
+                                      <span class="centre-lib">{{ c.centreLibelle }}</span>
+                                    </td>
+                                    <td class="right red">{{ c.nombreMajorations | number }}</td>
+                                    <td class="right">{{ fmtMontant(c.montantMajoration) }}</td>
+                                    <td class="right amber">{{ c.nombreTaxations | number }}</td>
+                                    <td class="right">{{ fmtMontant(c.montantTaxation) }}</td>
+                                    <td class="right indigo"><strong>{{ fmtMontant(c.montantTotal) }}</strong></td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  }<!-- end !loading && !error -->
+
+</div>

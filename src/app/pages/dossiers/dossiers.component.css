@@ -191,6 +191,10 @@
 .guide-badge.blue   { background: #dbeafe; color: #1d4ed8; }
 .guide-badge.amber  { background: #fef3c7; color: #b45309; }
 .guide-badge.slate  { background: #f1f5f9; color: #475569; }
+.guide-badge.purple { background: #f3e8ff; color: #7c3aed; }
+.guide-badge.teal   { background: #ccfbf1; color: #0d9488; }
+.guide-badge.indigo { background: #e0e7ff; color: #4338ca; }
+.guide-dot.purple   { background: #8b5cf6; }
 
 /* ---- Panneau de filtre ---- */
 .filter-panel {
@@ -581,6 +585,77 @@ td.right.orange { color: #d97706; }
 
 .tm-delta.var-up     { color: #15803d; }
 .tm-delta.var-down   { color: #b91c1c; }
+
+/* ---- Breakdown duo état / type ---- */
+.breakdown-duo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.breakdown-panel-sm {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.breakdown-title-sm {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  margin-bottom: 0.6rem;
+}
+
+.breakdown-row-sm {
+  display: grid;
+  grid-template-columns: 1fr 90px 48px 48px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.breakdown-label-sm {
+  font-size: 0.78rem;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.breakdown-bar-track-sm {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.breakdown-bar-fill-sm {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.breakdown-bar-fill-sm.etat  { background: #8b5cf6; }
+.breakdown-bar-fill-sm.dtype { background: #0ea5e9; }
+
+.breakdown-count-sm {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: right;
+}
+
+.breakdown-pct-sm {
+  font-size: 0.7rem;
+  color: #64748b;
+  text-align: right;
+}
 .tm-delta.var-stable { color: #b45309; }
 .tm-delta.var-none   { color: #94a3b8; }
 
@@ -660,3 +735,113 @@ td.right.orange { color: #d97706; }
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* =========================================================================
+   Workflow par état de dossier (dans le panneau de tendance)
+   ========================================================================= */
+.trend-panel-sub-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1rem 0 0.6rem;
+}
+
+.etat-workflow-grid {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.etat-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  min-width: 68px;
+  text-align: center;
+}
+
+.etat-arrow {
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.etat-code {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.etat-count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.1;
+}
+
+.etat-lib {
+  font-size: 0.65rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* Couleurs thématiques par état */
+.etat-depose   { border-color: #cbd5e1; }
+.etat-pec      { border-color: #93c5fd; background: #eff6ff; }
+.etat-pec .etat-count { color: #2563eb; }
+.etat-attente  { border-color: #fcd34d; background: #fffbeb; }
+.etat-attente .etat-count { color: #d97706; }
+.etat-rejete   { border-color: #fca5a5; background: #fff1f2; }
+.etat-rejete .etat-count  { color: #dc2626; }
+.etat-valide   { border-color: #86efac; background: #f0fdf4; }
+.etat-valide .etat-count { color: #16a34a; }
+.etat-cloture  { border-color: #86efac; background: #f0fdf4; }
+.etat-cloture .etat-count { color: #15803d; }
+.etat-suspend  { border-color: #f9a8d4; background: #fdf2f8; }
+.etat-suspend .etat-count { color: #be185d; }
+.etat-liquide  { border-color: #6ee7b7; background: #ecfdf5; }
+.etat-liquide .etat-count { color: #059669; }
+.etat-desactive { border-color: #fca5a5; background: #fff1f2; }
+.etat-desactive .etat-count { color: #dc2626; }
+.etat-default   { border-color: #cbd5e1; background: #f8fafc; }
+.etat-default .etat-count { color: #475569; }
+
+/* =========================================================================
+   Nature badge + breakdown hints
+   ========================================================================= */
+.nature-badge {
+  display: inline-block;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+}
+
+.breakdown-hint {
+  font-weight: 400;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.breakdown-sub-hint {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}

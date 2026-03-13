@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CentreDeGestionService } from '../../services/centre-de-gestion.service';
-import { DashboardStatsDto } from '../../models/centre-de-gestion.model';
+import { DashboardStatsDto, BreakdownItemDto } from '../../models/centre-de-gestion.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -95,9 +95,36 @@ export class DashboardComponent implements OnInit {
         couleur:     'red',
         icon:        '🚫',
       },
+      {
+        label:       'Retraités',
+        valeur:      this.stats.employesRetraites,
+        pourcentage: this.stats.pourcentageEmployesRetraites,
+        couleur:     'blue',
+        icon:        '👴',
+      },
+      {
+        label:       'Décédés',
+        valeur:      this.stats.employesDecedes,
+        pourcentage: this.stats.pourcentageEmployesDecedes,
+        couleur:     'slate',
+        icon:        '✝️',
+      },
     ];
   }
+  /** Top 5 formes juridiques par nombre d'employeurs */
+  get topFormesJuridiques(): BreakdownItemDto[] {
+    return (this.stats?.breakdownParFormeJuridique ?? []).slice(0, 5);
+  }
 
+  /** Top 5 régimes par nombre d'employeurs */
+  get topRegimes(): BreakdownItemDto[] {
+    return (this.stats?.breakdownParRegime ?? []).slice(0, 5);
+  }
+
+  /** Top 5 secteurs par nombre d'employeurs */
+  get topSecteurs(): BreakdownItemDto[] {
+    return (this.stats?.breakdownParSecteur ?? []).slice(0, 5);
+  }
   /** Formate un montant avec séparateurs (ex : 1 234 567) */
   fmtMontant(v: number | null | undefined): string {
     if (v === null || v === undefined) return '—';

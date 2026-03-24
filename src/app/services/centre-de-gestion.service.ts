@@ -252,6 +252,7 @@ export class CentreDeGestionService {
     if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
     if (filter.typePfId          != null) params = params.set('typePfId',          filter.typePfId.toString());
     if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.branche)                   params = params.set('branche',           filter.branche);
     if (filter.avecDetailParType)         params = params.set('avecDetailParType', 'true');
     if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
     return this.http.get<PrestationAnalyseDto[]>(

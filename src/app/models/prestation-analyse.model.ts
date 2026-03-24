@@ -18,6 +18,7 @@ export interface PrestationParCentreDto {
 }
 
 export interface PrestationAnalyseDto {
+  branche: string;
   annee: number;
   mois: string;
   periode: string;
@@ -27,6 +28,7 @@ export interface PrestationAnalyseDto {
 
   montantLiquide: number;
   montantArriere: number;
+  montantMajoration: number;
   montantPaye: number;
   tauxPaiement: number | null;
 
@@ -51,6 +53,7 @@ export interface PrestationFilterDto {
   centreDeGestionId?: number | null;
   typePfId?: number | null;
   tenantId?: number;
+  branche?: string;
   avecDetailParType?: boolean;
   avecDetailParCentre?: boolean;
 }

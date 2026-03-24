@@ -10,6 +10,14 @@ import {
 } from '../../models/prestation-analyse.model';
 import { CentreLookupDto, TypePrestationLookupDto } from '../../models/lookups.model';
 
+interface BrancheTab {
+  code: string;
+  label: string;
+  icon: string;
+  brancheId: number;          // maps to frontofficeprestation.branche_id
+  beneficiaireLabel: string;  // contextual label for "Employés" column
+}
+
 @Component({
   selector: 'app-prestations',
   standalone: true,
@@ -29,6 +37,26 @@ export class PrestationsComponent implements OnInit {
 
   readonly selectedPeriode = signal<PrestationAnalyseDto | null>(null);
 
+  // ── Branches ──
+  readonly branches: BrancheTab[] = [
+    { code: 'PF',   label: 'Prestations Familiales',    icon: '👨‍👩‍👧‍👦', brancheId: 5, beneficiaireLabel: 'Employés' },
+    { code: 'PVID', label: 'Pensions (PVID)',            icon: '🏛️',    brancheId: 6, beneficiaireLabel: 'Pensionnés' },
+    { code: 'RP',   label: 'Risques Professionnels',     icon: '⚠️',    brancheId: 4, beneficiaireLabel: 'Bénéficiaires' },
+  ];
+  readonly activeBranche = signal<string>('PF');
+
+  readonly activeBrancheTab = computed(() =>
+    this.branches.find(b => b.code === this.activeBranche()) ?? this.branches[0],
+  );
+
+  /** Types filtered for the currently selected branche */
+  readonly filteredTypes = computed(() => {
+    const bid = this.activeBrancheTab().brancheId;
+    return this.typesPf().filter(t => t.brancheId === bid);
+  });
+
+  readonly isPF = computed(() => this.activeBranche() === 'PF');
+
   filter: PrestationFilterDto = {
     anneeDebut:          new Date().getFullYear(),
     anneeFin:            new Date().getFullYear(),
@@ -37,6 +65,7 @@ export class PrestationsComponent implements OnInit {
     centreDeGestionId:   null,
     typePfId:            null,
     tenantId:            undefined,
+    branche:             'PF',
     avecDetailParType:   false,
     avecDetailParCentre: false,
   };
@@ -65,6 +94,7 @@ export class PrestationsComponent implements OnInit {
       nombreEmployes:     d.reduce((s, r) => s + r.nombreEmployes, 0),
       montantLiquide:     d.reduce((s, r) => s + r.montantLiquide, 0),
       montantArriere:     d.reduce((s, r) => s + r.montantArriere, 0),
+      montantMajoration:  d.reduce((s, r) => s + r.montantMajoration, 0),
       montantPaye:        d.reduce((s, r) => s + r.montantPaye, 0),
       calculees:          d.reduce((s, r) => s + r.calculees, 0),
       payees:             d.reduce((s, r) => s + r.payees, 0),
@@ -82,38 +112,50 @@ export class PrestationsComponent implements OnInit {
   // ── Chart.js ──
   readonly chartData = computed<ChartData<'bar' | 'line'>>(() => {
     const d = this.data();
-    return {
-      labels: d.map(r => `${this.moisLabel(r.mois)} ${r.annee}`),
-      datasets: [
-        {
-          type: 'bar' as const,
-          label: 'Montant liquidé',
-          data: d.map(r => r.montantLiquide),
-          backgroundColor: 'rgba(99,102,241,0.7)',
-          borderRadius: 3,
-          order: 2,
-        },
-        {
-          type: 'bar' as const,
-          label: 'Montant payé',
-          data: d.map(r => r.montantPaye),
-          backgroundColor: 'rgba(22,163,106,0.7)',
-          borderRadius: 3,
-          order: 2,
-        },
-        {
-          type: 'line' as const,
-          label: 'Arriérés',
-          data: d.map(r => r.montantArriere),
-          borderColor: '#d97706',
-          backgroundColor: 'rgba(217,119,6,0.1)',
-          pointRadius: 4,
-          tension: 0.3,
-          fill: true,
-          order: 1,
-        },
-      ],
-    };
+    const hasMaj = !this.isPF();
+    const datasets: any[] = [
+      {
+        type: 'bar' as const,
+        label: 'Montant liquidé',
+        data: d.map(r => r.montantLiquide),
+        backgroundColor: 'rgba(99,102,241,0.7)',
+        borderRadius: 3,
+        order: 2,
+      },
+      {
+        type: 'bar' as const,
+        label: 'Montant payé',
+        data: d.map(r => r.montantPaye),
+        backgroundColor: 'rgba(22,163,106,0.7)',
+        borderRadius: 3,
+        order: 2,
+      },
+      {
+        type: 'line' as const,
+        label: 'Arriérés',
+        data: d.map(r => r.montantArriere),
+        borderColor: '#d97706',
+        backgroundColor: 'rgba(217,119,6,0.1)',
+        pointRadius: 4,
+        tension: 0.3,
+        fill: true,
+        order: 1,
+      },
+    ];
+    if (hasMaj) {
+      datasets.push({
+        type: 'line' as const,
+        label: 'Majorations',
+        data: d.map(r => r.montantMajoration),
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220,38,38,0.1)',
+        pointRadius: 4,
+        tension: 0.3,
+        fill: true,
+        order: 1,
+      });
+    }
+    return { labels: d.map(r => `${this.moisLabel(r.mois)} ${r.annee}`), datasets };
   });
 
   readonly chartOptions: ChartOptions = {
@@ -144,6 +186,13 @@ export class PrestationsComponent implements OnInit {
         this.typesPf.set(l.typesPrestations);
       },
     });
+    this.load();
+  }
+
+  selectBranche(code: string): void {
+    this.activeBranche.set(code);
+    this.filter.branche = code;
+    this.filter.typePfId = null;  // reset type filter when switching branch
     this.load();
   }
 

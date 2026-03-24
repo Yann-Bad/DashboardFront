@@ -3,7 +3,7 @@
   <div class="page-header">
     <div class="page-header-main">
       <div>
-        <h1>Prestations</h1>
+        <h1>{{ activeBrancheTab().label }}</h1>
         <p>Liquidations, paiements, arriérés — suivi des prestations par période et type</p>
       </div>
       <button class="btn-guide" (click)="showGuide.set(!showGuide())" [class.active]="showGuide()">
@@ -11,6 +11,22 @@
         Guide des métriques
       </button>
     </div>
+  </div>
+
+  <!-- =========================================================
+       Onglets branches
+       ========================================================= -->
+  <div class="branch-tabs">
+    @for (b of branches; track b.code) {
+      <button
+        class="branch-tab"
+        [class.active]="activeBranche() === b.code"
+        (click)="selectBranche(b.code)"
+        [disabled]="loading()">
+        <span class="branch-icon">{{ b.icon }}</span>
+        <span class="branch-label">{{ b.label }}</span>
+      </button>
+    }
   </div>
 
 @if (showGuide()) {
@@ -105,7 +121,7 @@
         Type de prestation
         <select [(ngModel)]="filter.typePfId">
           <option [ngValue]="null">Tous les types</option>
-          @for (tp of typesPf(); track tp.id) {
+          @for (tp of filteredTypes(); track tp.id) {
             <option [ngValue]="tp.id">{{ tp.code }} — {{ tp.libelle }}</option>
           }
         </select>
@@ -155,7 +171,7 @@
           <div class="sub">prestations liquidées</div>
         </div>
         <div class="summary-card">
-          <div class="label">Employés</div>
+          <div class="label">{{ activeBrancheTab().beneficiaireLabel }}</div>
           <div class="value teal">{{ t.nombreEmployes | number }}</div>
           <div class="sub">bénéficiaires</div>
         </div>
@@ -174,11 +190,19 @@
           <div class="value amber">{{ fmtMontant(t.montantArriere) }}</div>
           <div class="sub">montant arriéré</div>
         </div>
-        <div class="summary-card">
-          <div class="label">Enfants</div>
-          <div class="value teal">{{ t.totalEnfants | number }}</div>
-          <div class="sub">couverts</div>
-        </div>
+        @if (isPF()) {
+          <div class="summary-card">
+            <div class="label">Enfants</div>
+            <div class="value teal">{{ t.totalEnfants | number }}</div>
+            <div class="sub">couverts</div>
+          </div>
+        } @else {
+          <div class="summary-card">
+            <div class="label">Majorations</div>
+            <div class="value red">{{ fmtMontant(t.montantMajoration) }}</div>
+            <div class="sub">montant majoration</div>
+          </div>
+        }
       </div>
 
       <!-- Workflow + Paiement barres -->
@@ -246,11 +270,15 @@
                 <th>Période</th>
                 <th>Tendance</th>
                 <th class="right">Liquidations</th>
-                <th class="right">Employés</th>
+                <th class="right">{{ activeBrancheTab().beneficiaireLabel }}</th>
                 <th class="right">Montant liquidé</th>
                 <th class="right">Montant payé</th>
                 <th class="right">Taux paie.</th>
-                <th class="right">Enfants</th>
+                @if (isPF()) {
+                  <th class="right">Enfants</th>
+                } @else {
+                  <th class="right">Majorations</th>
+                }
                 @if (filter.avecDetailParType) {
                   <th class="center">Types</th>
                 }
@@ -278,7 +306,11 @@
                   <td class="right"><strong>{{ fmtMontant(d.montantLiquide) }}</strong></td>
                   <td class="right green">{{ fmtMontant(d.montantPaye) }}</td>
                   <td class="right">{{ fmtPct(d.tauxPaiement) }}</td>
-                  <td class="right teal">{{ d.totalEnfants | number }}</td>
+                  @if (isPF()) {
+                    <td class="right teal">{{ d.totalEnfants | number }}</td>
+                  } @else {
+                    <td class="right red">{{ fmtMontant(d.montantMajoration) }}</td>
+                  }
                   @if (filter.avecDetailParType) {
                     <td class="center"><span class="period-count">{{ d.parType.length }}</span></td>
                   }
@@ -321,6 +353,14 @@
                             <span class="tm-note">CDF</span>
                           </div>
 
+                          @if (!isPF()) {
+                            <div class="trend-metric">
+                              <span class="tm-label">Majorations</span>
+                              <span class="tm-value red">{{ fmtMontant(d.montantMajoration) }}</span>
+                              <span class="tm-note">CDF</span>
+                            </div>
+                          }
+
                           <div class="trend-metric">
                             <span class="tm-label">Variation montant</span>
                             <span [class]="'tm-value ' + varClass(d.variationMontant)">
@@ -342,7 +382,9 @@
                                   <th class="right">Liquidations</th>
                                   <th class="right">Montant liquidé</th>
                                   <th class="right">Montant payé</th>
-                                  <th class="right">Enfants</th>
+                                  @if (isPF()) {
+                                    <th class="right">Enfants</th>
+                                  }
                                 </tr>
                               </thead>
                               <tbody>
@@ -355,7 +397,9 @@
                                     <td class="right indigo">{{ tp.nombreLiquidations | number }}</td>
                                     <td class="right">{{ fmtMontant(tp.montantLiquide) }}</td>
                                     <td class="right green">{{ fmtMontant(tp.montantPaye) }}</td>
-                                    <td class="right teal">{{ tp.totalEnfants | number }}</td>
+                                    @if (isPF()) {
+                                      <td class="right teal">{{ tp.totalEnfants | number }}</td>
+                                    }
                                   </tr>
                                 }
                               </tbody>

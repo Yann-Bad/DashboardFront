@@ -21,6 +21,15 @@
 .btn-guide svg    { flex-shrink:0; }
 
 /* ---- Guide panel ---- */
+/* ---- Branch tabs ---- */
+.branch-tabs{display:flex;gap:0.5rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.branch-tab{display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1.1rem;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#475569;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
+.branch-tab:hover{border-color:#a5b4fc;background:#f5f3ff;color:#4338ca}
+.branch-tab.active{background:#6366f1;color:#fff;border-color:#6366f1;box-shadow:0 2px 8px rgba(99,102,241,.25)}
+.branch-tab:disabled{opacity:.55;cursor:not-allowed}
+.branch-icon{font-size:1.05rem;line-height:1}
+.branch-label{line-height:1}
+
 .guide-panel{background:#fff;border:1px solid #c7d2fe;border-radius:12px;margin-bottom:1.5rem;overflow:hidden;box-shadow:0 2px 8px rgba(99,102,241,.07)}
 .guide-header{display:flex;justify-content:space-between;align-items:center;padding:.9rem 1.4rem;background:#eef2ff;border-bottom:1px solid #c7d2fe}
 .guide-header h2{font-size:.95rem;font-weight:700;color:#3730a3;margin:0}

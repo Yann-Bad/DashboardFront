@@ -29,6 +29,7 @@ export interface TypePrestationLookupDto {
   id:       number;
   code:     string | null;
   libelle:  string | null;
+  brancheId: number | null;
 }
 
 export interface LookupsDto {

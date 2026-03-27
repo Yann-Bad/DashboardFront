@@ -125,7 +125,7 @@ export class AcomptesComponent implements OnInit {
       legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 12 } } },
       tooltip: {
         callbacks: {
-          label: (ctx) => `${ctx.dataset.label}: ${this.fmtMontant(ctx.parsed.y)} FCFA`,
+          label: (ctx) => `${ctx.dataset.label}: ${this.fmtMontant(ctx.parsed.y)} CDF`,
         },
       },
     },

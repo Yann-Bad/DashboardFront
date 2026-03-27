@@ -12,24 +12,34 @@ export interface BreakdownItemDto {
 
 /**
  * Statistiques des employeurs d'un centre de gestion par état métier.
- * Retourné par GET /api/CentreDeGestion/:centreId/stats/employeurs
- * États : 1 = En activité | 2 = En cessation | 3 = Inactif
+ * Retourné par GET /api/CentreDeGestion/:centreId/stats/employeurs?dateReference=…
+ * L'état est déterminé via l'historique temporel (immatriculationhistoetatemployeur).
  * Règle : DateDeleted IS NULL, Deleted != true, TagValidate = 1
  */
 export interface CentreEmployeurStatsDto {
   centreId: number;
   centreCode: string | null;
   centreLibelle: string | null;
+  /** Date de référence utilisée pour déterminer l'état courant */
+  dateReference: string;
   /** Total employeurs valides (tous états) */
   totalEmployeurs: number;
-  /** Etat 1 — En activité */
+  /** EN ACTIVITE — nombre d'employeurs */
   enActivite: number;
-  /** Etat 2 — En cessation d'activité */
+  /** EN ACTIVITE — travailleurs validés à la date de référence */
+  travailleurs_EnActivite: number;
+  /** EN CESSATION — nombre d'employeurs */
   enCessation: number;
-  /** Etat 3 — Inactif */
+  /** EN CESSATION — travailleurs validés à la date de référence */
+  travailleurs_EnCessation: number;
+  /** INACTIF — nombre d'employeurs */
   inactif: number;
-  /** Effectif total des employés du centre */
-  totalEmployes: number;
+  /** INACTIF — travailleurs validés à la date de référence */
+  travailleurs_Inactif: number;
+  /** Employeurs sans ligne d'historique valide à la date de référence */
+  sansEtatHistorique: number;
+  /** Total travailleurs (enActivite + enCessation + inactif) */
+  totalTravailleurs: number;
   /** Pourcentages calculés côté backend */
   pourcentageEnActivite: number;
   pourcentageEnCessation: number;
@@ -38,6 +48,28 @@ export interface CentreEmployeurStatsDto {
   breakdownParFormeJuridique: BreakdownItemDto[];
   breakdownParRegime: BreakdownItemDto[];
   breakdownParSecteur: BreakdownItemDto[];
+}
+
+/**
+ * Statistiques globales des employeurs pour TOUS les centres de gestion,
+ * groupées par (centre, état).
+ * Retourné par GET /api/CentreDeGestion/stats/employeurs/global?dateReference=…
+ */
+export interface GlobalEmployeurStatsDto {
+  dateReference: string;
+  lignes: GlobalEmployeurStatsLineDto[];
+  /** Total cumulé tous centres / états */
+  totalEmployeurs: number;
+  totalTravailleurs: number;
+}
+
+/** Une ligne de la vue agrégée : couple (centre de gestion, état employeur) */
+export interface GlobalEmployeurStatsLineDto {
+  centreId: number;
+  centreLibelle: string;
+  etatEmployeur: string;
+  nombreEmployeurs: number;
+  nombreTravailleurs: number;
 }
 
 /**
@@ -50,30 +82,72 @@ export interface CentreEmployeStatsDto {
   centreId: number;
   centreCode: string | null;
   centreLibelle: string | null;
-  /** Total employes valides (tous statuts) */
+  /** Date de référence utilisée pour le calcul via historique */
+  dateReference: string;
+  /** Total employés valides (DateDeleted IS NULL, Deleted != true, TagValidate = 1) */
   totalEmployes: number;
-  /** StatutEmployeId = 1 — Actifs */
-  actif: number;
-  /** StatutEmployeId = 2 — Inactifs */
+  /** Employés dont l'état historique contient ACTIVIT */
+  enActivite: number;
+  /** Employés dont l'état historique contient CESSATION */
+  enCessation: number;
+  /** Employés dont l'état historique contient INACTIF */
   inactif: number;
-  /** Pourcentages calcules cote backend */
-  pourcentageActif: number;
-  pourcentageInactif: number;  /** Retraités — TagRetraite = 0, TagDeces = 0 */
-  retraites: number;
-  /** Décédés — TagDeces = 1 */
-  decedes: number;
-  pourcentageRetraites: number;
-  pourcentageDecedes: number;  /** Breakdown dynamique par statut avec libellés depuis Referentielstatutemploye */
-  breakdownParStatut: StatutEmployeDetailDto[];
+  /** Employés sans ligne d'historique à la date de référence */
+  sansEtatHistorique: number;
+  /** Pourcentages calculés côté backend */
+  pourcentageEnActivite: number;
+  pourcentageEnCessation: number;
+  pourcentageInactif: number;
 }
 
-/** Détail d'un statut d'employé avec libellé réel depuis la DB */
-export interface StatutEmployeDetailDto {
-  statutId: number;
-  statutCode: string | null;
-  statutLibelle: string | null;
+/** Distribution du nombre d'enfants par palier */
+export interface EnfantDistributionDto {
+  label: string;
+  nbEnfants: number;
   nombre: number;
   pourcentage: number;
+}
+
+/**
+ * Statistiques de la grappe familiale (family cluster) des employés d'un centre.
+ * Retourné par GET /api/CentreDeGestion/:centreId/stats/famille
+ */
+export interface GrappeFamilleStatsDto {
+  centreId: number;
+  centreCode: string | null;
+  centreLibelle: string | null;
+  /** Total d'employés valides du centre */
+  totalEmployesValides: number;
+  /** Employés avec grappe validée pour la branche Pension (tagFamille = 0) */
+  avecGrappeValidePension: number;
+  /** Employés avec grappe validée pour les Prestations Familiales (tagFamillePf = 0) */
+  avecGrappeValidePf: number;
+  /** Employés avec grappe validée pour les Risques Professionnels (tagFamilleRp = 0) */
+  avecGrappeValideRp: number;
+  /** Nombre total de conjoints actifs (non décédés) */
+  totalConjoints: number;
+  /** Nombre total d'enfants actifs (non décédés) */
+  totalEnfants: number;
+  /** Nombre total d'ascendants actifs (non décédés) */
+  totalAscendants: number;
+  /** Total de tous les membres de la famille */
+  totalMembresFamille: number;
+  /** Employés ayant au moins un conjoint actif */
+  employesAvecConjoint: number;
+  /** Employés ayant au moins un enfant actif */
+  employesAvecEnfants: number;
+  /** Employés ayant au moins un ascendant actif */
+  employesAvecAscendants: number;
+  /** % employés avec conjoint */
+  pctAvecConjoint: number;
+  /** % employés avec enfants */
+  pctAvecEnfants: number;
+  /** % employés avec ascendants */
+  pctAvecAscendants: number;
+  /** Moyenne d'enfants par employé */
+  moyenneEnfants: number;
+  /** Ventilation par nombre d'enfants */
+  distributionEnfants: EnfantDistributionDto[];
 }
 
 export interface CentreDeGestionDto {
@@ -164,15 +238,14 @@ export interface DashboardStatsDto {
   totalMajorations: number;
   totalTaxations: number;
 
-  // Employés — états métier (StatutEmployeId)
-  employesActifs: number;
+  // Employés — états déduits de l'employeur (EtatId)
+  employesEnActivite: number;
+  employesEnCessation: number;
   employesInactifs: number;
-  pourcentageEmployesActifs: number;
+  employesSansEmployeur: number;
+  pourcentageEmployesEnActivite: number;
+  pourcentageEmployesEnCessation: number;
   pourcentageEmployesInactifs: number;
-  employesRetraites: number;
-  employesDecedes: number;
-  pourcentageEmployesRetraites: number;
-  pourcentageEmployesDecedes: number;
 
   // Encaissements — montants agrégés (Cotisationencaissement actifs, non supprimés)
   montantPrincipalEncaisse: number;
@@ -203,4 +276,18 @@ export interface DashboardStatsDto {
   breakdownParFormeJuridique: BreakdownItemDto[];
   breakdownParRegime: BreakdownItemDto[];
   breakdownParSecteur: BreakdownItemDto[];
+  /** Ventilation des déclarations et encaissements par devise */
+  breakdownParDevise: DeviseBreakdownDto[];
+}
+
+export interface DeviseBreakdownDto {
+  deviseId: number;
+  deviseCode: string | null;
+  deviseLibelle: string | null;
+  nbDeclarations: number;
+  nbEncaissements: number;
+  montantEncaisseCdf: number;
+  montantEncaisseDevise: number;
+  pctDeclarations: number;
+  pctMontantCdf: number;
 }

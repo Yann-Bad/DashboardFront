@@ -249,7 +249,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (e of d.topEmployeursEnDette; track e.employeurId) {
+              @for (e of d.topEmployeursEnDette; track e.noCompte) {
                 <tr>
                   <td><code>{{ e.noCompte ?? '—' }}</code></td>
                   <td>{{ e.raisonSociale ?? '—' }}</td>

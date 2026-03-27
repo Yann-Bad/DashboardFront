@@ -100,15 +100,107 @@
   transition: width 0.4s ease;
   background: #94a3b8; /* fallback */
 }
+.emp-bar-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
 .emp-bar-value {
   font-size: 0.75rem;
   color: var(--color-text-muted);
 }
+.emp-bar-workers {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* ── Section header with date picker ─────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.date-ref-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.date-ref-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.date-ref-input {
+  font-size: 0.82rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg, #fff);
+  color: var(--color-text);
+  outline: none;
+}
+.date-ref-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+.btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-refresh:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-refresh:hover:not(:disabled) { opacity: 0.88; }
+
+.date-ref-info {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.emp-total-warn {
+  font-size: 0.7rem;
+  color: #f97316;
+  margin-top: 0.25rem;
+  font-weight: 600;
+}
+
+.spinner-sm {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Couleurs des barres selon data-color */
 .emp-bar-card[data-color='green']  .emp-bar-fill { background: #22c55e; }
 .emp-bar-card[data-color='orange'] .emp-bar-fill { background: #f97316; }
 .emp-bar-card[data-color='red']    .emp-bar-fill { background: #ef4444; }
+.emp-bar-card[data-color='blue']   .emp-bar-fill { background: #3b82f6; }
+.emp-bar-card[data-color='teal']   .emp-bar-fill { background: #14b8a6; }
+.emp-bar-card[data-color='pink']   .emp-bar-fill { background: #ec4899; }
+.emp-bar-card[data-color='purple'] .emp-bar-fill { background: #a855f7; }
+.emp-bar-card[data-color='indigo'] .emp-bar-fill { background: #6366f1; }
 
 /* Responsive : empilement sur petits écrans */
 @media (max-width: 720px) {
@@ -282,4 +374,53 @@
   color: var(--color-text-muted, #64748b);
   text-align: right;
   min-width: 3rem;
+}
+
+/* ── Grappe Familiale ───────────────────────────────────────── */
+.grappe-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 720px) {
+  .grappe-grid { grid-template-columns: 1fr; }
+}
+
+.subsection-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text, #1e293b);
+  margin: 1.25rem 0 0.75rem;
+}
+
+.distribution-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.distribution-bar {
+  display: grid;
+  grid-template-columns: 80px 1fr 120px;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.distribution-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text, #1e293b);
+  text-align: right;
+}
+
+.distribution-value {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #64748b);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barre de distribution enfants */
+.distribution-fill {
+  background: #a855f7;
 }

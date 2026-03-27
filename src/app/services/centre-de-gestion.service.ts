@@ -9,6 +9,8 @@ import {
   DashboardStatsDto,
   CentreEmployeurStatsDto,
   CentreEmployeStatsDto,
+  GlobalEmployeurStatsDto,
+  GrappeFamilleStatsDto,
 } from '../models/centre-de-gestion.model';
 import {
   DeclarationAnalyseDto,
@@ -98,14 +100,32 @@ export class CentreDeGestionService {
 
   /**
    * Récupère les statistiques des employeurs rattachés au centre de gestion.
-   * Correspond à : GET /api/CentreDeGestion/:centreId/stats/employeurs
+   * Correspond à : GET /api/CentreDeGestion/:centreId/stats/employeurs?dateReference=…
    *
-   * @param centreId - Identifiant du centre de gestion
-   * @returns Observable contenant le DTO de statistiques employeurs
+   * @param centreId      Identifiant du centre de gestion
+   * @param dateReference Date de référence ISO (yyyy-MM-dd). Défaut : aujourd'hui côté backend
    */
-  getEmployeurStats(centreId: number): Observable<CentreEmployeurStatsDto> {
+  getEmployeurStats(centreId: number, dateReference?: string): Observable<CentreEmployeurStatsDto> {
+    let params = new HttpParams();
+    if (dateReference) params = params.set('dateReference', dateReference);
     return this.http.get<CentreEmployeurStatsDto>(
-      `${this.base}/${centreId}/stats/employeurs`
+      `${this.base}/${centreId}/stats/employeurs`,
+      { params }
+    );
+  }
+
+  /**
+   * Récupère les statistiques globales des employeurs pour TOUS les centres.
+   * Correspond à : GET /api/CentreDeGestion/stats/employeurs/global?dateReference=…
+   *
+   * @param dateReference Date de référence ISO (yyyy-MM-dd). Défaut : aujourd'hui côté backend
+   */
+  getGlobalEmployeurStats(dateReference?: string): Observable<GlobalEmployeurStatsDto> {
+    let params = new HttpParams();
+    if (dateReference) params = params.set('dateReference', dateReference);
+    return this.http.get<GlobalEmployeurStatsDto>(
+      `${this.base}/stats/employeurs/global`,
+      { params }
     );
   }
 
@@ -116,10 +136,20 @@ export class CentreDeGestionService {
    * @param centreId - Identifiant du centre de gestion
    * @returns Observable contenant le DTO de statistiques employés
    */
-  getEmployeStats(centreId: number): Observable<CentreEmployeStatsDto> {
+  getEmployeStats(centreId: number, dateReference?: string): Observable<CentreEmployeStatsDto> {
+    const params: Record<string, string> = {};
+    if (dateReference) params['dateReference'] = dateReference;
     return this.http.get<CentreEmployeStatsDto>(
-      `${this.base}/${centreId}/stats/employes`
+      `${this.base}/${centreId}/stats/employes`, { params }
     );
+  }
+
+  /**
+   * Statistiques de la grappe familiale des employés d'un centre.
+   * Correspond à : GET /api/CentreDeGestion/:centreId/stats/famille
+   */
+  getGrappeFamilleStats(centreId: number): Observable<GrappeFamilleStatsDto> {
+    return this.http.get<GrappeFamilleStatsDto>(`${this.base}/${centreId}/stats/famille`);
   }
 
   /**

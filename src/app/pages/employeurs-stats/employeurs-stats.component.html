@@ -1,0 +1,127 @@
+<div class="emp-global-page">
+
+  <!-- ── Page Header ─────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Employeurs — Vue globale</h1>
+      <p class="page-subtitle">Répartition par centre de gestion et état à une date donnée</p>
+    </div>
+
+    <div class="toolbar">
+      <input
+        type="date"
+        class="date-input"
+        [(ngModel)]="dateRef"
+        title="Date de référence"
+      />
+      <button class="btn-primary" (click)="load()" [disabled]="loading()">
+        @if (loading()) { <span class="spinner-sm"></span> } Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p>Chargement…</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
+  <!-- ── Content ──────────────────────────────────────────────── -->
+  @if (!loading() && stats(); as s) {
+    <!-- Date info + totaux -->
+    <div class="summary-bar">
+      <span class="summary-date">
+        Données au <strong>{{ s.dateReference | date:'dd/MM/yyyy' }}</strong>
+      </span>
+      <div class="summary-chips">
+        <span class="chip chip-blue">{{ s.totalEmployeurs | number }} employeurs</span>
+        <span class="chip chip-purple">{{ s.totalTravailleurs | number }} travailleurs</span>
+        <span class="chip chip-slate">{{ etats().length }} états</span>
+        <span class="chip chip-slate">{{ bycentre().length }} centres</span>
+      </div>
+    </div>
+
+    <!-- ── Synthèse par état (top cards) ──────────────────────── -->
+    <div class="etat-cards">
+      @for (etat of etats(); track etat) {
+        <div class="etat-card" [attr.data-color]="etatColor(etat)">
+          <div class="etat-card-label">{{ etat }}</div>
+          <div class="etat-card-value">{{ etatTotal(etat) | number }}</div>
+          <div class="etat-card-sub">{{ etatTravailleurs(etat) | number }} travailleur(s)</div>
+          <div class="etat-card-pct">
+            {{ s.totalEmployeurs > 0 ? (etatTotal(etat) / s.totalEmployeurs * 100 | number:'1.1-1') : 0 }} %
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ── Filtre + drapeau ────────────────────────────────────── -->
+    <div class="filter-bar">
+      <input
+        type="search"
+        class="filter-input"
+        placeholder="Filtrer par centre…"
+        [(ngModel)]="filterCentre"
+      />
+      @if (filterCentre) {
+        <span class="filter-count">{{ filteredLignes().length }} ligne(s)</span>
+      }
+    </div>
+
+    <!-- ── Table détaillée ────────────────────────────────────── -->
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="sortable" (click)="sort('centreLibelle')">
+              Centre de gestion <span class="sort-icon">{{ sortIcon('centreLibelle') }}</span>
+            </th>
+            <th class="sortable" (click)="sort('etatEmployeur')">
+              État <span class="sort-icon">{{ sortIcon('etatEmployeur') }}</span>
+            </th>
+            <th class="sortable text-right" (click)="sort('nombreEmployeurs')">
+              Employeurs <span class="sort-icon">{{ sortIcon('nombreEmployeurs') }}</span>
+            </th>
+            <th class="sortable text-right" (click)="sort('nombreTravailleurs')">
+              Travailleurs <span class="sort-icon">{{ sortIcon('nombreTravailleurs') }}</span>
+            </th>
+            <th class="text-right">% employeurs</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filteredLignes(); track row.centreId + row.etatEmployeur) {
+            <tr>
+              <td>{{ row.centreLibelle || '—' }}</td>
+              <td>
+                <span class="etat-badge" [attr.data-color]="etatColor(row.etatEmployeur)">
+                  {{ row.etatEmployeur }}
+                </span>
+              </td>
+              <td class="text-right">{{ row.nombreEmployeurs | number }}</td>
+              <td class="text-right">{{ row.nombreTravailleurs | number }}</td>
+              <td class="text-right">
+                {{ s.totalEmployeurs > 0 ? (row.nombreEmployeurs / s.totalEmployeurs * 100 | number:'1.1-1') : 0 }} %
+              </td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="2">Total (filtre actif)</td>
+            <td class="text-right">{{ filteredTotal | number }}</td>
+            <td class="text-right">{{ filteredTravailleurs | number }}</td>
+            <td class="text-right">
+              {{ s.totalEmployeurs > 0 ? (filteredTotal / s.totalEmployeurs * 100 | number:'1.1-1') : 0 }} %
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  }
+</div>

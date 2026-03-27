@@ -38,14 +38,39 @@
     <!-- Section : Répartition des employeurs -->
     @if (employeurStats) {
       <div class="emp-stats-section">
-        <h2 class="section-title">Répartition des employeurs</h2>
+        <div class="section-header">
+          <h2 class="section-title">Répartition des employeurs</h2>
+          <div class="date-ref-form">
+            <label class="date-ref-label" for="dateRefInput">Date de référence</label>
+            <input
+              id="dateRefInput"
+              type="date"
+              class="date-ref-input"
+              [(ngModel)]="dateRef"
+            />
+            <button
+              class="btn-refresh"
+              (click)="refreshEmployeurStats()"
+              [disabled]="statsLoading"
+            >
+              @if (statsLoading) { <span class="spinner-sm"></span> }
+              Actualiser
+            </button>
+          </div>
+        </div>
+        <p class="date-ref-info">
+          Données au <strong>{{ employeurStats.dateReference | date:'dd/MM/yyyy' }}</strong>
+        </p>
         <div class="emp-stats-grid">
 
           <!-- Total employeurs -->
           <div class="emp-total-card">
             <span class="emp-total-value">{{ employeurStats.totalEmployeurs | number }}</span>
             <span class="emp-total-label">Employeurs immatriculés</span>
-            <span class="emp-total-sub">dont {{ employeurStats.totalEmployes | number }} employé (s)</span>
+            <span class="emp-total-sub">{{ employeurStats.totalTravailleurs | number }} travailleur(s) validés</span>
+            @if (employeurStats.sansEtatHistorique > 0) {
+              <span class="emp-total-warn">{{ employeurStats.sansEtatHistorique }} sans historique</span>
+            }
           </div>
 
           <!-- Barres de répartition -->
@@ -59,7 +84,10 @@
               <div class="emp-bar-track">
                 <div class="emp-bar-fill" [style.width.%]="r.pct"></div>
               </div>
-              <span class="emp-bar-value">{{ r.value | number }} employeur(s)</span>
+              <div class="emp-bar-footer">
+                <span class="emp-bar-value">{{ r.value | number }} employeur(s)</span>
+                <span class="emp-bar-workers">👤 {{ r.travailleurs | number }} travailleur(s)</span>
+              </div>
             </div>
           }
 
@@ -124,17 +152,42 @@
     <!-- Section : Répartition des employés -->
     @if (employeStats) {
       <div class="emp-stats-section">
-        <h2 class="section-title">Répartition des employés</h2>
+        <div class="section-header">
+          <h2 class="section-title">Répartition des employés</h2>
+          <div class="date-ref-form">
+            <label class="date-ref-label" for="dateRefEmployeInput">Date de référence</label>
+            <input
+              id="dateRefEmployeInput"
+              type="date"
+              class="date-ref-input"
+              [(ngModel)]="dateRefEmploye"
+            />
+            <button
+              class="btn-refresh"
+              (click)="refreshEmployeStats()"
+              [disabled]="statsLoading"
+            >
+              @if (statsLoading) { <span class="spinner-sm"></span> }
+              Actualiser
+            </button>
+          </div>
+        </div>
+        <p class="date-ref-info">
+          Données au <strong>{{ employeStats.dateReference | date:'dd/MM/yyyy' }}</strong>
+        </p>
+
         <div class="emp-stats-grid">
 
           <!-- Total employés -->
           <div class="emp-total-card">
-            <span class="emp-total-value">{{ employeStats.actif + employeStats.inactif | number }}</span>
-            <span class="emp-total-label">Employés validés</span>
-            <span class="emp-total-sub">sur {{ employeStats.totalEmployes | number }} immatriculé(s)</span>
+            <span class="emp-total-value">{{ employeStats.totalEmployes | number }}</span>
+            <span class="emp-total-label">Employés immatriculés</span>
+            @if (employeStats.sansEtatHistorique > 0) {
+              <span class="emp-total-warn">{{ employeStats.sansEtatHistorique }} sans historique</span>
+            }
           </div>
 
-          <!-- Barres de répartition (Actif / Inactif) -->
+          <!-- Barres de répartition (EN ACTIVITE / EN CESSATION / INACTIF) -->
           @for (r of employeRepartition; track r.label) {
             <div class="emp-bar-card" [attr.data-color]="r.color">
               <div class="emp-bar-header">
@@ -151,33 +204,71 @@
 
         </div>
       </div>
+    }
 
-      <!-- Breakdown par statut (Referentielstatutemploye) -->
-      @if (statutBreakdown.length > 0) {
-        <div class="emp-stats-section">
-          <h2 class="section-title">Détail par statut d'employé</h2>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Statut</th>
-                <th>Code</th>
-                <th class="text-right">Nombre</th>
-                <th class="text-right">%</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (s of statutBreakdown; track s.label) {
-                <tr>
-                  <td>{{ s.label }}</td>
-                  <td class="text-muted"></td>
-                  <td class="text-right">{{ s.value | number }}</td>
-                  <td class="text-right">{{ s.pct | number:'1.1-1' }} %</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+    <!-- Section : Grappe Familiale -->
+    @if (grappeStats) {
+      <div class="emp-stats-section">
+        <div class="section-header">
+          <h2 class="section-title">Grappe Familiale</h2>
         </div>
-      }
+        <p class="emp-date-info">
+          <strong>{{ grappeStats.totalEmployesValides | number }}</strong> employés validés
+          — <strong>{{ grappeStats.totalMembresFamille | number }}</strong> membres de famille
+          — Moyenne <strong>{{ grappeStats.moyenneEnfants | number:'1.1-1' }}</strong> enfant(s)/employé
+        </p>
+
+        <!-- Validation par branche -->
+        <h3 class="subsection-title">Validation de la grappe par branche</h3>
+        <div class="grappe-grid">
+          @for (b of grappeValidationBranches; track b.label) {
+            <div class="emp-bar-card" [attr.data-color]="b.color">
+              <div class="emp-bar-header">
+                <span class="emp-bar-label">{{ b.label }}</span>
+                <span class="emp-bar-pct">{{ b.pct | number:'1.0-0' }} %</span>
+              </div>
+              <div class="emp-bar-track">
+                <div class="emp-bar-fill" [style.width.%]="clampPct(b.pct)"></div>
+              </div>
+              <span class="emp-bar-value">{{ b.valide | number }} / {{ grappeStats.totalEmployesValides | number }} validé(s)</span>
+            </div>
+          }
+        </div>
+
+        <!-- Membres par type -->
+        <h3 class="subsection-title">Composition de la famille</h3>
+        <div class="grappe-grid">
+          @for (m of familleMembres; track m.label) {
+            <div class="emp-bar-card" [attr.data-color]="m.color">
+              <div class="emp-bar-header">
+                <span class="emp-bar-icon">{{ m.icon }}</span>
+                <span class="emp-bar-label">{{ m.label }}</span>
+                <span class="emp-bar-pct">{{ m.pct | number:'1.0-0' }} %</span>
+              </div>
+              <div class="emp-bar-track">
+                <div class="emp-bar-fill" [style.width.%]="clampPct(m.pct)"></div>
+              </div>
+              <span class="emp-bar-value">{{ m.total | number }} membre(s) — {{ m.employesConcernes | number }} employé(s) concerné(s)</span>
+            </div>
+          }
+        </div>
+
+        <!-- Distribution enfants -->
+        @if (distributionEnfants.length > 0) {
+          <h3 class="subsection-title">Distribution du nombre d'enfants</h3>
+          <div class="distribution-grid">
+            @for (d of distributionEnfants; track d.label) {
+              <div class="distribution-bar">
+                <span class="distribution-label">{{ d.label }}</span>
+                <div class="emp-bar-track">
+                  <div class="emp-bar-fill distribution-fill" [style.width.%]="clampPct(d.pourcentage)"></div>
+                </div>
+                <span class="distribution-value">{{ d.nombre | number }} ({{ d.pourcentage | number:'1.1-1' }} %)</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
     }
 
     <!-- Details grid -->

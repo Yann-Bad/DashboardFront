@@ -103,6 +103,12 @@ export const routes: Routes = [
       import('./pages/immatriculations/immatriculations.component').then(m => m.ImmatriculationsComponent),
   },
   {
+    path: 'employeurs-stats',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/employeurs-stats/employeurs-stats.component').then(m => m.EmployeursStatsComponent),
+  },
+  {
     path: 'recouvrement',
     canActivate: [authGuard],
     loadComponent: () =>

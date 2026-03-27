@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { CentreDeGestionService } from '../../services/centre-de-gestion.service';
@@ -8,12 +9,14 @@ import {
   CentreEmployeurStatsDto,
   CentreEmployeStatsDto,
   BreakdownItemDto,
+  GrappeFamilleStatsDto,
+  EnfantDistributionDto,
 } from '../../models/centre-de-gestion.model';
 
 @Component({
   selector: 'app-centre-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './centre-detail.html',
   styleUrl: './centre-detail.css',
 })
@@ -26,28 +29,64 @@ export class CentreDetailComponent implements OnInit {
   employeurStats: CentreEmployeurStatsDto | null = null;
   /** Statistiques détaillées des employés rattachés au centre */
   employeStats: CentreEmployeStatsDto | null = null;
+  /** Statistiques de la grappe familiale des employés du centre */
+  grappeStats: GrappeFamilleStatsDto | null = null;
   loading = true;
+  statsLoading = false;
   error: string | null = null;
 
-  ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+  /** Date de référence pour les stats employeurs (format yyyy-MM-dd, vide = aujourd'hui) */
+  dateRef = '';
+  /** Date de référence pour les stats employés (format yyyy-MM-dd, vide = aujourd'hui) */
+  dateRefEmploye = '';
 
-    // Chargement en parallèle : détail du centre + statistiques employeurs + statistiques employés
+  private centreId = 0;
+
+  ngOnInit(): void {
+    this.centreId = Number(this.route.snapshot.paramMap.get('id'));
+
+    // Chargement en parallèle : détail du centre + statistiques employeurs + statistiques employés + grappe familiale
     forkJoin({
-      centre: this.service.getById(id),
-      stats: this.service.getEmployeurStats(id),
-      employes: this.service.getEmployeStats(id),
+      centre: this.service.getById(this.centreId),
+      stats: this.service.getEmployeurStats(this.centreId),
+      employes: this.service.getEmployeStats(this.centreId),
+      grappe: this.service.getGrappeFamilleStats(this.centreId),
     }).subscribe({
-      next: ({ centre, stats, employes }) => {
+      next: ({ centre, stats, employes, grappe }) => {
         this.centre = centre;
         this.employeurStats = stats;
         this.employeStats = employes;
+        this.grappeStats = grappe;
         this.loading = false;
       },
       error: () => {
-        this.error = `Centre de gestion introuvable (id: ${id}).`;
+        this.error = `Centre de gestion introuvable (id: ${this.centreId}).`;
         this.loading = false;
       },
+    });
+  }
+
+  /** Recharge uniquement les statistiques employeurs avec la date de référence saisie */
+  refreshEmployeurStats(): void {
+    this.statsLoading = true;
+    this.service.getEmployeurStats(this.centreId, this.dateRef || undefined).subscribe({
+      next: stats => {
+        this.employeurStats = stats;
+        this.statsLoading = false;
+      },
+      error: () => { this.statsLoading = false; },
+    });
+  }
+
+  /** Recharge uniquement les statistiques employés avec la date de référence saisie */
+  refreshEmployeStats(): void {
+    this.statsLoading = true;
+    this.service.getEmployeStats(this.centreId, this.dateRefEmploye || undefined).subscribe({
+      next: employes => {
+        this.employeStats = employes;
+        this.statsLoading = false;
+      },
+      error: () => { this.statsLoading = false; },
     });
   }
 
@@ -56,7 +95,7 @@ export class CentreDetailComponent implements OnInit {
     if (!this.centre) return [];
     return [
       { label: 'Employeurs',         value: this.centre.nombreEmployeurs,       icon: '👔', color: 'green'  },
-      { label: 'Employés',           value: this.centre.nombreEmployes,         icon: '👤', color: 'purple' },
+      { label: 'Employés',            value: this.centre.nombreEmployes,         icon: '👤', color: 'purple' },
       { label: 'Cotisations Compte', value: this.centre.nombreCotisationsCompte, icon: '💼', color: 'orange' },
       { label: 'Encaissements',      value: this.centre.nombreEncaissements,    icon: '💰', color: 'teal'   },
       { label: 'Majorations',        value: this.centre.nombreMajorations,      icon: '📈', color: 'red'    },
@@ -65,10 +104,12 @@ export class CentreDetailComponent implements OnInit {
   }
 
   /**
-   * Répartition des employeurs en 3 catégories :
-   * en activité (etat_id=1), en cessation (etat_id=2) et inactifs (etat_id=3) — avec leur pourcentage sur le total.
+   * Répartition des employeurs en 3 catégories avec le nombre de travailleurs par état.
    */
-  get employeurRepartition(): { label: string; value: number; pct: number; color: string; icon: string }[] {
+  get employeurRepartition(): {
+    label: string; value: number; pct: number;
+    travailleurs: number; color: string; icon: string;
+  }[] {
     const s = this.employeurStats;
     if (!s || s.totalEmployeurs === 0) return [];
     return [
@@ -76,6 +117,7 @@ export class CentreDetailComponent implements OnInit {
         label: 'En activité',
         value: s.enActivite,
         pct: Math.round(s.pourcentageEnActivite),
+        travailleurs: s.travailleurs_EnActivite,
         color: 'green',
         icon: '✅',
       },
@@ -83,6 +125,7 @@ export class CentreDetailComponent implements OnInit {
         label: 'En cessation',
         value: s.enCessation,
         pct: Math.round(s.pourcentageEnCessation),
+        travailleurs: s.travailleurs_EnCessation,
         color: 'orange',
         icon: '⏸️',
       },
@@ -90,62 +133,24 @@ export class CentreDetailComponent implements OnInit {
         label: 'Inactifs',
         value: s.inactif,
         pct: Math.round(s.pourcentageInactif),
+        travailleurs: s.travailleurs_Inactif,
         color: 'red',
         icon: '🚫',
       },
     ];
   }
-
   /**
-   * Répartition des employés en 2 statuts :
-   * actifs (statut_employe_id=1) et inactifs (statut_employe_id=2).
-   * Règle : DateDeleted IS NULL, Deleted != true, TagDeces=0, TagRetraite=1, TagValidate=1
+   * Répartition des employés en 3 états via historique :
+   * EN ACTIVITE | EN CESSATION | INACTIF
    */
   get employeRepartition(): { label: string; value: number; pct: number; color: string; icon: string }[] {
     const s = this.employeStats;
-    if (!s || (s.actif + s.inactif + s.retraites + s.decedes) === 0) return [];
+    if (!s || s.totalEmployes === 0) return [];
     return [
-      {
-        label: 'Actifs',
-        value: s.actif,
-        pct: s.pourcentageActif,
-        color: 'green',
-        icon: '✅',
-      },
-      {
-        label: 'Inactifs',
-        value: s.inactif,
-        pct: s.pourcentageInactif,
-        color: 'red',
-        icon: '🚫',
-      },
-      {
-        label: 'Retraités',
-        value: s.retraites,
-        pct: s.pourcentageRetraites,
-        color: 'blue',
-        icon: '👴',
-      },
-      {
-        label: 'Décédés',
-        value: s.decedes,
-        pct: s.pourcentageDecedes,
-        color: 'slate',
-        icon: '✝️',
-      },
+      { label: 'En activité',  value: s.enActivite,  pct: Math.round(s.pourcentageEnActivite),  color: 'green',  icon: '✅' },
+      { label: 'En cessation', value: s.enCessation, pct: Math.round(s.pourcentageEnCessation), color: 'orange', icon: '⏸️' },
+      { label: 'Inactifs',     value: s.inactif,     pct: Math.round(s.pourcentageInactif),     color: 'red',    icon: '🚫' },
     ];
-  }
-
-  /**
-   * Breakdown dynamique par statut depuis Referentielstatutemploye.
-   * Libellés réels depuis la DB — remplace le hardcodage 1=Actif / 2=Inactif.
-   */
-  get statutBreakdown(): { label: string; value: number; pct: number }[] {
-    return (this.employeStats?.breakdownParStatut ?? []).map(s => ({
-      label: s.statutLibelle ?? s.statutCode ?? `Statut ${s.statutId}`,
-      value: s.nombre,
-      pct:   s.pourcentage,
-    }));
   }
 
   /** Top 5 formes juridiques des employeurs de ce centre */
@@ -165,5 +170,34 @@ export class CentreDetailComponent implements OnInit {
 
   clampPct(v: number): number {
     return Math.min(100, Math.max(0, v ?? 0));
+  }
+
+  /** Répartition des branches de validation de la grappe familiale */
+  get grappeValidationBranches(): { label: string; valide: number; pct: number; color: string }[] {
+    const g = this.grappeStats;
+    if (!g || g.totalEmployesValides === 0) return [];
+    const total = g.totalEmployesValides;
+    return [
+      { label: 'Pension',               valide: g.avecGrappeValidePension, pct: Math.round((g.avecGrappeValidePension / total) * 100), color: 'blue'   },
+      { label: 'Prestations Familiales', valide: g.avecGrappeValidePf,     pct: Math.round((g.avecGrappeValidePf     / total) * 100), color: 'teal'   },
+      { label: 'Risques Professionnels', valide: g.avecGrappeValideRp,     pct: Math.round((g.avecGrappeValideRp    / total) * 100), color: 'orange' },
+    ];
+  }
+
+  /** Totaux des membres de la famille par type */
+  get familleMembres(): { label: string; total: number; employesConcernes: number; pct: number; icon: string; color: string }[] {
+    const g = this.grappeStats;
+    if (!g || g.totalEmployesValides === 0) return [];
+    const total = g.totalEmployesValides;
+    return [
+      { label: 'Conjoints',   total: g.totalConjoints,   employesConcernes: g.employesAvecConjoint,   pct: Math.round(g.pctAvecConjoint),   icon: '💑', color: 'pink'   },
+      { label: 'Enfants',     total: g.totalEnfants,     employesConcernes: g.employesAvecEnfants,     pct: Math.round(g.pctAvecEnfants),     icon: '👶', color: 'purple' },
+      { label: 'Ascendants',  total: g.totalAscendants,  employesConcernes: g.employesAvecAscendants,  pct: Math.round(g.pctAvecAscendants),  icon: '👴', color: 'indigo' },
+    ];
+  }
+
+  /** Distribution du nombre d’enfants par employé */
+  get distributionEnfants(): EnfantDistributionDto[] {
+    return this.grappeStats?.distributionEnfants ?? [];
   }
 }

@@ -63,12 +63,12 @@
 
     <!-- ============================================================ -->
     <!-- Section : Répartition globale des employés                  -->
-    <!-- StatutEmployeId : 1=Actif | 2=Inactif                       -->
+    <!-- État déduit de l'employeur : EtatId 1/2/3                    -->
     <!-- ============================================================ -->
     <div class="section-card emp-repartition">
       <div class="section-header">
         <h2>Répartition des employés</h2>
-        <span class="text-muted">Actifs + Inactifs : {{ stats.employesActifs + stats.employesInactifs | number }}</span>
+        <span class="text-muted">Total : {{ stats.totalEmployes | number }}</span>
       </div>
 
       <div class="emp-rep-grid">
@@ -76,7 +76,9 @@
         <div class="emp-total-tile">
           <span class="emp-total-value">{{ stats.totalEmployes | number }}</span>
           <span class="emp-total-label">Employés immatriculés</span>
-          <span class="emp-total-sub">dont {{ stats.employesActifs + stats.employesInactifs | number }} validé(s)</span>
+          @if (stats.employesSansEmployeur > 0) {
+            <span class="emp-total-sub">{{ stats.employesSansEmployeur | number }} sans employeur</span>
+          }
         </div>
 
         <!-- Barres de progression -->
@@ -246,6 +248,56 @@
         </div>
       </div>
     </div>
+
+    <!-- Ventilation par devise -->
+    @if (deviseBreakdown.length > 0) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Ventilation par devise</h2>
+        </div>
+        <div class="devise-grid">
+          @for (d of deviseBreakdown; track d.deviseId) {
+            <div class="devise-card">
+              <div class="devise-header">
+                <span class="devise-code">{{ d.deviseCode ?? 'N/A' }}</span>
+                <span class="devise-libelle">{{ d.deviseLibelle }}</span>
+              </div>
+              <div class="devise-stats">
+                <div class="devise-stat">
+                  <span class="devise-stat-label">Déclarations</span>
+                  <span class="devise-stat-value">{{ d.nbDeclarations | number }}</span>
+                  <span class="devise-stat-pct">{{ d.pctDeclarations | number:'1.1-1' }} %</span>
+                </div>
+                <div class="devise-stat">
+                  <span class="devise-stat-label">Encaissements</span>
+                  <span class="devise-stat-value">{{ d.nbEncaissements | number }}</span>
+                </div>
+                <div class="devise-stat">
+                  <span class="devise-stat-label">Montant CDF</span>
+                  <span class="devise-stat-value teal">{{ fmtMontant(d.montantEncaisseCdf) }}</span>
+                  <span class="devise-stat-pct">{{ d.pctMontantCdf | number:'1.1-1' }} %</span>
+                </div>
+                @if (d.deviseCode !== 'CDF' && d.montantEncaisseDevise > 0) {
+                  <div class="devise-stat">
+                    <span class="devise-stat-label">Montant {{ d.deviseCode }}</span>
+                    <span class="devise-stat-value">{{ fmtMontant(d.montantEncaisseDevise) }}</span>
+                  </div>
+                }
+              </div>
+              <!-- bar showing % of total CDF -->
+              <div class="emp-bar-track" style="margin-top: 0.5rem">
+                <div class="emp-bar-fill"
+                  [class.green]="d.pctMontantCdf >= 50"
+                  [class.orange]="d.pctMontantCdf >= 10 && d.pctMontantCdf < 50"
+                  [class.blue]="d.pctMontantCdf < 10"
+                  [style.width.%]="clampPct(d.pctMontantCdf)">
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
 
     <!-- Top 5 table -->
     <div class="section-card">

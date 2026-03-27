@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CentreDeGestionService } from '../../services/centre-de-gestion.service';
-import { DashboardStatsDto, BreakdownItemDto } from '../../models/centre-de-gestion.model';
+import { DashboardStatsDto, BreakdownItemDto, DeviseBreakdownDto } from '../../models/centre-de-gestion.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -74,19 +74,25 @@ export class DashboardComponent implements OnInit {
   }
 
   /**
-   * Répartition des employés en 2 statuts métier (StatutEmployeId 1=Actif, 2=Inactif)
-   * pour l'affichage des barres de progression.
-   * Règle : DateDeleted IS NULL, Deleted != true, TagDeces=0, TagRetraite=1, TagValidate=1
+   * Répartition des employés en 3 états via historique
+   * (EN ACTIVITE / EN CESSATION / INACTIF)
    */
   get repartitionEmployes(): { label: string; valeur: number; pourcentage: number; couleur: string; icon: string }[] {
     if (!this.stats) return [];
     return [
       {
-        label:       'Actifs',
-        valeur:      this.stats.employesActifs,
-        pourcentage: this.stats.pourcentageEmployesActifs,
+        label:       'En activité',
+        valeur:      this.stats.employesEnActivite,
+        pourcentage: this.stats.pourcentageEmployesEnActivite,
         couleur:     'green',
         icon:        '✅',
+      },
+      {
+        label:       'En cessation',
+        valeur:      this.stats.employesEnCessation,
+        pourcentage: this.stats.pourcentageEmployesEnCessation,
+        couleur:     'orange',
+        icon:        '⏸️',
       },
       {
         label:       'Inactifs',
@@ -94,20 +100,6 @@ export class DashboardComponent implements OnInit {
         pourcentage: this.stats.pourcentageEmployesInactifs,
         couleur:     'red',
         icon:        '🚫',
-      },
-      {
-        label:       'Retraités',
-        valeur:      this.stats.employesRetraites,
-        pourcentage: this.stats.pourcentageEmployesRetraites,
-        couleur:     'blue',
-        icon:        '👴',
-      },
-      {
-        label:       'Décédés',
-        valeur:      this.stats.employesDecedes,
-        pourcentage: this.stats.pourcentageEmployesDecedes,
-        couleur:     'slate',
-        icon:        '✝️',
       },
     ];
   }
@@ -124,6 +116,11 @@ export class DashboardComponent implements OnInit {
   /** Top 5 secteurs par nombre d'employeurs */
   get topSecteurs(): BreakdownItemDto[] {
     return (this.stats?.breakdownParSecteur ?? []).slice(0, 5);
+  }
+
+  /** Ventilation des déclarations et encaissements par devise */
+  get deviseBreakdown(): DeviseBreakdownDto[] {
+    return this.stats?.breakdownParDevise ?? [];
   }
   /** Formate un montant avec séparateurs (ex : 1 234 567) */
   fmtMontant(v: number | null | undefined): string {

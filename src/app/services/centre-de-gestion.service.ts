@@ -49,6 +49,13 @@ import {
   RecouvrementAnalyseDto,
   RecouvrementFilterDto,
 } from '../models/recouvrement-analyse.model';
+import {
+  LiquidationTrendDto,
+  LiquidationTrendFilterDto,
+} from '../models/liquidation-trend.model';
+import {
+  GlobalGrappeFamilleStatsDto,
+} from '../models/global-grappe-famille.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -322,6 +329,33 @@ export class CentreDeGestionService {
     if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
     return this.http.get<RecouvrementAnalyseDto[]>(
       `${this.base}/recouvrement/analyse`, { params },
+    );
+  }
+
+  /** GET /api/CentreDeGestion/liquidations/tendance */
+  getLiquidationTrend(
+    filter: LiquidationTrendFilterDto = {},
+  ): Observable<LiquidationTrendDto> {
+    let params = new HttpParams();
+    if (filter.anneeDebut        != null) params = params.set('anneeDebut',        filter.anneeDebut.toString());
+    if (filter.anneeFin          != null) params = params.set('anneeFin',          filter.anneeFin.toString());
+    if (filter.moisDebut)                 params = params.set('moisDebut',         filter.moisDebut);
+    if (filter.moisFin)                   params = params.set('moisFin',           filter.moisFin);
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    return this.http.get<LiquidationTrendDto>(
+      `${this.base}/liquidations/tendance`, { params },
+    );
+  }
+
+  /** GET /api/CentreDeGestion/grappe-familiale */
+  getGlobalGrappeFamilleStats(
+    centreDeGestionId?: number | null,
+  ): Observable<GlobalGrappeFamilleStatsDto> {
+    let params = new HttpParams();
+    if (centreDeGestionId != null) params = params.set('centreDeGestionId', centreDeGestionId.toString());
+    return this.http.get<GlobalGrappeFamilleStatsDto>(
+      `${this.base}/grappe-familiale`, { params },
     );
   }
 }

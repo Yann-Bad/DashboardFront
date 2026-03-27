@@ -1,0 +1,239 @@
+<div class="trends-page">
+
+  <!-- ── Header ── -->
+  <div class="page-header">
+    <div>
+      <h1>Tendances des Liquidations</h1>
+      <p>Comparaison des 3 branches de prestations — PF, Pensions (PVID), Risques Professionnels</p>
+    </div>
+  </div>
+
+  <!-- ── Filtres ── -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+      <label>
+        Année début
+        <input type="number" [(ngModel)]="filter.anneeDebut" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois début
+        <select [(ngModel)]="filter.moisDebut">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Année fin
+        <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2100" />
+      </label>
+      <label>
+        Mois fin
+        <select [(ngModel)]="filter.moisFin">
+          @for (m of mois; track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Centre de gestion
+        <select [(ngModel)]="filter.centreDeGestionId">
+          <option [ngValue]="null">Tous les centres</option>
+          @for (c of centres(); track c.id) {
+            <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+          }
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Appliquer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading / Error ── -->
+  @if (loading()) {
+    <div class="state-loading"><div class="spinner"></div><span>Chargement…</span></div>
+  }
+  @if (!loading() && error()) {
+    <div class="state-error"><span>{{ error() }}</span></div>
+  }
+
+  @if (!loading() && !error() && data()) {
+
+    <!-- =========================================================
+         Cartes de synthèse par branche
+         ========================================================= -->
+    <div class="branch-summaries">
+      @for (b of summaries(); track b.label) {
+        <div class="branch-card" [class]="'branch-card--' + b.color">
+          <div class="branch-card-header">
+            <span class="branch-card-icon">{{ b.icon }}</span>
+            <span class="branch-card-title">{{ b.label }}</span>
+          </div>
+          <div class="branch-card-body">
+            <div class="bc-metric">
+              <span class="bc-label">Liquidations</span>
+              <span class="bc-value">{{ fmtCount(b.s.nombreLiquidations) }}</span>
+            </div>
+            <div class="bc-metric">
+              <span class="bc-label">Bénéficiaires</span>
+              <span class="bc-value">{{ fmtCount(b.s.nombreBeneficiaires) }}</span>
+            </div>
+            <div class="bc-metric">
+              <span class="bc-label">Montant liquidé</span>
+              <span class="bc-value">{{ fmtMontant(b.s.montantLiquide) }}</span>
+            </div>
+            <div class="bc-metric">
+              <span class="bc-label">Montant payé</span>
+              <span class="bc-value green">{{ fmtMontant(b.s.montantPaye) }}</span>
+            </div>
+            <div class="bc-metric">
+              <span class="bc-label">Arriérés</span>
+              <span class="bc-value amber">{{ fmtMontant(b.s.montantArriere) }}</span>
+            </div>
+            <div class="bc-metric">
+              <span class="bc-label">Annulées</span>
+              <span class="bc-value red">{{ fmtCount(b.s.annulees) }}</span>
+            </div>
+          </div>
+          <!-- Taux de paiement bar -->
+          <div class="bc-progress">
+            <div class="bc-progress-label">
+              <span>Taux de paiement</span>
+              <strong>{{ fmtPct(b.s.tauxPaiement) }}</strong>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" [class]="'progress-fill--' + b.color"
+                [style.width]="barWidth(b.s.tauxPaiement)"></div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- =========================================================
+         Graphiques
+         ========================================================= -->
+
+    <!-- Nombre de liquidations -->
+    @if (chartCountData().labels!.length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Nombre de liquidations par période</h2>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartCountData()"
+            [options]="chartCountOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- Montant liquidé -->
+    @if (chartAmountData().labels!.length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Montant liquidé par période</h2>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartAmountData()"
+            [options]="chartAmountOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- Taux de paiement -->
+    @if (chartRateData().labels!.length > 1) {
+      <div class="chart-section">
+        <div class="section-header">
+          <h2>Taux de paiement par période</h2>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartRateData()"
+            [options]="chartRateOptions"
+            type="line"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Tableau comparatif
+         ========================================================= -->
+    @if (tableData().length === 0) {
+      <div class="state-empty"><span>Aucune liquidation trouvée pour les critères sélectionnés.</span></div>
+    } @else {
+      <div class="table-section">
+        <div class="section-header">
+          <h2>Détail comparatif par période</h2>
+          <span class="period-count">{{ tableData().length }} période(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th rowspan="2" class="th-period">Période</th>
+                <th colspan="4" class="th-group th-pf">PF</th>
+                <th colspan="4" class="th-group th-pvid">PVID</th>
+                <th colspan="4" class="th-group th-rp">RP</th>
+              </tr>
+              <tr>
+                <!-- PF -->
+                <th class="right sub-th">Liquid.</th>
+                <th class="right sub-th">Bénéf.</th>
+                <th class="right sub-th">Montant</th>
+                <th class="right sub-th">Taux</th>
+                <!-- PVID -->
+                <th class="right sub-th">Liquid.</th>
+                <th class="right sub-th">Bénéf.</th>
+                <th class="right sub-th">Montant</th>
+                <th class="right sub-th">Taux</th>
+                <!-- RP -->
+                <th class="right sub-th">Liquid.</th>
+                <th class="right sub-th">Bénéf.</th>
+                <th class="right sub-th">Montant</th>
+                <th class="right sub-th">Taux</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of tableData(); track row.key) {
+                <tr class="data-row">
+                  <td class="periode-cell">
+                    <span class="mois">{{ moisLabel(row.mois) }}</span>
+                    <span class="annee">{{ row.annee }}</span>
+                  </td>
+                  <!-- PF -->
+                  <td class="right indigo">{{ fmtCount(row.pf?.nombreLiquidations) }}</td>
+                  <td class="right teal">{{ fmtCount(row.pf?.nombreEmployes) }}</td>
+                  <td class="right">{{ fmtMontant(row.pf?.montantLiquide) }}</td>
+                  <td class="right">{{ fmtPct(row.pf?.tauxPaiement) }}</td>
+                  <!-- PVID -->
+                  <td class="right emerald">{{ fmtCount(row.pension?.nombreLiquidations) }}</td>
+                  <td class="right teal">{{ fmtCount(row.pension?.nombreEmployes) }}</td>
+                  <td class="right">{{ fmtMontant(row.pension?.montantLiquide) }}</td>
+                  <td class="right">{{ fmtPct(row.pension?.tauxPaiement) }}</td>
+                  <!-- RP -->
+                  <td class="right amber-text">{{ fmtCount(row.rp?.nombreLiquidations) }}</td>
+                  <td class="right teal">{{ fmtCount(row.rp?.nombreEmployes) }}</td>
+                  <td class="right">{{ fmtMontant(row.rp?.montantLiquide) }}</td>
+                  <td class="right">{{ fmtPct(row.rp?.tauxPaiement) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  }
+
+</div>

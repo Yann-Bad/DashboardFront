@@ -1,0 +1,191 @@
+/* ============================================================
+   Grappe Familiale — Module dédié
+   ============================================================ */
+
+.grappe-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ---- Header ---- */
+.page-header { margin-bottom: 1.5rem; }
+.page-header h1 { font-size: 1.4rem; font-weight: 600; color: #1e293b; margin: 0 0 0.25rem; }
+.page-header p  { font-size: 0.875rem; color: #64748b; margin: 0; }
+
+/* ---- Filter ---- */
+.filter-panel {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+}
+.filter-panel h2 {
+  font-size: 0.95rem; font-weight: 600; color: #374151; margin: 0 0 1rem;
+}
+.filter-grid {
+  display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;
+}
+.filter-grid label {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  font-size: 0.8rem; font-weight: 500; color: #6b7280; min-width: 240px;
+}
+.filter-grid select {
+  border: 1px solid #d1d5db; border-radius: 6px;
+  padding: 0.4rem 0.6rem; font-size: 0.875rem;
+  color: #1e293b; background: #f9fafb; outline: none;
+  transition: border-color 0.15s;
+}
+.filter-grid select:focus { border-color: #6366f1; background: #fff; }
+.filter-actions { display: flex; align-items: flex-end; gap: 0.5rem; }
+.btn-apply {
+  background: #6366f1; color: #fff; border: none; border-radius: 6px;
+  padding: 0.45rem 1.1rem; font-size: 0.875rem; font-weight: 500;
+  cursor: pointer; transition: background 0.15s; white-space: nowrap;
+}
+.btn-apply:hover    { background: #4f46e5; }
+.btn-apply:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+/* ---- States ---- */
+.state-loading, .state-error, .state-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 4rem 2rem;
+  text-align: center; color: #94a3b8; gap: 0.5rem;
+}
+.state-error { color: #ef4444; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #e2e8f0; border-top-color: #6366f1;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- Summary cards ---- */
+.summary-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.75rem; margin-bottom: 1.5rem;
+}
+.summary-card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 1rem 1.1rem; display: flex; align-items: center; gap: 0.75rem;
+}
+.sc-icon { font-size: 1.5rem; line-height: 1; }
+.sc-body { flex: 1; min-width: 0; }
+.sc-label { font-size: 0.75rem; color: #64748b; font-weight: 500; margin-bottom: 0.2rem; }
+.sc-value { font-size: 1.15rem; font-weight: 700; color: #1e293b; }
+.sc-value.indigo  { color: #4338ca; }
+.sc-value.teal    { color: #0d9488; }
+.sc-value.blue    { color: #2563eb; }
+.sc-value.emerald { color: #059669; }
+.sc-value.amber   { color: #d97706; }
+.sc-value.purple  { color: #7c3aed; }
+
+/* ---- Section panels ---- */
+.section-panel {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+}
+.section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1rem;
+}
+.section-title {
+  font-size: 0.95rem; font-weight: 600; color: #374151; margin: 0 0 1rem;
+}
+.period-count {
+  background: #f1f5f9; color: #64748b; border-radius: 12px;
+  padding: 0.2rem 0.7rem; font-size: 0.78rem; font-weight: 500;
+}
+
+/* ---- Validation cards ---- */
+.validation-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+.validation-card {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+.vc-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.4rem;
+}
+.vc-label { font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+.vc-pct   { font-size: 0.85rem; font-weight: 700; color: #1e293b; }
+.vc-detail { font-size: 0.75rem; color: #64748b; margin-top: 0.3rem; display: block; }
+
+.progress-track {
+  height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 4px; transition: width 0.4s ease;
+}
+.pf-teal    { background: #14b8a6; }
+.pf-indigo  { background: #6366f1; }
+.pf-amber   { background: #f59e0b; }
+.pf-blue    { background: #3b82f6; }
+.pf-emerald { background: #10b981; }
+
+/* ---- Composition ---- */
+.composition-row {
+  display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start;
+}
+@media (max-width: 768px) {
+  .composition-row { grid-template-columns: 1fr; }
+}
+.composition-cards {
+  display: flex; flex-direction: column; gap: 0.75rem;
+}
+.comp-card {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 0.85rem 1rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+}
+.cc-icon { font-size: 1.3rem; line-height: 1; }
+.cc-body { flex: 1; min-width: 120px; }
+.cc-label { font-size: 0.8rem; color: #64748b; font-weight: 500; }
+.cc-value { font-size: 1.05rem; font-weight: 700; color: #1e293b; }
+.cc-sub   { font-size: 0.72rem; color: #94a3b8; }
+.cc-bar   { width: 100%; }
+.composition-chart { height: 250px; }
+
+/* ---- Distribution ---- */
+.distribution-grid {
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.dist-bar {
+  display: grid; grid-template-columns: 100px 1fr 120px; gap: 0.75rem; align-items: center;
+}
+.dist-label { font-size: 0.82rem; font-weight: 500; color: #475569; }
+.dist-track { height: 10px; }
+.dist-value { font-size: 0.8rem; color: #64748b; text-align: right; }
+
+/* ---- Charts ---- */
+.chart-canvas-wrap {
+  position: relative; height: 300px;
+}
+
+/* ---- Table ---- */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+thead th {
+  background: #f8fafc; color: #64748b; font-weight: 600;
+  padding: 0.6rem 0.7rem; border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+tbody td {
+  padding: 0.55rem 0.7rem; border-bottom: 1px solid #f1f5f9;
+}
+.data-row:hover td { background: #f8fafc; }
+.right { text-align: right; }
+
+.centre-code {
+  font-weight: 600; color: #1e293b; margin-right: 0.4rem;
+}
+.centre-lib {
+  font-size: 0.78rem; color: #94a3b8;
+}
+
+.indigo     { color: #4338ca; }
+.teal       { color: #0d9488; }
+.blue       { color: #2563eb; }
+.emerald    { color: #059669; }
+.amber-text { color: #d97706; }
+.purple     { color: #7c3aed; }

@@ -97,6 +97,18 @@ export const routes: Routes = [
       import('./pages/prestations/prestations.component').then(m => m.PrestationsComponent),
   },
   {
+    path: 'liquidation-trends',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/liquidation-trends/liquidation-trends.component').then(m => m.LiquidationTrendsComponent),
+  },
+  {
+    path: 'grappe-familiale',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/grappe-familiale/grappe-familiale.component').then(m => m.GrappeFamilialeComponent),
+  },
+  {
     path: 'immatriculations',
     canActivate: [authGuard],
     loadComponent: () =>

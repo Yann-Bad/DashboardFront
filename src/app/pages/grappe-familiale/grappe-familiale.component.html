@@ -1,0 +1,224 @@
+<div class="grappe-page">
+
+  <!-- ── Header ── -->
+  <div class="page-header">
+    <div>
+      <h1>Grappe Familiale</h1>
+      <p>Conjoints, enfants, ascendants — composition et validation par branche pour tous les centres</p>
+    </div>
+  </div>
+
+  <!-- ── Filtre ── -->
+  <div class="filter-panel">
+    <h2>Filtres</h2>
+    <div class="filter-grid">
+      <label>
+        Centre de gestion
+        <select [(ngModel)]="selectedCentreId">
+          <option [ngValue]="null">Tous les centres</option>
+          @for (c of centres(); track c.id) {
+            <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+          }
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Appliquer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── States ── -->
+  @if (loading()) {
+    <div class="state-loading"><div class="spinner"></div><span>Chargement…</span></div>
+  }
+  @if (!loading() && error()) {
+    <div class="state-error"><span>{{ error() }}</span></div>
+  }
+
+  @if (!loading() && !error() && data()) {
+
+    <!-- =========================================================
+         Cartes de synthèse globale
+         ========================================================= -->
+    <div class="summary-grid">
+      @for (c of summaryCards(); track c.label) {
+        <div class="summary-card">
+          <div class="sc-icon">{{ c.icon }}</div>
+          <div class="sc-body">
+            <div class="sc-label">{{ c.label }}</div>
+            <div class="sc-value" [class]="c.color">
+              @if (c.isDecimal) {
+                {{ c.value | number:'1.1-2' }}
+              } @else {
+                {{ c.value | number }}
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- =========================================================
+         Validation de la grappe par branche
+         ========================================================= -->
+    <div class="section-panel">
+      <h2 class="section-title">Validation de la grappe par branche</h2>
+      <div class="validation-grid">
+        @for (b of validationBranches(); track b.label) {
+          <div class="validation-card" [attr.data-color]="b.color">
+            <div class="vc-header">
+              <span class="vc-label">{{ b.label }}</span>
+              <span class="vc-pct">{{ b.pct }} %</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" [class]="'pf-' + b.color"
+                [style.width.%]="clampPct(b.pct)"></div>
+            </div>
+            <span class="vc-detail">{{ fmt(b.valide) }} / {{ fmt(b.total) }} validé(s)</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- =========================================================
+         Composition de la famille
+         ========================================================= -->
+    <div class="section-panel">
+      <h2 class="section-title">Composition de la famille</h2>
+      <div class="composition-row">
+        <div class="composition-cards">
+          @for (m of familleComposition(); track m.label) {
+            <div class="comp-card" [attr.data-color]="m.color">
+              <div class="cc-icon">{{ m.icon }}</div>
+              <div class="cc-body">
+                <div class="cc-label">{{ m.label }}</div>
+                <div class="cc-value">{{ fmt(m.total) }}</div>
+                <div class="cc-sub">{{ fmt(m.employesConcernes) }} employés ({{ m.pct }} %)</div>
+              </div>
+              <div class="progress-track cc-bar">
+                <div class="progress-fill" [class]="'pf-' + m.color"
+                  [style.width.%]="clampPct(m.pct)"></div>
+              </div>
+            </div>
+          }
+        </div>
+        <!-- Doughnut chart -->
+        @if (data()!.totalMembresFamille > 0) {
+          <div class="composition-chart">
+            <canvas baseChart
+              [data]="chartCompositionData()"
+              [options]="chartCompositionOptions"
+              type="doughnut"
+            ></canvas>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- =========================================================
+         Distribution du nombre d'enfants
+         ========================================================= -->
+    @if (data()!.distributionEnfants.length > 0) {
+      <div class="section-panel">
+        <h2 class="section-title">Distribution du nombre d'enfants</h2>
+        <div class="distribution-grid">
+          @for (d of data()!.distributionEnfants; track d.label) {
+            <div class="dist-bar">
+              <span class="dist-label">{{ d.label }}</span>
+              <div class="progress-track dist-track">
+                <div class="progress-fill pf-emerald"
+                  [style.width.%]="clampPct(d.pourcentage)"></div>
+              </div>
+              <span class="dist-value">{{ fmt(d.nombre) }} ({{ d.pourcentage | number:'1.1-1' }} %)</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Graphiques par centre
+         ========================================================= -->
+
+    <!-- Employés et membres par centre -->
+    @if (data()!.parCentre.length > 1) {
+      <div class="section-panel">
+        <h2 class="section-title">Employés et membres par centre</h2>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartEmployeesData()"
+            [options]="chartEmployeesOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- Taux de validation par centre -->
+    @if (data()!.parCentre.length > 1) {
+      <div class="section-panel">
+        <h2 class="section-title">Taux de validation par branche et centre</h2>
+        <div class="chart-canvas-wrap">
+          <canvas baseChart
+            [data]="chartValidationData()"
+            [options]="chartValidationOptions"
+            type="bar"
+          ></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- =========================================================
+         Tableau par centre
+         ========================================================= -->
+    @if (data()!.parCentre.length > 0) {
+      <div class="section-panel">
+        <div class="section-header">
+          <h2 class="section-title">Détail par centre</h2>
+          <span class="period-count">{{ data()!.parCentre.length }} centre(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Centre</th>
+                <th class="right">Employés</th>
+                <th class="right">Conjoints</th>
+                <th class="right">Enfants</th>
+                <th class="right">Ascendants</th>
+                <th class="right">Total famille</th>
+                <th class="right">Moy. enf.</th>
+                <th class="right">Valid. Pension</th>
+                <th class="right">Valid. PF</th>
+                <th class="right">Valid. RP</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of data()!.parCentre; track c.centreId) {
+                <tr class="data-row">
+                  <td>
+                    <span class="centre-code">{{ c.centreCode }}</span>
+                    <span class="centre-lib">{{ c.centreLibelle }}</span>
+                  </td>
+                  <td class="right indigo">{{ c.totalEmployesValides | number }}</td>
+                  <td class="right blue">{{ c.totalConjoints | number }}</td>
+                  <td class="right emerald">{{ c.totalEnfants | number }}</td>
+                  <td class="right amber-text">{{ c.totalAscendants | number }}</td>
+                  <td class="right"><strong>{{ c.totalMembresFamille | number }}</strong></td>
+                  <td class="right purple">{{ c.moyenneEnfants | number:'1.1-2' }}</td>
+                  <td class="right teal">{{ c.totalEmployesValides > 0 ? (c.avecGrappeValidePension / c.totalEmployesValides * 100 | number:'1.0-0') + ' %' : '—' }}</td>
+                  <td class="right indigo">{{ c.totalEmployesValides > 0 ? (c.avecGrappeValidePf / c.totalEmployesValides * 100 | number:'1.0-0') + ' %' : '—' }}</td>
+                  <td class="right amber-text">{{ c.totalEmployesValides > 0 ? (c.avecGrappeValideRp / c.totalEmployesValides * 100 | number:'1.0-0') + ' %' : '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  }
+
+</div>

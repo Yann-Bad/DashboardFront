@@ -1,0 +1,201 @@
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-row">
+      <div>
+        <h1>🔍 Détection d'Anomalies (IA)</h1>
+        <p class="subtitle">Identification de pics inhabituels dans les séries financières via IID Spike Detection (ML.NET)</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide = !showGuide">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        {{ showGuide ? 'Masquer le guide' : 'Guide d\'utilisation' }}
+      </button>
+    </div>
+  </div>
+
+  @if (showGuide) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>📖 Comment fonctionne la détection d'anomalies ?</h2>
+    </div>
+    <div class="guide-body">
+      <div class="guide-section">
+        <h3>🧠 L'algorithme</h3>
+        <p>Le module utilise <strong>IID Spike Detection</strong> de ML.NET. Il analyse chaque point de la série temporelle et calcule un score statistique indiquant si la valeur est significativement différente du comportement habituel.</p>
+      </div>
+      <div class="guide-section">
+        <h3>📊 Les métriques disponibles</h3>
+        <ul>
+          <li><strong>Encaissements</strong> — Détecte les mois avec des montants collectés anormalement hauts ou bas</li>
+          <li><strong>Déclarations</strong> — Identifie les pics ou creux inhabituels dans le volume de déclarations</li>
+          <li><strong>Dossiers</strong> — Repère les mois avec un nombre anormal de dossiers créés</li>
+          <li><strong>Soldes Employeurs</strong> — Détecte les variations brutales du solde débiteur net</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>⚙️ Les paramètres</h3>
+        <ul>
+          <li><strong>Année début / fin</strong> — Fenêtre d'analyse. Plus elle est large, plus l'algorithme a de contexte pour distinguer le normal de l'anormal.</li>
+          <li><strong>Confiance (%)</strong> — Seuil de sensibilité de la détection :
+            <ul>
+              <li><strong>90 %</strong> — Plus sensible, détecte plus d'anomalies (y compris des faux positifs)</li>
+              <li><strong>95 %</strong> — Équilibre recommandé entre sensibilité et précision</li>
+              <li><strong>99 %</strong> — Très strict, ne signale que les anomalies les plus évidentes</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>📈 Lire les résultats</h3>
+        <ul>
+          <li><span class="legend-dot blue"></span> <strong>Ligne bleue</strong> — Valeurs normales de la série</li>
+          <li><span class="legend-dot red"></span> <strong>Points rouges</strong> — Points identifiés comme anomalies</li>
+          <li><strong>Score</strong> — Amplitude de l'écart par rapport à la normale (plus le score est élevé, plus l'anomalie est marquée)</li>
+          <li><strong>P-value</strong> — Probabilité que le point soit normal. Plus elle est basse, plus l'anomalie est certaine.</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>💡 Conseils</h3>
+        <ul>
+          <li>Commencez avec un niveau de confiance de <strong>95 %</strong> puis ajustez selon les résultats.</li>
+          <li>Un minimum de <strong>4 points</strong> est nécessaire. Idéalement, analysez au moins 12 mois.</li>
+          <li>Les anomalies détectées peuvent indiquer : erreurs de saisie, événements exceptionnels, ou changements structurels dans les données.</li>
+          <li>Croisez les anomalies avec le contexte métier (grèves, réformes, périodes de régularisation) pour interpréter les résultats.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Métrique</label>
+      <select [(ngModel)]="filter.metric">
+        @for (m of metrics; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Année début</label>
+      <input type="number" [(ngModel)]="filter.anneeDebut" placeholder="Ex: 2020" min="2000" max="2030" />
+    </div>
+    <div class="filter-group">
+      <label>Année fin</label>
+      <input type="number" [(ngModel)]="filter.anneeFin" placeholder="Ex: 2025" min="2000" max="2030" />
+    </div>
+    <div class="filter-group">
+      <label>Confiance (%)</label>
+      <select [(ngModel)]="filter.confidence">
+        <option [ngValue]="90">90 %</option>
+        <option [ngValue]="95">95 %</option>
+        <option [ngValue]="99">99 %</option>
+      </select>
+    </div>
+    <button class="btn-apply" (click)="load()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Détecter
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Analyse en cours…</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-state">
+      <p>{{ error }}</p>
+      <button (click)="load()">Réessayer</button>
+    </div>
+  }
+
+  @if (!loading && !error && result) {
+
+    <!-- Summary cards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Métrique</span>
+        <span class="stat-value">{{ result.metric }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Points analysés</span>
+        <span class="stat-value">{{ result.totalPoints }}</span>
+      </div>
+      <div class="stat-card" [class.anomaly-highlight]="result.anomalyCount > 0">
+        <span class="stat-label">Anomalies détectées</span>
+        <span class="stat-value">{{ result.anomalyCount }}</span>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    @if (chartData.length > 0) {
+    <div class="chart-section">
+      <h2>Série temporelle & Anomalies</h2>
+      <p class="chart-desc">Ligne bleue = valeurs normales · Points rouges = anomalies détectées</p>
+      <ngx-charts-line-chart
+        [view]="view"
+        [results]="chartData"
+        [scheme]="chartColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Période"
+        yAxisLabel="Valeur"
+        [autoScale]="true"
+        [animations]="true"
+        [roundDomains]="true">
+      </ngx-charts-line-chart>
+    </div>
+    }
+
+    <!-- Anomaly table -->
+    @if (anomalies.length > 0) {
+    <div class="table-section">
+      <h2>Détail des anomalies ({{ anomalies.length }})</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th class="num">Valeur</th>
+              <th class="num">Score</th>
+              <th class="num">P-value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of anomalies; track a.date) {
+            <tr class="anomaly-row">
+              <td>{{ fmtDate(a.date) }}</td>
+              <td class="num highlight-red">{{ fmtValue(a.value) }}</td>
+              <td class="num">{{ fmtValue(a.score) }}</td>
+              <td class="num muted">{{ fmtValue(a.pValue) }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    @if (result.anomalyCount === 0) {
+    <div class="success-state">
+      <p>✅ Aucune anomalie détectée sur les {{ result.totalPoints }} points analysés avec un niveau de confiance de {{ filter.confidence }} %.</p>
+    </div>
+    }
+
+    @if (result.totalPoints < 4) {
+    <div class="warning-state">
+      <p>⚠️ Données insuffisantes ({{ result.totalPoints }} points). Il faut au moins 4 périodes pour la détection d'anomalies.</p>
+    </div>
+    }
+  }
+</div>

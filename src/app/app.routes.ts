@@ -147,6 +147,34 @@ export const routes: Routes = [
       import('./pages/trends/trends').then(m => m.TrendsComponent),
   },
 
+  // ── Analyse Financière IA (ML.NET) ───────────────────────────────────
+  {
+    path: 'forecast',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/forecast/forecast.component').then(m => m.ForecastComponent),
+  },
+  {
+    path: 'anomalies',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/anomalies/anomalies.component').then(m => m.AnomaliesComponent),
+  },
+
+  // ── Analyse Trésorerie IA (ML.NET) ───────────────────────────────────
+  {
+    path: 'treasury-forecast',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/treasury-forecast/treasury-forecast.component').then(m => m.TreasuryForecastComponent),
+  },
+  {
+    path: 'treasury-anomalies',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/treasury-anomalies/treasury-anomalies.component').then(m => m.TreasuryAnomaliesComponent),
+  },
+
   // ── Protected (Admin + Manager only) ─────────────────────────────────
   // Example for a future stats-management or config route:
   // {

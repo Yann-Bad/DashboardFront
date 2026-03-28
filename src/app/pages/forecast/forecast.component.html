@@ -1,0 +1,188 @@
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-row">
+      <div>
+        <h1>🔮 Prévisions Financières (IA)</h1>
+        <p class="subtitle">Prédiction de séries temporelles par Singular Spectrum Analysis (ML.NET)</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide = !showGuide">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        {{ showGuide ? 'Masquer le guide' : 'Guide d\'utilisation' }}
+      </button>
+    </div>
+  </div>
+
+  @if (showGuide) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>📖 Comment fonctionne la prévision ?</h2>
+    </div>
+    <div class="guide-body">
+      <div class="guide-section">
+        <h3>🧠 L'algorithme</h3>
+        <p>Le module utilise <strong>SSA (Singular Spectrum Analysis)</strong>, un algorithme de décomposition de séries temporelles intégré à ML.NET. Il extrait les tendances et cycles saisonniers des données historiques pour projeter les valeurs futures.</p>
+      </div>
+      <div class="guide-section">
+        <h3>📊 Les métriques disponibles</h3>
+        <ul>
+          <li><strong>Encaissements</strong> — Montants totaux collectés par mois (cotisations, majorations, taxations)</li>
+          <li><strong>Déclarations</strong> — Nombre de déclarations de cotisations déposées par mois</li>
+          <li><strong>Dossiers</strong> — Nombre de dossiers créés par mois (front-office)</li>
+          <li><strong>Soldes Employeurs</strong> — Solde débiteur net agrégé par mois (débit − crédit)</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>⚙️ Les paramètres</h3>
+        <ul>
+          <li><strong>Année début / fin</strong> — Définissent la fenêtre de données historiques utilisées pour entraîner le modèle. Plus la fenêtre est large, plus la prévision capte les tendances longues.</li>
+          <li><strong>Horizon</strong> — Nombre de mois à prédire dans le futur (3 à 24). Un horizon court est plus fiable qu'un horizon long.</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>📈 Lire le graphique</h3>
+        <ul>
+          <li><span class="legend-dot blue"></span> <strong>Ligne bleue</strong> — Données historiques réelles</li>
+          <li><span class="legend-dot green"></span> <strong>Ligne verte</strong> — Valeurs prédites par le modèle</li>
+          <li><span class="legend-dot gray"></span> <strong>Lignes grises</strong> — Intervalle de confiance à 95 % (borne supérieure et inférieure)</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>💡 Conseils</h3>
+        <ul>
+          <li>Minimum <strong>4 points</strong> de données nécessaires. Idéalement, utilisez au moins 12 à 24 mois d'historique.</li>
+          <li>Si les prévisions semblent aberrantes, essayez de réduire l'horizon ou d'élargir la fenêtre historique.</li>
+          <li>Les bornes de confiance s'élargissent avec l'horizon — c'est normal, l'incertitude augmente.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Métrique</label>
+      <select [(ngModel)]="filter.metric">
+        @for (m of metrics; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Année début</label>
+      <input type="number" [(ngModel)]="filter.anneeDebut" placeholder="Ex: 2020" min="2000" max="2030" />
+    </div>
+    <div class="filter-group">
+      <label>Année fin</label>
+      <input type="number" [(ngModel)]="filter.anneeFin" placeholder="Ex: 2025" min="2000" max="2030" />
+    </div>
+    <div class="filter-group">
+      <label>Horizon (mois)</label>
+      <select [(ngModel)]="filter.horizon">
+        <option [ngValue]="3">3 mois</option>
+        <option [ngValue]="6">6 mois</option>
+        <option [ngValue]="12">12 mois</option>
+        <option [ngValue]="24">24 mois</option>
+      </select>
+    </div>
+    <button class="btn-apply" (click)="load()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      Analyser
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Analyse en cours… Le modèle ML.NET entraîne les données.</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-state">
+      <p>{{ error }}</p>
+      <button (click)="load()">Réessayer</button>
+    </div>
+  }
+
+  @if (!loading && !error && result) {
+
+    <!-- Summary cards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Métrique</span>
+        <span class="stat-value">{{ result.metric }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Points historiques</span>
+        <span class="stat-value">{{ result.historicalPointCount }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Points prédits</span>
+        <span class="stat-value accent">{{ result.forecasts.length }}</span>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    @if (chartData.length > 0) {
+    <div class="chart-section">
+      <h2>Historique & Prévisions</h2>
+      <p class="chart-desc">Ligne bleue = données réelles · Ligne verte = prévisions · Zone grise = intervalle de confiance 95 %</p>
+      <ngx-charts-line-chart
+        [view]="view"
+        [results]="chartData"
+        [scheme]="historyColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Période"
+        yAxisLabel="Valeur"
+        [autoScale]="true"
+        [animations]="true"
+        [roundDomains]="true">
+      </ngx-charts-line-chart>
+    </div>
+    }
+
+    <!-- Forecast table -->
+    @if (result.forecasts.length > 0) {
+    <div class="table-section">
+      <h2>Détail des prévisions</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th class="num">Valeur prédite</th>
+              <th class="num">Borne inférieure</th>
+              <th class="num">Borne supérieure</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of result.forecasts; track f.date) {
+            <tr>
+              <td>{{ fmtDate(f.date) }}</td>
+              <td class="num highlight">{{ fmtValue(f.predictedValue) }}</td>
+              <td class="num muted">{{ fmtValue(f.lowerBound) }}</td>
+              <td class="num muted">{{ fmtValue(f.upperBound) }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    @if (result.historicalPointCount < 4) {
+    <div class="warning-state">
+      <p>⚠️ Données insuffisantes ({{ result.historicalPointCount }} points). Il faut au moins 4 périodes pour générer une prévision.</p>
+    </div>
+    }
+  }
+</div>

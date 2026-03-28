@@ -1,0 +1,232 @@
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-row">
+      <div>
+        <h1>🏦 Prévisions de Trésorerie (IA)</h1>
+        <p class="subtitle">Prédiction des flux de trésorerie par Singular Spectrum Analysis (ML.NET) — basé sur les opérations comptables</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide = !showGuide">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        {{ showGuide ? 'Masquer le guide' : 'Guide d\'utilisation' }}
+      </button>
+    </div>
+  </div>
+
+  @if (showGuide) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>📖 Comment fonctionne la prévision de trésorerie ?</h2>
+    </div>
+    <div class="guide-body">
+      <div class="guide-section">
+        <h3>🧠 L'algorithme</h3>
+        <p>Le module utilise <strong>SSA (Singular Spectrum Analysis)</strong> de ML.NET sur les données de la table <strong>Operationcomptable</strong> croisée avec <strong>CodeOperation</strong> pour catégoriser les flux entrants et sortants.</p>
+      </div>
+      <div class="guide-section">
+        <h3>📊 Les métriques</h3>
+        <ul>
+          <li><strong>Flux Net</strong> — Encaissements (AE+BEE) moins Décaissements (CS+BSE) par mois</li>
+          <li><strong>Encaissements</strong> — Cotisations, intérêts DAT, reversements (catégories AE, BEE)</li>
+          <li><strong>Décaissements</strong> — Sorties de fonds exécutées, frais bancaires (catégories CS, BSE)</li>
+          <li><strong>Solde Disponible</strong> — Balance cumulée incluant AE, BS, BSR, BEE, CS (fonds réellement accessibles)</li>
+          <li><strong>Solde Réel</strong> — Balance cumulée des flux confirmés : AE, BSE, BEE, CS (hors prévisionnels)</li>
+          <li><strong>Solde Prévisionnel</strong> — Solde Réel − Émis + Encaissé (projection toutes opérations confondues)</li>
+          <li><strong>Volume</strong> — Nombre total d'opérations exécutées par mois</li>
+          <li><strong>Frais Bancaires</strong> — Uniquement les codes C01 à C07 de la catégorie CS :
+            <ul>
+              <li><strong>C01</strong> — Tenue de compte</li>
+              <li><strong>C02</strong> — Commission</li>
+              <li><strong>C03</strong> — Frais extrait</li>
+              <li><strong>C04</strong> — Intérêt débiteur</li>
+              <li><strong>C05</strong> — Message</li>
+              <li><strong>C06</strong> — TVA</li>
+              <li><strong>C07</strong> — Autres frais bancaires</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>⚙️ Les filtres</h3>
+        <ul>
+          <li><strong>Monnaie</strong> — CDF, USD ou EUR. Filtre via la banque associée à l'opération. Sans filtre, les montants sont convertis en CDF via les taux de change du jour.</li>
+          <li><strong>Année début / fin</strong> — Fenêtre historique pour l'entraînement du modèle.</li>
+          <li><strong>Horizon</strong> — Nombre de mois à projeter (3 à 24).</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>📈 Lire le graphique</h3>
+        <ul>
+          <li><span class="legend-dot blue"></span> <strong>Ligne bleue</strong> — Données historiques réelles</li>
+          <li><span class="legend-dot green"></span> <strong>Ligne verte</strong> — Valeurs prédites</li>
+          <li><span class="legend-dot gray"></span> <strong>Lignes grises</strong> — Intervalle de confiance à 95 %</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>� Colonnes du tableau de prévisions</h3>
+        <ul>
+          <li><strong>Période</strong> — Mois futur prédit (format mois/année)</li>
+          <li><strong>Valeur prédite</strong> — Montant estimé par le modèle SSA pour ce mois</li>
+          <li><strong>Borne inférieure</strong> — Limite basse de l'intervalle de confiance à 95 % (scénario pessimiste)</li>
+          <li><strong>Borne supérieure</strong> — Limite haute de l'intervalle de confiance à 95 % (scénario optimiste)</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>💱 Conversion de devise</h3>
+        <ul>
+          <li>Avec un filtre de devise (CDF, USD, EUR) — les montants sont affichés dans la devise sélectionnée, sans conversion.</li>
+          <li>Sans filtre (« Toutes ») — les montants USD et EUR sont convertis en <strong>CDF</strong> via les taux de change de la table Taux (base SUIVI_TP_DF), en utilisant l'USD comme devise intermédiaire.</li>
+          <li>Le taux utilisé est celui du 1er du mois, ou à défaut le plus récent avant cette date (même logique que le système de taux du jour).</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>💡 Conseils</h3>
+        <ul>
+          <li>Le flux net peut être négatif — cela signifie que les décaissements dépassent les encaissements.</li>
+          <li>Les frais bancaires ne couvrent que les codes C01–C07 (pas les débits d'opérations C10, E01).</li>
+          <li>Un minimum de 4 mois est requis. Utilisez au moins 12 mois pour de meilleurs résultats.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Métrique</label>
+      <select [(ngModel)]="filter.metric">
+        @for (m of metrics; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Monnaie</label>
+      <select [(ngModel)]="filter.monnaie">
+        @for (c of currencies; track c.value) {
+          <option [value]="c.value">{{ c.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Année début</label>
+      <input type="number" [(ngModel)]="filter.anneeDebut" placeholder="Ex: 2023" min="2000" max="2030" />
+    </div>
+    <div class="filter-group">
+      <label>Année fin</label>
+      <input type="number" [(ngModel)]="filter.anneeFin" placeholder="Ex: 2026" min="2000" max="2030" />
+    </div>
+    <div class="filter-group">
+      <label>Horizon (mois)</label>
+      <select [(ngModel)]="filter.horizon">
+        <option [ngValue]="3">3 mois</option>
+        <option [ngValue]="6">6 mois</option>
+        <option [ngValue]="12">12 mois</option>
+        <option [ngValue]="24">24 mois</option>
+      </select>
+    </div>
+    <button class="btn-apply" (click)="load()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      Analyser
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Analyse en cours… Le modèle ML.NET entraîne les données de trésorerie.</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-state">
+      <p>{{ error }}</p>
+      <button (click)="load()">Réessayer</button>
+    </div>
+  }
+
+  @if (!loading && !error && result) {
+
+    <!-- Summary cards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Métrique</span>
+        <span class="stat-value">{{ result.metric }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Monnaie</span>
+        <span class="stat-value">{{ result.monnaie || 'Toutes (conv. CDF)' }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Points historiques</span>
+        <span class="stat-value">{{ result.historicalPointCount }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Points prédits</span>
+        <span class="stat-value accent">{{ result.forecasts.length }}</span>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    @if (chartData.length > 0) {
+    <div class="chart-section">
+      <h2>Historique & Prévisions</h2>
+      <p class="chart-desc">Ligne bleue = données réelles · Ligne verte = prévisions · Zone grise = intervalle de confiance 95 %</p>
+      <ngx-charts-line-chart
+        [view]="view"
+        [results]="chartData"
+        [scheme]="chartColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Période"
+        yAxisLabel="Montant"
+        [autoScale]="true"
+        [animations]="true"
+        [roundDomains]="true">
+      </ngx-charts-line-chart>
+    </div>
+    }
+
+    <!-- Forecast table -->
+    @if (result.forecasts.length > 0) {
+    <div class="table-section">
+      <h2>Détail des prévisions</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th class="num">Valeur prédite</th>
+              <th class="num">Borne inférieure</th>
+              <th class="num">Borne supérieure</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of result.forecasts; track f.date) {
+            <tr>
+              <td>{{ fmtDate(f.date) }}</td>
+              <td class="num highlight">{{ fmtValue(f.predictedValue) }}</td>
+              <td class="num muted">{{ fmtValue(f.lowerBound) }}</td>
+              <td class="num muted">{{ fmtValue(f.upperBound) }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    @if (result.historicalPointCount < 4) {
+    <div class="warning-state">
+      <p>⚠️ Données insuffisantes ({{ result.historicalPointCount }} points). Il faut au moins 4 périodes pour générer une prévision.</p>
+    </div>
+    }
+  }
+</div>

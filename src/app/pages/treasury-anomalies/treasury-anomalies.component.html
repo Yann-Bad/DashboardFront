@@ -1,0 +1,237 @@
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-row">
+      <div>
+        <h1>🏦 Détection d'Anomalies de Trésorerie (IA)</h1>
+        <p class="subtitle">Identification de pics inhabituels dans les flux bancaires via IID Spike Detection (ML.NET)</p>
+      </div>
+      <button class="btn-guide" (click)="showGuide = !showGuide">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        {{ showGuide ? 'Masquer le guide' : 'Guide d\'utilisation' }}
+      </button>
+    </div>
+  </div>
+
+  @if (showGuide) {
+  <div class="guide-panel">
+    <div class="guide-header">
+      <h2>📖 Comment fonctionne la détection d'anomalies de trésorerie ?</h2>
+    </div>
+    <div class="guide-body">
+      <div class="guide-section">
+        <h3>🧠 L'algorithme</h3>
+        <p>Le module utilise <strong>IID Spike Detection</strong> de ML.NET sur les opérations comptables. Il calcule un score statistique pour chaque mois et identifie les valeurs qui s'écartent significativement du comportement normal des flux bancaires.</p>
+      </div>
+      <div class="guide-section">
+        <h3>📊 Les métriques</h3>
+        <ul>
+          <li><strong>Flux Net</strong> — Détecte les mois où le solde net (entrées − sorties) est anormalement haut ou bas</li>
+          <li><strong>Encaissements</strong> — Repère les pics inhabituels dans les réceptions bancaires (AE, BEE)</li>
+          <li><strong>Décaissements</strong> — Identifie les sorties de fonds anormales (BSE, CS)</li>
+          <li><strong>Solde Disponible</strong> — Détecte les variations anormales de la balance disponible (AE, BS, BSR, BEE, CS)</li>
+          <li><strong>Solde Réel</strong> — Signale les écarts anormaux du solde réel confirmé (AE, BSE, BEE, CS)</li>
+          <li><strong>Solde Prévisionnel</strong> — Identifie les anomalies sur la projection globale (Réel − Émis + Encaissé)</li>
+          <li><strong>Volume</strong> — Détecte les mois avec un nombre d'opérations inhabituel</li>
+          <li><strong>Frais Bancaires</strong> — Signale les anomalies sur les frais bancaires purs (codes C01–C07 uniquement) :
+            <ul>
+              <li><strong>C01</strong> — Tenue de compte</li>
+              <li><strong>C02</strong> — Commission</li>
+              <li><strong>C03</strong> — Frais extrait</li>
+              <li><strong>C04</strong> — Intérêt débiteur</li>
+              <li><strong>C05</strong> — Message</li>
+              <li><strong>C06</strong> — TVA</li>
+              <li><strong>C07</strong> — Autres frais bancaires</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>⚙️ Les paramètres</h3>
+        <ul>
+          <li><strong>Monnaie</strong> — CDF, USD ou EUR pour une analyse ciblée par devise. Sans filtre, les montants sont convertis en CDF via les taux de change du jour.</li>
+          <li><strong>Confiance (%)</strong> — 90 % = plus sensible, 95 % = équilibré, 99 % = très strict</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>📈 Lire les résultats</h3>
+        <ul>
+          <li><span class="legend-dot blue"></span> <strong>Ligne bleue</strong> — Valeurs normales</li>
+          <li><span class="legend-dot red"></span> <strong>Points rouges</strong> — Anomalies détectées</li>
+          <li><strong>Score</strong> — Amplitude de l'écart (plus élevé = plus marqué)</li>
+          <li><strong>P-value</strong> — Probabilité que le point soit normal (plus basse = plus certain)</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>� Colonnes du tableau d'anomalies</h3>
+        <ul>
+          <li><strong>Période</strong> — Mois concerné par l'anomalie (format mois/année)</li>
+          <li><strong>Valeur</strong> — Montant réel observé pour ce mois sur la métrique sélectionnée</li>
+          <li><strong>Score</strong> — Amplitude de l'écart par rapport au comportement normal. Plus le score est élevé, plus le pic est prononcé</li>
+          <li><strong>P-value</strong> — Probabilité statistique que ce point soit normal. Plus la p-value est basse, plus l'anomalie est certaine (ex : 0.01 = 1 % de chance d'être normal)</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>💱 Conversion de devise</h3>
+        <ul>
+          <li>Avec un filtre de devise (CDF, USD, EUR) — les montants sont affichés dans la devise sélectionnée, sans conversion.</li>
+          <li>Sans filtre (« Toutes ») — les montants USD et EUR sont convertis en <strong>CDF</strong> via les taux de change de la table Taux (base SUIVI_TP_DF), en utilisant l'USD comme devise intermédiaire.</li>
+          <li>Le taux utilisé est celui du 1er du mois, ou à défaut le plus récent avant cette date (même logique que le système de taux du jour).</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h3>💡 Conseils</h3>
+        <ul>
+          <li>Les anomalies de flux net peuvent révéler : régularisations massives, erreurs comptables, ou opérations exceptionnelles.</li>
+          <li>Les frais bancaires ne couvrent que les codes C01–C07 (pas les débits d'opérations C10, E01).</li>
+          <li>Un minimum de 4 mois est requis. Plus la fenêtre est large, meilleure est la détection.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Métrique</label>
+      <select [(ngModel)]="filter.metric">
+        @for (m of metrics; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Monnaie</label>
+      <select [(ngModel)]="filter.monnaie">
+        @for (c of currencies; track c.value) {
+          <option [value]="c.value">{{ c.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Année début</label>
+      <input type="number" [(ngModel)]="filter.anneeDebut" placeholder="Ex: 2023" min="2000" max="2030" />
+    </div>
+    <div class="filter-group">
+      <label>Année fin</label>
+      <input type="number" [(ngModel)]="filter.anneeFin" placeholder="Ex: 2026" min="2000" max="2030" />
+    </div>
+    <div class="filter-group">
+      <label>Confiance (%)</label>
+      <select [(ngModel)]="filter.confidence">
+        <option [ngValue]="90">90 %</option>
+        <option [ngValue]="95">95 %</option>
+        <option [ngValue]="99">99 %</option>
+      </select>
+    </div>
+    <button class="btn-apply" (click)="load()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Détecter
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Analyse en cours…</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-state">
+      <p>{{ error }}</p>
+      <button (click)="load()">Réessayer</button>
+    </div>
+  }
+
+  @if (!loading && !error && result) {
+
+    <!-- Summary cards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Métrique</span>
+        <span class="stat-value">{{ result.metric }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Monnaie</span>
+        <span class="stat-value">{{ result.monnaie || 'Toutes (conv. CDF)' }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Points analysés</span>
+        <span class="stat-value">{{ result.totalPoints }}</span>
+      </div>
+      <div class="stat-card" [class.anomaly-highlight]="result.anomalyCount > 0">
+        <span class="stat-label">Anomalies détectées</span>
+        <span class="stat-value">{{ result.anomalyCount }}</span>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    @if (chartData.length > 0) {
+    <div class="chart-section">
+      <h2>Série temporelle & Anomalies</h2>
+      <p class="chart-desc">Ligne bleue = valeurs normales · Points rouges = anomalies détectées</p>
+      <ngx-charts-line-chart
+        [view]="view"
+        [results]="chartData"
+        [scheme]="chartColors"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Période"
+        yAxisLabel="Montant"
+        [autoScale]="true"
+        [animations]="true"
+        [roundDomains]="true">
+      </ngx-charts-line-chart>
+    </div>
+    }
+
+    <!-- Anomaly table -->
+    @if (anomalies.length > 0) {
+    <div class="table-section">
+      <h2>Détail des anomalies ({{ anomalies.length }})</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th class="num">Valeur</th>
+              <th class="num">Score</th>
+              <th class="num">P-value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of anomalies; track a.date) {
+            <tr class="anomaly-row">
+              <td>{{ fmtDate(a.date) }}</td>
+              <td class="num highlight-red">{{ fmtValue(a.value) }}</td>
+              <td class="num">{{ fmtValue(a.score) }}</td>
+              <td class="num muted">{{ fmtValue(a.pValue) }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    @if (result.anomalyCount === 0) {
+    <div class="success-state">
+      <p>✅ Aucune anomalie détectée sur les {{ result.totalPoints }} points analysés avec un niveau de confiance de {{ filter.confidence }} %.</p>
+    </div>
+    }
+
+    @if (result.totalPoints < 4) {
+    <div class="warning-state">
+      <p>⚠️ Données insuffisantes ({{ result.totalPoints }} points). Il faut au moins 4 périodes pour la détection d'anomalies.</p>
+    </div>
+    }
+  }
+</div>

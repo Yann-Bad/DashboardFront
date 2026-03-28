@@ -28,8 +28,14 @@
         <h3>📊 Les métriques</h3>
         <ul>
           <li><strong>Flux Net</strong> — Détecte les mois où le solde net (entrées − sorties) est anormalement haut ou bas</li>
-          <li><strong>Encaissements</strong> — Repère les pics inhabituels dans les réceptions bancaires (AE, BEE)</li>
+          <li><strong>Encaissements</strong> — Repère les pics inhabituels dans les réceptions bancaires (AE hors DAT, BEE)</li>
           <li><strong>Décaissements</strong> — Identifie les sorties de fonds anormales (BSE, CS)</li>
+          <li><strong>Intérêts DAT</strong> — Détecte les anomalies sur les intérêts de Dépôts à Terme (codes A02, A05 de AE) :
+            <ul>
+              <li><strong>A02</strong> — Intérêt DAT</li>
+              <li><strong>A05</strong> — Intérêt DAT (autre type)</li>
+            </ul>
+          </li>
           <li><strong>Solde Disponible</strong> — Détecte les variations anormales de la balance disponible (AE, BS, BSR, BEE, CS)</li>
           <li><strong>Solde Réel</strong> — Signale les écarts anormaux du solde réel confirmé (AE, BSE, BEE, CS)</li>
           <li><strong>Solde Prévisionnel</strong> — Identifie les anomalies sur la projection globale (Réel − Émis + Encaissé)</li>

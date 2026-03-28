@@ -27,9 +27,15 @@
       <div class="guide-section">
         <h3>📊 Les métriques</h3>
         <ul>
-          <li><strong>Flux Net</strong> — Encaissements (AE+BEE) moins Décaissements (CS+BSE) par mois</li>
-          <li><strong>Encaissements</strong> — Cotisations, intérêts DAT, reversements (catégories AE, BEE)</li>
+          <li><strong>Flux Net</strong> — Encaissements (AE hors DAT + BEE) moins Décaissements (CS+BSE) par mois</li>
+          <li><strong>Encaissements</strong> — Entrées bancaires hors intérêts DAT (catégories AE sans A02/A05, + BEE)</li>
           <li><strong>Décaissements</strong> — Sorties de fonds exécutées, frais bancaires (catégories CS, BSE)</li>
+          <li><strong>Intérêts DAT</strong> — Intérêts sur Dépôts à Terme uniquement (codes A02 et A05 de la catégorie AE) :
+            <ul>
+              <li><strong>A02</strong> — Intérêt DAT</li>
+              <li><strong>A05</strong> — Intérêt DAT (autre type)</li>
+            </ul>
+          </li>
           <li><strong>Solde Disponible</strong> — Balance cumulée incluant AE, BS, BSR, BEE, CS (fonds réellement accessibles)</li>
           <li><strong>Solde Réel</strong> — Balance cumulée des flux confirmés : AE, BSE, BEE, CS (hors prévisionnels)</li>
           <li><strong>Solde Prévisionnel</strong> — Solde Réel − Émis + Encaissé (projection toutes opérations confondues)</li>

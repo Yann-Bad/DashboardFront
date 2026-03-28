@@ -24,7 +24,110 @@
         </div>
       }
     </div>
+    <!-- ============================================================         Section : Recouvrement & Encaissements (KPI annuels)
+         ============================================================ -->
+    <div class="section-card recouvrement-section">
+      <div class="section-header">
+        <h2>Recouvrement annuel</h2>
+        <a routerLink="/encaissements" class="btn-link">Analyse détaillée →</a>
+      </div>
 
+      <div class="recouv-body">
+        <!-- Taux de recouvrement -->
+        <div class="recouv-rate">
+          <div class="recouv-rate-header">
+            <span>Taux de recouvrement (année courante)</span>
+            <strong
+              [class.green]="stats.tauxRecouvrementAnnuel >= 70"
+              [class.orange]="stats.tauxRecouvrementAnnuel >= 40 && stats.tauxRecouvrementAnnuel < 70"
+              [class.red]="stats.tauxRecouvrementAnnuel < 40"
+            >{{ stats.tauxRecouvrementAnnuel | number:'1.1-1' }} %</strong>
+          </div>
+          <div class="emp-bar-track">
+            <div class="emp-bar-fill recouv-bar"
+              [class.green]="stats.tauxRecouvrementAnnuel >= 70"
+              [class.orange]="stats.tauxRecouvrementAnnuel >= 40 && stats.tauxRecouvrementAnnuel < 70"
+              [class.red]="stats.tauxRecouvrementAnnuel < 40"
+              [style.width.%]="clampPct(stats.tauxRecouvrementAnnuel)">
+            </div>
+          </div>
+          <div class="recouv-rate-sub">
+            {{ stats.employeursAyantPaye | number }} employeur(s) ayant payé
+            sur {{ stats.employeursDeclares | number }} déclarant(s)
+          </div>
+        </div>
+
+        <!-- Montants encaissés -->
+        <div class="montant-enc-grid">
+          <div class="montant-enc-tile">
+            <span class="montant-enc-label">Principal</span>
+            <span class="montant-enc-value">{{ fmtMontant(stats.montantPrincipalEncaisse) }}</span>
+          </div>
+          <div class="montant-enc-tile">
+            <span class="montant-enc-label">Majorations</span>
+            <span class="montant-enc-value orange">{{ fmtMontant(stats.montantMajorationEncaisse) }}</span>
+          </div>
+          <div class="montant-enc-tile">
+            <span class="montant-enc-label">Taxations</span>
+            <span class="montant-enc-value red">{{ fmtMontant(stats.montantTaxationEncaisse) }}</span>
+          </div>
+          <div class="montant-enc-tile total-tile">
+            <span class="montant-enc-label">Total encaissé</span>
+            <span class="montant-enc-value teal">{{ fmtMontant(stats.montantTotalEncaisse) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ventilation par devise -->
+    @if (deviseBreakdown.length > 0) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Ventilation par devise</h2>
+        </div>
+        <div class="devise-grid">
+          @for (d of deviseBreakdown; track d.deviseId) {
+            <div class="devise-card">
+              <div class="devise-header">
+                <span class="devise-code">{{ d.deviseCode ?? 'N/A' }}</span>
+                <span class="devise-libelle">{{ d.deviseLibelle }}</span>
+              </div>
+              <div class="devise-stats">
+                <div class="devise-stat">
+                  <span class="devise-stat-label">Déclarations</span>
+                  <span class="devise-stat-value">{{ d.nbDeclarations | number }}</span>
+                  <span class="devise-stat-pct">{{ d.pctDeclarations | number:'1.1-1' }} %</span>
+                </div>
+                <div class="devise-stat">
+                  <span class="devise-stat-label">Encaissements</span>
+                  <span class="devise-stat-value">{{ d.nbEncaissements | number }}</span>
+                </div>
+                <div class="devise-stat">
+                  <span class="devise-stat-label">Montant CDF</span>
+                  <span class="devise-stat-value teal">{{ fmtMontant(d.montantEncaisseCdf) }}</span>
+                  <span class="devise-stat-pct">{{ d.pctMontantCdf | number:'1.1-1' }} %</span>
+                </div>
+                @if (d.deviseCode !== 'CDF' && d.montantEncaisseDevise > 0) {
+                  <div class="devise-stat">
+                    <span class="devise-stat-label">Montant {{ d.deviseCode }}</span>
+                    <span class="devise-stat-value">{{ fmtMontant(d.montantEncaisseDevise) }}</span>
+                  </div>
+                }
+              </div>
+              <!-- bar showing % of total CDF -->
+              <div class="emp-bar-track" style="margin-top: 0.5rem">
+                <div class="emp-bar-fill"
+                  [class.green]="d.pctMontantCdf >= 50"
+                  [class.orange]="d.pctMontantCdf >= 10 && d.pctMontantCdf < 50"
+                  [class.blue]="d.pctMontantCdf < 10"
+                  [style.width.%]="clampPct(d.pctMontantCdf)">
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
     <!-- ============================================================ -->
     <!-- Section : Répartition globale des employeurs                 -->
     <!-- ============================================================ -->
@@ -162,7 +265,7 @@
     <!-- ============================================================
          Section : Effectifs déclarés (snapshots Immatriculationeffectif)
          ============================================================ -->
-    @if (stats.effectifDeclareTotal > 0) {
+    <!-- @if (stats.effectifDeclareTotal > 0) {
       <div class="section-card">
         <div class="section-header">
           <h2>Effectifs déclarés</h2>
@@ -192,112 +295,9 @@
           </div>
         </div>
       </div>
-    }
+    } -->
 
-    <!-- ============================================================         Section : Recouvrement & Encaissements (KPI annuels)
-         ============================================================ -->
-    <div class="section-card recouvrement-section">
-      <div class="section-header">
-        <h2>Recouvrement annuel</h2>
-        <a routerLink="/encaissements" class="btn-link">Analyse détaillée →</a>
-      </div>
 
-      <div class="recouv-body">
-        <!-- Taux de recouvrement -->
-        <div class="recouv-rate">
-          <div class="recouv-rate-header">
-            <span>Taux de recouvrement (année courante)</span>
-            <strong
-              [class.green]="stats.tauxRecouvrementAnnuel >= 70"
-              [class.orange]="stats.tauxRecouvrementAnnuel >= 40 && stats.tauxRecouvrementAnnuel < 70"
-              [class.red]="stats.tauxRecouvrementAnnuel < 40"
-            >{{ stats.tauxRecouvrementAnnuel | number:'1.1-1' }} %</strong>
-          </div>
-          <div class="emp-bar-track">
-            <div class="emp-bar-fill recouv-bar"
-              [class.green]="stats.tauxRecouvrementAnnuel >= 70"
-              [class.orange]="stats.tauxRecouvrementAnnuel >= 40 && stats.tauxRecouvrementAnnuel < 70"
-              [class.red]="stats.tauxRecouvrementAnnuel < 40"
-              [style.width.%]="clampPct(stats.tauxRecouvrementAnnuel)">
-            </div>
-          </div>
-          <div class="recouv-rate-sub">
-            {{ stats.employeursAyantPaye | number }} employeur(s) ayant payé
-            sur {{ stats.employeursDeclares | number }} déclarant(s)
-          </div>
-        </div>
-
-        <!-- Montants encaissés -->
-        <div class="montant-enc-grid">
-          <div class="montant-enc-tile">
-            <span class="montant-enc-label">Principal</span>
-            <span class="montant-enc-value">{{ fmtMontant(stats.montantPrincipalEncaisse) }}</span>
-          </div>
-          <div class="montant-enc-tile">
-            <span class="montant-enc-label">Majorations</span>
-            <span class="montant-enc-value orange">{{ fmtMontant(stats.montantMajorationEncaisse) }}</span>
-          </div>
-          <div class="montant-enc-tile">
-            <span class="montant-enc-label">Taxations</span>
-            <span class="montant-enc-value red">{{ fmtMontant(stats.montantTaxationEncaisse) }}</span>
-          </div>
-          <div class="montant-enc-tile total-tile">
-            <span class="montant-enc-label">Total encaissé</span>
-            <span class="montant-enc-value teal">{{ fmtMontant(stats.montantTotalEncaisse) }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Ventilation par devise -->
-    @if (deviseBreakdown.length > 0) {
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Ventilation par devise</h2>
-        </div>
-        <div class="devise-grid">
-          @for (d of deviseBreakdown; track d.deviseId) {
-            <div class="devise-card">
-              <div class="devise-header">
-                <span class="devise-code">{{ d.deviseCode ?? 'N/A' }}</span>
-                <span class="devise-libelle">{{ d.deviseLibelle }}</span>
-              </div>
-              <div class="devise-stats">
-                <div class="devise-stat">
-                  <span class="devise-stat-label">Déclarations</span>
-                  <span class="devise-stat-value">{{ d.nbDeclarations | number }}</span>
-                  <span class="devise-stat-pct">{{ d.pctDeclarations | number:'1.1-1' }} %</span>
-                </div>
-                <div class="devise-stat">
-                  <span class="devise-stat-label">Encaissements</span>
-                  <span class="devise-stat-value">{{ d.nbEncaissements | number }}</span>
-                </div>
-                <div class="devise-stat">
-                  <span class="devise-stat-label">Montant CDF</span>
-                  <span class="devise-stat-value teal">{{ fmtMontant(d.montantEncaisseCdf) }}</span>
-                  <span class="devise-stat-pct">{{ d.pctMontantCdf | number:'1.1-1' }} %</span>
-                </div>
-                @if (d.deviseCode !== 'CDF' && d.montantEncaisseDevise > 0) {
-                  <div class="devise-stat">
-                    <span class="devise-stat-label">Montant {{ d.deviseCode }}</span>
-                    <span class="devise-stat-value">{{ fmtMontant(d.montantEncaisseDevise) }}</span>
-                  </div>
-                }
-              </div>
-              <!-- bar showing % of total CDF -->
-              <div class="emp-bar-track" style="margin-top: 0.5rem">
-                <div class="emp-bar-fill"
-                  [class.green]="d.pctMontantCdf >= 50"
-                  [class.orange]="d.pctMontantCdf >= 10 && d.pctMontantCdf < 50"
-                  [class.blue]="d.pctMontantCdf < 10"
-                  [style.width.%]="clampPct(d.pctMontantCdf)">
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    }
 
     <!-- Top 5 table -->
     <div class="section-card">

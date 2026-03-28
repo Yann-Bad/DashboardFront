@@ -62,8 +62,9 @@ export interface TreasuryAnomalyResult {
 
 export const TREASURY_METRICS = [
   { value: 'NetCashFlow',       label: 'Flux Net (Encaissements − Décaissements)' },
-  { value: 'Encaissements',     label: 'Encaissements (AE + BEE)' },
+  { value: 'Encaissements',     label: 'Encaissements (AE hors DAT + BEE)' },
   { value: 'Decaissements',     label: 'Décaissements (CS + BSE)' },
+  { value: 'InteretsDAT',       label: 'Intérêts DAT (A02 + A05)' },
   { value: 'SoldeDisponible',   label: 'Solde Disponible (cumulé)' },
   { value: 'SoldeReel',         label: 'Solde Réel (cumulé)' },
   { value: 'SoldePrevisionnel', label: 'Solde Prévisionnel (cumulé)' },

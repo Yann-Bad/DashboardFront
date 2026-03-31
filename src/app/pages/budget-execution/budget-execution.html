@@ -1,0 +1,338 @@
+<div class="budget-page">
+  <div class="page-header">
+    <h1>Analyse Budgétaire</h1>
+    <p class="subtitle">Exécution, synthèse et indicateurs par centre de gestion</p>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn" [class.active]="activeTab === 'execution'" (click)="switchTab('execution')">Exécution Budgétaire</button>
+    <button class="tab-btn" [class.active]="activeTab === 'synthese'" (click)="switchTab('synthese')">Synthèse Consolidée</button>
+  </div>
+
+  <!-- ════════════════ EXECUTION TAB ════════════════ -->
+  @if (activeTab === 'execution') {
+    <!-- Filter bar -->
+    <div class="filter-card">
+      <div class="filter-row">
+        <div class="filter-field filter-field--small">
+          <label for="filterExercice">Exercice</label>
+          <select id="filterExercice" [(ngModel)]="filter.exercice">
+            @for (e of exercices; track e.exerciceId) {
+              <option [ngValue]="e.exerciceId">{{ e.exercice ?? e.exerciceId }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="filterCentre">Centre de Gestion</label>
+          <select id="filterCentre" [(ngModel)]="filter.codeCentreGestion">
+            <option [ngValue]="undefined">-- Tous --</option>
+            @for (c of centres; track c.centreGestionId) {
+              <option [ngValue]="c.codeCentreGestion">{{ c.codeCentreGestion }} - {{ c.centreGestion }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="filterType">Type Budget</label>
+          <select id="filterType" [(ngModel)]="filter.typeBudget">
+            <option [ngValue]="undefined">-- Tous --</option>
+            @for (t of typesBudget; track t.typBudgetId) {
+              <option [ngValue]="t.typeBudget">{{ t.codeTypeBud }} - {{ t.typeBudget }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="filterGestion">Gestion</label>
+          <select id="filterGestion" [(ngModel)]="filter.codeGestion">
+            <option [ngValue]="undefined">-- Toutes --</option>
+            @for (g of gestions; track g.gestionId) {
+              <option [ngValue]="g.codeGestion">{{ g.codeGestion }} - {{ g.gestion }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="filterNiveau">Niveau de détail</label>
+          <select id="filterNiveau" [(ngModel)]="selectedNiveau">
+            @for (n of niveauLabels; track n.value) {
+              <option [ngValue]="n.value">{{ n.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button class="btn-primary" (click)="onSearch()">Rechercher</button>
+          <button class="btn-secondary" (click)="onReset()">Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="loading-state">
+        <span class="spinner"></span>
+        <p>Chargement de l'exécution budgétaire…</p>
+      </div>
+    } @else if (error) {
+      <div class="error-banner">{{ error }}</div>
+    } @else {
+      <!-- Summary cards -->
+      <div class="stats-grid">
+        <div class="stat-card" data-color="blue">
+          <div class="stat-icon">📋</div>
+          <div class="stat-body">
+            <span class="stat-value">{{ fmtMontant(totalAssignation) }}</span>
+            <span class="stat-label">Assignation totale</span>
+          </div>
+        </div>
+        <div class="stat-card" data-color="green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-body">
+            <span class="stat-value">{{ fmtMontant(totalRealisation) }}</span>
+            <span class="stat-label">Réalisation totale</span>
+          </div>
+        </div>
+        <div class="stat-card" data-color="orange">
+          <div class="stat-icon">💸</div>
+          <div class="stat-body">
+            <span class="stat-value">{{ fmtMontant(totalDepense) }}</span>
+            <span class="stat-label">Dépense totale</span>
+          </div>
+        </div>
+        <div class="stat-card" data-color="purple">
+          <div class="stat-icon">📊</div>
+          <div class="stat-body">
+            <span class="stat-value">{{ totalLignes | number }}</span>
+            <span class="stat-label">Lignes budgétaires</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Taux globaux -->
+      <div class="rates-row">
+        <div class="rate-card">
+          <div class="rate-header">
+            <span>Taux de réalisation</span>
+            <strong [class.green]="tauxGlobalRealisation >= 70"
+                    [class.orange]="tauxGlobalRealisation >= 40 && tauxGlobalRealisation < 70"
+                    [class.red]="tauxGlobalRealisation < 40">
+              {{ tauxGlobalRealisation | number:'1.1-1' }} %
+            </strong>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill"
+                 [class.green]="tauxGlobalRealisation >= 70"
+                 [class.orange]="tauxGlobalRealisation >= 40 && tauxGlobalRealisation < 70"
+                 [class.red]="tauxGlobalRealisation < 40"
+                 [style.width.%]="clampPct(tauxGlobalRealisation)"></div>
+          </div>
+        </div>
+        <div class="rate-card">
+          <div class="rate-header">
+            <span>Taux de dépense</span>
+            <strong [class.green]="tauxGlobalDepense >= 70"
+                    [class.orange]="tauxGlobalDepense >= 40 && tauxGlobalDepense < 70"
+                    [class.red]="tauxGlobalDepense < 40">
+              {{ tauxGlobalDepense | number:'1.1-1' }} %
+            </strong>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill"
+                 [class.green]="tauxGlobalDepense >= 70"
+                 [class.orange]="tauxGlobalDepense >= 40 && tauxGlobalDepense < 70"
+                 [class.red]="tauxGlobalDepense < 40"
+                 [style.width.%]="clampPct(tauxGlobalDepense)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard stats - par type budget -->
+      @if (dashboardStats && dashboardStats.parTypeBudget.length > 0) {
+        <div class="section-card">
+          <div class="section-header">
+            <h2>Répartition par Type de Budget</h2>
+            <span class="text-muted">{{ dashboardStats.parTypeBudget.length }} type(s)</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Type Budget</th>
+                  <th class="text-right">Assignation</th>
+                  <th class="text-right">Réalisation</th>
+                  <th class="text-right">Dépense</th>
+                  <th class="text-right">Taux Réal.</th>
+                  <th class="text-right">Taux Dép.</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of dashboardStats.parTypeBudget; track t.typeBudget) {
+                  <tr>
+                    <td>{{ t.typeBudget }}</td>
+                    <td class="text-right">{{ fmtMontant(t.assignation) }}</td>
+                    <td class="text-right">{{ fmtMontant(t.realisation) }}</td>
+                    <td class="text-right">{{ fmtMontant(t.depense) }}</td>
+                    <td class="text-right">
+                      <span [class.green]="t.tauxRealisation >= 70" [class.orange]="t.tauxRealisation >= 40 && t.tauxRealisation < 70" [class.red]="t.tauxRealisation < 40">
+                        {{ t.tauxRealisation | number:'1.1-1' }} %
+                      </span>
+                    </td>
+                    <td class="text-right">
+                      <span [class.green]="t.tauxDepense >= 70" [class.orange]="t.tauxDepense >= 40 && t.tauxDepense < 70" [class.red]="t.tauxDepense < 40">
+                        {{ t.tauxDepense | number:'1.1-1' }} %
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- Chart -->
+      @if (data.length > 0) {
+        <div class="section-card">
+          <div class="section-header">
+            <h2>Graphique par Type de Budget</h2>
+          </div>
+          <div class="chart-container">
+            <canvas baseChart [data]="chartData" [options]="chartOptions" type="bar"></canvas>
+          </div>
+        </div>
+      }
+
+      <!-- Execution detail table (adapts columns to Niveau) -->
+      @if (data.length > 0) {
+        <div class="section-card">
+          <div class="section-header">
+            <h2>Exécution Budgétaire</h2>
+            <span class="text-muted">{{ data.length | number }} ligne(s)</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  @if (selectedNiveau >= 4) { <th>Centre</th><th>Centre Gestion</th> }
+                  <th>Type Budget</th>
+                  @if (selectedNiveau >= 2) { <th>Gestion</th> }
+                  @if (selectedNiveau >= 3) { <th>Poste</th><th>Libellé Poste</th> }
+                  <th class="text-right">Assignation</th>
+                  <th class="text-right">Réalisation</th>
+                  <th class="text-right">Dépense</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of data; track $index) {
+                  <tr>
+                    @if (selectedNiveau >= 4) { <td><code>{{ row.codeCentreGestion }}</code></td><td>{{ row.centreGestion }}</td> }
+                    <td>{{ row.typeBudget }}</td>
+                    @if (selectedNiveau >= 2) { <td>{{ row.codeGestion }}</td> }
+                    @if (selectedNiveau >= 3) { <td><code>{{ row.poste }}</code></td><td>{{ row.libellePoste }}</td> }
+                    <td class="text-right">{{ fmtMontant(row.assignation) }}</td>
+                    <td class="text-right">{{ fmtMontant(row.realisation) }}</td>
+                    <td class="text-right">{{ fmtMontant(row.depense) }}</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  @if (selectedNiveau >= 4) { <td colspan="2"></td> }
+                  <td><strong>Total</strong></td>
+                  @if (selectedNiveau >= 2) { <td></td> }
+                  @if (selectedNiveau >= 3) { <td></td><td></td> }
+                  <td class="text-right"><strong>{{ fmtMontant(totalAssignation) }}</strong></td>
+                  <td class="text-right"><strong>{{ fmtMontant(totalRealisation) }}</strong></td>
+                  <td class="text-right"><strong>{{ fmtMontant(totalDepense) }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (data.length === 0) {
+        <div class="empty-state">Aucune donnée d'exécution budgétaire pour cet exercice.</div>
+      }
+    }
+  }
+
+  <!-- ════════════════ SYNTHESE TAB ════════════════ -->
+  @if (activeTab === 'synthese') {
+    <div class="filter-card">
+      <div class="filter-row">
+        <div class="filter-field filter-field--small">
+          <label for="synExercice">Exercice</label>
+          <select id="synExercice" [(ngModel)]="syntheseFilter.exercice">
+            @for (e of exercices; track e.exerciceId) {
+              <option [ngValue]="e.exerciceId">{{ e.exercice ?? e.exerciceId }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="synCentre">Centre de Gestion</label>
+          <select id="synCentre" [(ngModel)]="syntheseFilter.codeCentreGestion">
+            <option [ngValue]="undefined">-- Tous --</option>
+            @for (c of centres; track c.centreGestionId) {
+              <option [ngValue]="c.codeCentreGestion">{{ c.codeCentreGestion }} - {{ c.centreGestion }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="synType">Type Budget</label>
+          <select id="synType" [(ngModel)]="syntheseFilter.typeBudget">
+            <option [ngValue]="undefined">-- Tous --</option>
+            @for (t of typesBudget; track t.typBudgetId) {
+              <option [ngValue]="t.typeBudget">{{ t.codeTypeBud }} - {{ t.typeBudget }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button class="btn-primary" (click)="onSyntheseSearch()">Rechercher</button>
+          <button class="btn-secondary" (click)="onSyntheseReset()">Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+
+    @if (syntheseLoading) {
+      <div class="loading-state">
+        <span class="spinner"></span>
+        <p>Chargement de la synthèse consolidée…</p>
+      </div>
+    } @else if (syntheseData.length > 0) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Synthèse Consolidée</h2>
+          <span class="text-muted">{{ syntheseData.length }} ligne(s)</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Code Type</th>
+                <th>Type Budget</th>
+                <th>Centre de Gestion</th>
+                <th class="text-right">Sollicité</th>
+                <th class="text-right">Accordé</th>
+                <th class="text-right">Réalisation</th>
+                <th class="text-right">Projection</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of syntheseData; track $index) {
+                <tr>
+                  <td><code>{{ row.codeTypeBud }}</code></td>
+                  <td>{{ row.typeBudget }}</td>
+                  <td>{{ row.centreGestion }}</td>
+                  <td class="text-right">{{ fmtMontant(row.solliciter) }}</td>
+                  <td class="text-right">{{ fmtMontant(row.accorder) }}</td>
+                  <td class="text-right">{{ fmtMontant(row.realisation) }}</td>
+                  <td class="text-right">{{ fmtMontant(row.projection) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    } @else {
+      <div class="empty-state">Aucune donnée de synthèse consolidée pour cet exercice.</div>
+    }
+  }
+</div>

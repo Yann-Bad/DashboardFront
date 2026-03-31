@@ -147,6 +147,14 @@ export const routes: Routes = [
       import('./pages/trends/trends').then(m => m.TrendsComponent),
   },
 
+  // ── Budget ────────────────────────────────────────────────────────────
+  {
+    path: 'budget-execution',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/budget-execution/budget-execution').then(m => m.BudgetExecutionComponent),
+  },
+
   // ── Analyse Financière IA (ML.NET) ───────────────────────────────────
   {
     path: 'forecast',

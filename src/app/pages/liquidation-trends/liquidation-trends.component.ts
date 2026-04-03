@@ -33,6 +33,7 @@ export class LiquidationTrendsComponent implements OnInit {
     moisDebut:  '01',
     moisFin:    '12',
     centreDeGestionId: null,
+    granularite: 'mensuel',
   };
 
   readonly mois = [
@@ -69,7 +70,7 @@ export class LiquidationTrendsComponent implements OnInit {
   readonly chartCountData = computed<ChartData<'bar'>>(() => {
     const d = this.data();
     if (!d) return { labels: [], datasets: [] };
-    const labels = d.pf.map(r => `${this.moisLabel(r.mois)} ${r.annee}`);
+    const labels = d.pf.map(r => this.shortPeriodLabel(r.mois, r.annee));
     return {
       labels,
       datasets: [
@@ -117,7 +118,7 @@ export class LiquidationTrendsComponent implements OnInit {
   readonly chartAmountData = computed<ChartData<'bar'>>(() => {
     const d = this.data();
     if (!d) return { labels: [], datasets: [] };
-    const labels = d.pf.map(r => `${this.moisLabel(r.mois)} ${r.annee}`);
+    const labels = d.pf.map(r => this.shortPeriodLabel(r.mois, r.annee));
     return {
       labels,
       datasets: [
@@ -165,7 +166,7 @@ export class LiquidationTrendsComponent implements OnInit {
   readonly chartRateData = computed<ChartData<'line'>>(() => {
     const d = this.data();
     if (!d) return { labels: [], datasets: [] };
-    const labels = d.pf.map(r => `${this.moisLabel(r.mois)} ${r.annee}`);
+    const labels = d.pf.map(r => this.shortPeriodLabel(r.mois, r.annee));
     return {
       labels,
       datasets: [
@@ -258,7 +259,15 @@ export class LiquidationTrendsComponent implements OnInit {
 
   // ── Helpers ──
   moisLabel(m: string): string {
+    if (m === 'AN') return 'Annuel';
+    if (m.startsWith('T'))  return `Trimestre ${m.substring(1)}`;
     return this.mois.find(x => x.value === m)?.label ?? m;
+  }
+
+  shortPeriodLabel(m: string, annee: number): string {
+    if (m === 'AN') return `${annee}`;
+    if (m.startsWith('T'))  return `${m} ${annee}`;
+    return `${this.moisLabel(m).substring(0, 3)} ${annee}`;
   }
 
   fmtMontant(v: number | null | undefined): string {

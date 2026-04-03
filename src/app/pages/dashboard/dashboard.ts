@@ -39,6 +39,7 @@ export class DashboardComponent implements OnInit {
       { label: 'Employeurs',            value: this.stats.totalEmployeurs,           icon: '👔', color: 'green'  },
       { label: 'Employés déclarés',     value: this.stats.totalEmployes,             icon: '👤', color: 'purple' },
       { label: 'Effectifs déclarés',    value: this.stats.effectifDeclareTotal ?? 0, icon: '📋', color: 'teal'   },
+      { label: 'Déclarations',          value: this.stats.totalDeclarations ?? 0,    icon: '📄', color: 'indigo' },
     ];
   }
 

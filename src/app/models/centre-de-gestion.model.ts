@@ -254,6 +254,12 @@ export interface DashboardStatsDto {
   /** Calculé côté backend = Principal + Majoration + Taxation */
   montantTotalEncaisse: number;
 
+  // Déclarations — montant total des cotisations sociales déclarées
+  /** Nombre total de déclarations (Cotisationfacturation) */
+  totalDeclarations: number;
+  /** Montant total des cotisations sociales déclarées */
+  montantTotalDeclare: number;
+
   // Taux de recouvrement annuel (année courante)
   /** Employeurs distincts ayant déclaré sur l'année courante */
   employeursDeclares: number;

@@ -75,6 +75,7 @@ export class DossiersComponent implements OnInit {
     centreDeGestionId:   null,
     tenantId:            null,
     avecDetailParCentre: false,
+    granularite:         'mensuel',
   };
 
   readonly mois = [
@@ -139,7 +140,7 @@ export class DossiersComponent implements OnInit {
   readonly chartData = computed<ChartData<'bar'>>(() => {
     const data = this.dossiers();
     return {
-      labels: data.map(d => `${this.moisLabel(d.mois).substring(0, 3)} ${d.annee}`),
+      labels: data.map(d => this.shortPeriodLabel(d.mois, d.annee)),
       datasets: [
         {
           label: 'Dossiers',
@@ -276,7 +277,15 @@ export class DossiersComponent implements OnInit {
   // Helpers d'affichage
   // -------------------------------------------------------------------------
   moisLabel(m: string): string {
+    if (m === 'AN') return 'Annuel';
+    if (m.startsWith('T')) return `Trimestre ${m.substring(1)}`;
     return this.mois.find(x => x.value === m)?.label ?? m;
+  }
+
+  shortPeriodLabel(mois: string, annee: number): string {
+    if (mois === 'AN') return `${annee}`;
+    if (mois.startsWith('T')) return `${mois} ${annee}`;
+    return `${this.moisLabel(mois).substring(0, 3)} ${annee}`;
   }
 
   barWidth(v: number): string {

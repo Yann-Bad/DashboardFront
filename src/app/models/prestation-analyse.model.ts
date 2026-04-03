@@ -56,4 +56,5 @@ export interface PrestationFilterDto {
   branche?: string;
   avecDetailParType?: boolean;
   avecDetailParCentre?: boolean;
+  granularite?: string;
 }

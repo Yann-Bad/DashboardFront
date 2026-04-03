@@ -1,0 +1,217 @@
+<div class="property-page">
+
+  <!-- ── Page Header ────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Gestion du Patrimoine Immobilier</h1>
+    <p class="text-muted">Tableau de bord DGI — Immeubles, Unités Locatives, Locataires &amp; Facturation</p>
+  </div>
+
+  <!-- ── Filters ────────────────────────────────────────────────────── -->
+  <div class="filter-card">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label>Centre de Gestion</label>
+        <select [(ngModel)]="filter.centreGestionId" (ngModelChange)="onSearch()">
+          <option [ngValue]="undefined">Tous les centres</option>
+          @for (c of lookups?.centres; track c.centreGestionId) {
+            <option [ngValue]="c.centreGestionId">{{ c.codeCentreGestion }} — {{ c.centreGestion }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-field">
+        <label>Année (facturation)</label>
+        <select [(ngModel)]="billingFilter.annee" (ngModelChange)="onSearch()">
+          <option [ngValue]="undefined">Toutes</option>
+          @for (a of lookups?.annees; track a.annee) {
+            <option [ngValue]="a.annee">{{ a.annee }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-field filter-action">
+        <button class="btn-primary" (click)="onSearch()">Actualiser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading / Error ────────────────────────────────────────────── -->
+  @if (loading && !stats) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p>Chargement…</p>
+    </div>
+  } @else if (error) {
+    <div class="error-banner">{{ error }}</div>
+  } @else if (stats) {
+
+    <!-- ── KPI Cards ──────────────────────────────────────────────── -->
+    <div class="stats-grid">
+      <div class="stat-card" data-color="blue">
+        <span class="stat-icon">🏢</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats.totalImmeubles }}</span>
+          <span class="stat-label">Immeubles</span>
+        </div>
+      </div>
+      <div class="stat-card" data-color="green">
+        <span class="stat-icon">🏠</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats.totalImmeublesVilla }}</span>
+          <span class="stat-label">Villas</span>
+        </div>
+      </div>
+      <div class="stat-card" data-color="purple">
+        <span class="stat-icon">🏬</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats.totalImmeublesAppartement }}</span>
+          <span class="stat-label">Appartements</span>
+        </div>
+      </div>
+      <div class="stat-card" data-color="blue">
+        <span class="stat-icon">🚪</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats.totalUnites }}</span>
+          <span class="stat-label">Unités Locatives</span>
+        </div>
+      </div>
+      <div class="stat-card" data-color="green">
+        <span class="stat-icon">✅</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats.totalUnitesOccupees }}</span>
+          <span class="stat-label">Occupées</span>
+        </div>
+      </div>
+      <div class="stat-card" data-color="orange">
+        <span class="stat-icon">🔑</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats.totalUnitesVacantes }}</span>
+          <span class="stat-label">Vacantes</span>
+        </div>
+      </div>
+      <div class="stat-card" data-color="blue">
+        <span class="stat-icon">👤</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats.totalLocataires }}</span>
+          <span class="stat-label">Locataires</span>
+        </div>
+      </div>
+      <div class="stat-card" data-color="purple">
+        <span class="stat-icon">📋</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats.totalContrats }}</span>
+          <span class="stat-label">Contrats</span>
+        </div>
+      </div>
+      <div class="stat-card" data-color="green">
+        <span class="stat-icon">📊</span>
+        <div class="stat-body">
+          <span class="stat-value">{{ pct(stats.tauxOccupation) }}</span>
+          <span class="stat-label">Taux d'occupation</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Billing Summary ────────────────────────────────────────── -->
+    @if (billing) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Synthèse Facturation / Paiement</h2>
+          <a routerLink="/property-detail" class="btn-secondary">Voir le détail →</a>
+        </div>
+
+        <div class="billing-kpis">
+          <div class="billing-kpi">
+            <span class="billing-kpi-label">Total Facturé</span>
+            <span class="billing-kpi-value blue">{{ billing.totalFacturation | number:'1.0-0' }}</span>
+          </div>
+          <div class="billing-kpi">
+            <span class="billing-kpi-label">Total Payé</span>
+            <span class="billing-kpi-value green">{{ billing.totalPaiement | number:'1.0-0' }}</span>
+          </div>
+          <div class="billing-kpi">
+            <span class="billing-kpi-label">Solde Impayé</span>
+            <span class="billing-kpi-value" [class.text-negative]="billing.solde > 0">{{ billing.solde | number:'1.0-0' }}</span>
+          </div>
+          <div class="billing-kpi">
+            <span class="billing-kpi-label">Taux Recouvrement</span>
+            <span class="billing-kpi-value green">{{ pct(billing.tauxRecouvrement) }}</span>
+          </div>
+        </div>
+
+        <!-- Billing by nature chart -->
+        @if (billing.parNature.length) {
+          <div class="chart-container">
+            <canvas baseChart [data]="billingChartData" [options]="billingChartOptions" type="bar"></canvas>
+          </div>
+        }
+
+        <!-- Table breakdown by nature -->
+        @if (billing.parNature.length) {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nature</th>
+                <th class="text-right">Facturation</th>
+                <th class="text-right">Paiement</th>
+                <th class="text-right">Solde</th>
+                <th class="text-right">Taux Recouvr.</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (n of billing.parNature; track n.fkNor) {
+                <tr>
+                  <td>{{ n.libelle ?? '—' }}</td>
+                  <td class="text-right">{{ n.facturation | number:'1.0-0' }}</td>
+                  <td class="text-right">{{ n.paiement | number:'1.0-0' }}</td>
+                  <td class="text-right" [class.text-negative]="n.solde > 0">{{ n.solde | number:'1.0-0' }}</td>
+                  <td class="text-right">{{ pct(n.tauxRecouvrement) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    }
+
+    <!-- ── Occupancy by Immeuble ──────────────────────────────────── -->
+    @if (occupancy.length) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Taux d'occupation par Immeuble</h2>
+        </div>
+
+        <div class="chart-container chart-tall">
+          <canvas baseChart [data]="occupancyChartData" [options]="occupancyChartOptions" type="bar"></canvas>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Immeuble</th>
+              <th class="text-right">Total Unités</th>
+              <th class="text-right">Occupées</th>
+              <th class="text-right">Vacantes</th>
+              <th>Taux</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of occupancy; track o.cdIm) {
+              <tr>
+                <td>{{ o.immeuble ?? o.cdIm }}</td>
+                <td class="text-right">{{ o.totalUnites }}</td>
+                <td class="text-right">{{ o.unitesOccupees }}</td>
+                <td class="text-right">{{ o.unitesVacantes }}</td>
+                <td>
+                  <div class="bar-track">
+                    <div class="bar-fill" [class.green]="o.tauxOccupation >= 70" [class.orange]="o.tauxOccupation >= 40 && o.tauxOccupation < 70" [class.red]="o.tauxOccupation < 40" [style.width.%]="o.tauxOccupation"></div>
+                  </div>
+                  <span class="bar-label">{{ pct(o.tauxOccupation) }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  }
+</div>

@@ -120,4 +120,6 @@ export interface DeclarationFilterDto {
   tenantId?: number | null;
   valideesSeulement?: boolean | null;
   avecDetailParCentre?: boolean;
+  /** Granularité : 'mensuel' (défaut) | 'trimestriel' | 'annuel' */
+  granularite?: string;
 }

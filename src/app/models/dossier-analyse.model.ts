@@ -83,4 +83,6 @@ export interface DossierFilterDto {
   centreDeGestionId?:  number | null;
   tenantId?:           number | null;
   avecDetailParCentre?: boolean;
+  /** Granularité : 'mensuel' (défaut) | 'trimestriel' | 'annuel' */
+  granularite?: string;
 }

@@ -181,6 +181,8 @@ export class CentreDeGestionService {
       params = params.set('valideesSeulement', filter.valideesSeulement.toString());
     if (filter.avecDetailParCentre)
       params = params.set('avecDetailParCentre', 'true');
+    if (filter.granularite && filter.granularite !== 'mensuel')
+      params = params.set('granularite', filter.granularite);
     return this.http.get<DeclarationAnalyseDto[]>(`${this.base}/declarations/analyse`, { params });
   }
 
@@ -202,6 +204,8 @@ export class CentreDeGestionService {
     if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
     if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
     if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    if (filter.granularite && filter.granularite !== 'mensuel')
+      params = params.set('granularite', filter.granularite);
     return this.http.get<DossierAnalyseDto[]>(`${this.base}/dossiers/analyse`, { params });
   }
 
@@ -220,6 +224,8 @@ export class CentreDeGestionService {
     if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
     if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
     if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    if (filter.granularite && filter.granularite !== 'mensuel')
+      params = params.set('granularite', filter.granularite);
     return this.http.get<EncaissementAnalyseDto[]>(`${this.base}/encaissements/analyse`, { params });
   }
 
@@ -292,6 +298,7 @@ export class CentreDeGestionService {
     if (filter.branche)                   params = params.set('branche',           filter.branche);
     if (filter.avecDetailParType)         params = params.set('avecDetailParType', 'true');
     if (filter.avecDetailParCentre)       params = params.set('avecDetailParCentre', 'true');
+    if (filter.granularite && filter.granularite !== 'mensuel') params = params.set('granularite', filter.granularite);
     return this.http.get<PrestationAnalyseDto[]>(
       `${this.base}/prestations/analyse`, { params },
     );
@@ -343,6 +350,7 @@ export class CentreDeGestionService {
     if (filter.moisFin)                   params = params.set('moisFin',           filter.moisFin);
     if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
     if (filter.tenantId          != null) params = params.set('tenantId',          filter.tenantId.toString());
+    if (filter.granularite && filter.granularite !== 'mensuel') params = params.set('granularite', filter.granularite);
     return this.http.get<LiquidationTrendDto>(
       `${this.base}/liquidations/tendance`, { params },
     );

@@ -68,6 +68,7 @@ export class PrestationsComponent implements OnInit {
     branche:             'PF',
     avecDetailParType:   false,
     avecDetailParCentre: false,
+    granularite:         'mensuel',
   };
 
   readonly mois = [
@@ -155,7 +156,7 @@ export class PrestationsComponent implements OnInit {
         order: 1,
       });
     }
-    return { labels: d.map(r => `${this.moisLabel(r.mois)} ${r.annee}`), datasets };
+    return { labels: d.map(r => this.shortPeriodLabel(r.mois, r.annee)), datasets };
   });
 
   readonly chartOptions: ChartOptions = {
@@ -217,7 +218,15 @@ export class PrestationsComponent implements OnInit {
   }
 
   moisLabel(m: string): string {
+    if (m === 'AN') return 'Annuel';
+    if (m.startsWith('T'))  return `Trimestre ${m.substring(1)}`;
     return this.mois.find(x => x.value === m)?.label ?? m;
+  }
+
+  shortPeriodLabel(m: string, annee: number): string {
+    if (m === 'AN') return `${annee}`;
+    if (m.startsWith('T'))  return `${m} ${annee}`;
+    return `${this.moisLabel(m).substring(0, 3)} ${annee}`;
   }
 
   fmtMontant(v: number | null | undefined): string {

@@ -36,6 +36,7 @@ export class EncaissementsComponent implements OnInit {
     moisDebut:           '01',
     moisFin:             '12',
     avecDetailParCentre: false,
+    granularite:         'mensuel',
   };
 
   readonly mois = [
@@ -87,7 +88,7 @@ export class EncaissementsComponent implements OnInit {
   readonly chartData = computed<ChartData<'bar'>>(() => {
     const data = this.encaissements();
     return {
-      labels: data.map(d => `${this.moisLabel(d.mois).substring(0, 3)} ${d.annee}`),
+      labels: data.map(d => this.shortPeriodLabel(d.mois, d.annee)),
       datasets: [
         {
           label: 'Encaissements',
@@ -190,7 +191,15 @@ export class EncaissementsComponent implements OnInit {
   }
 
   moisLabel(value: string): string {
+    if (value === 'AN') return 'Annuel';
+    if (value.startsWith('T')) return `Trimestre ${value.substring(1)}`;
     return this.mois.find(m => m.value === value)?.label ?? value;
+  }
+
+  shortPeriodLabel(mois: string, annee: number): string {
+    if (mois === 'AN') return `${annee}`;
+    if (mois.startsWith('T')) return `${mois} ${annee}`;
+    return `${this.moisLabel(mois).substring(0, 3)} ${annee}`;
   }
 
   barWidth(value: number): string {

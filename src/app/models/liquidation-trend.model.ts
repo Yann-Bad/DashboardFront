@@ -37,4 +37,5 @@ export interface LiquidationTrendFilterDto {
   moisFin?: string;
   centreDeGestionId?: number | null;
   tenantId?: number;
+  granularite?: string;
 }

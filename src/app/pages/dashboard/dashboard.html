@@ -60,6 +60,10 @@
         <!-- Montants encaissés -->
         <div class="montant-enc-grid">
           <div class="montant-enc-tile">
+            <span class="montant-enc-label">Déclaré (cotisations)</span>
+            <span class="montant-enc-value indigo">{{ fmtMontant(stats.montantTotalDeclare) }}</span>
+          </div>
+          <div class="montant-enc-tile">
             <span class="montant-enc-label">Principal</span>
             <span class="montant-enc-value">{{ fmtMontant(stats.montantPrincipalEncaisse) }}</span>
           </div>

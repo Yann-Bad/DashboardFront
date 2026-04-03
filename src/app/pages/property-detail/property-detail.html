@@ -1,0 +1,252 @@
+<!-- ═══════════════════ PAGE HEADER ═══════════════════ -->
+<div class="page-header">
+  <h1>Gestion du Patrimoine — Détails</h1>
+</div>
+
+<!-- ═══════════════════ FILTERS ═══════════════════ -->
+<div class="filter-card">
+  <div class="filter-group">
+    <label for="centre">Centre de Gestion</label>
+    <select id="centre" [(ngModel)]="filter.centreGestionId" (ngModelChange)="onSearch()">
+      <option [ngValue]="undefined">— Tous —</option>
+      @for (c of lookups?.centres; track c.centreGestionId) {
+        <option [ngValue]="c.centreGestionId">{{ c.centreGestion }}</option>
+      }
+    </select>
+  </div>
+
+  @if (activeTab === 'facturations' || activeTab === 'paiements' || activeTab === 'impayes') {
+    <div class="filter-group">
+      <label for="annee">Année</label>
+      <select id="annee" [(ngModel)]="billingFilter.annee" (ngModelChange)="onSearch()">
+        <option [ngValue]="undefined">— Toutes —</option>
+        @for (a of lookups?.annees; track a.annee) {
+          <option [ngValue]="a.annee">{{ a.annee }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="nature">Nature</label>
+      <select id="nature" [(ngModel)]="billingFilter.fkNor" (ngModelChange)="onSearch()">
+        <option [ngValue]="undefined">— Toutes —</option>
+        <option [ngValue]="1">Garantie</option>
+        <option [ngValue]="2">Frais de Dossier</option>
+        <option [ngValue]="3">Loyer</option>
+        <option [ngValue]="4">Charges</option>
+        <option [ngValue]="5">Pénalités</option>
+      </select>
+    </div>
+  }
+</div>
+
+<!-- ═══════════════════ TABS BAR ═══════════════════ -->
+<div class="tab-bar">
+  @for (t of tabs; track t.key) {
+    <button class="tab-btn" [class.active]="activeTab === t.key"
+            (click)="switchTab(t.key)">{{ t.label }}</button>
+  }
+</div>
+
+<!-- ═══════════════════ LOADING / ERROR ═══════════════════ -->
+@if (loading) {
+  <div class="center-msg"><div class="spinner"></div></div>
+}
+@if (error) {
+  <div class="error-banner">{{ error }}</div>
+}
+
+<!-- ═══════════════════ TAB CONTENT ═══════════════════ -->
+@if (!loading) {
+
+  <!-- ─── Immeubles ─── -->
+  @if (activeTab === 'immeubles') {
+    <div class="section-card">
+      <h2 class="section-title">Liste des Immeubles ({{ immeubles.length }})</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Code</th><th>Désignation</th><th>Commune</th><th>Type</th>
+              <th>Catégorie</th><th>État</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of immeubles; track r.cdIm) {
+              <tr>
+                <td>{{ r.cdIm }}</td>
+                <td>{{ r.im }}</td>
+                <td>{{ r.commune }}</td>
+                <td>{{ r.typeImmeuble }}</td>
+                <td>{{ r.categorieIm }}</td>
+                <td>{{ r.etat }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-cell">Aucun immeuble trouvé.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Unités ─── -->
+  @if (activeTab === 'unites') {
+    <div class="section-card">
+      <h2 class="section-title">Unités Locatives ({{ unites.length }})</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Code</th><th>Immeuble</th><th>Désignation</th><th>Superficie</th><th>État</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of unites; track r.cdu) {
+              <tr>
+                <td>{{ r.cdu }}</td>
+                <td>{{ r.immeuble }}</td>
+                <td>{{ r.nomUnite }}</td>
+                <td>{{ r.superficie }}</td>
+                <td>
+                  <span class="badge" [class.badge-success]="r.etat === 'Occupée'" [class.badge-warning]="r.etat !== 'Occupée'">
+                    {{ r.etat }}
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty-cell">Aucune unité trouvée.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Locataires ─── -->
+  @if (activeTab === 'locataires') {
+    <div class="section-card">
+      <h2 class="section-title">Locataires ({{ locataires.length }})</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>N°</th><th>Nom / Raison Sociale</th><th>Type</th>
+              <th>Immeuble</th><th>Unité</th><th>Usage</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of locataires; track r.num) {
+              <tr>
+                <td>{{ r.num }}</td>
+                <td>{{ r.nomLocataire }}</td>
+                <td>{{ r.typeLocataire }}</td>
+                <td>{{ r.immeuble }}</td>
+                <td>{{ r.nomUnite }}</td>
+                <td>{{ r.usage }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-cell">Aucun locataire trouvé.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Facturations ─── -->
+  @if (activeTab === 'facturations') {
+    <div class="section-card">
+      <h2 class="section-title">Facturations ({{ facturations.length }})</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>N°</th><th>Immeuble</th><th>Unité</th><th>Locataire</th>
+              <th>Libellé</th><th>Année</th><th class="col-right">Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of facturations; track r.num) {
+              <tr>
+                <td>{{ r.num }}</td>
+                <td>{{ r.immeuble }}</td>
+                <td>{{ r.nomUnite }}</td>
+                <td>{{ r.nomLocataire }}</td>
+                <td>{{ r.libelle }}</td>
+                <td>{{ r.annee }}</td>
+                <td class="col-right">{{ r.montant | number:'1.2-2' }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="empty-cell">Aucune facturation trouvée.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Paiements ─── -->
+  @if (activeTab === 'paiements') {
+    <div class="section-card">
+      <h2 class="section-title">Paiements ({{ paiements.length }})</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>N°</th><th>Immeuble</th><th>Unité</th><th>Locataire</th>
+              <th>Libellé</th><th>Année</th><th class="col-right">Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of paiements; track r.num) {
+              <tr>
+                <td>{{ r.num }}</td>
+                <td>{{ r.immeuble }}</td>
+                <td>{{ r.nomUnite }}</td>
+                <td>{{ r.nomLocataire }}</td>
+                <td>{{ r.libelle }}</td>
+                <td>{{ r.annee }}</td>
+                <td class="col-right">{{ r.montant | number:'1.2-2' }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="empty-cell">Aucun paiement trouvé.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Impayés ─── -->
+  @if (activeTab === 'impayes') {
+    <div class="section-card">
+      <h2 class="section-title">Impayés ({{ impayes.length }})</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Immeuble</th><th>Unité</th><th>Locataire</th>
+              <th class="col-right">Facturé</th><th class="col-right">Payé</th>
+              <th class="col-right">Solde</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of impayes; track r.nomLocataire) {
+              <tr>
+                <td>{{ r.immeuble }}</td>
+                <td>{{ r.nomUnite }}</td>
+                <td>{{ r.nomLocataire }}</td>
+                <td class="col-right">{{ r.totalFacturation | number:'1.2-2' }}</td>
+                <td class="col-right">{{ r.totalPaiement | number:'1.2-2' }}</td>
+                <td class="col-right solde-negative">{{ r.solde | number:'1.2-2' }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-cell">Aucun impayé trouvé.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+}

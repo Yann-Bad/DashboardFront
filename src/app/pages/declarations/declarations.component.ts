@@ -39,6 +39,7 @@ export class DeclarationsComponent implements OnInit {
     moisFin:             '12',
     valideesSeulement:   null,
     avecDetailParCentre: false,
+    granularite:         'mensuel',
   };
 
   readonly mois = [
@@ -126,7 +127,7 @@ export class DeclarationsComponent implements OnInit {
   readonly chartData = computed<ChartData<'bar'>>(() => {
     const data = this.declarations();
     return {
-      labels: data.map(d => `${this.moisLabel(d.mois).substring(0, 3)} ${d.annee}`),
+      labels: data.map(d => this.shortPeriodLabel(d.mois, d.annee)),
       datasets: [
         {
           label: 'Déclarations',
@@ -253,9 +254,18 @@ export class DeclarationsComponent implements OnInit {
     );
   }
 
-  /** Libellé du mois à partir de sa valeur */
+  /** Libellé du mois (ou trimestre/année) à partir de sa valeur */
   moisLabel(value: string): string {
+    if (value === 'AN') return 'Annuel';
+    if (value.startsWith('T')) return `Trimestre ${value.substring(1)}`;
     return this.mois.find((m) => m.value === value)?.label ?? value;
+  }
+
+  /** Libellé court pour les axes de graphiques */
+  shortPeriodLabel(mois: string, annee: number): string {
+    if (mois === 'AN') return `${annee}`;
+    if (mois.startsWith('T')) return `${mois} ${annee}`;
+    return `${this.moisLabel(mois).substring(0, 3)} ${annee}`;
   }
 
   /** Largeur de la barre de progression (clamped 0–100) */

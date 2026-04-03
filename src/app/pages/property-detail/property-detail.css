@@ -1,0 +1,82 @@
+/* ═══════════════════ PAGE HEADER ═══════════════════ */
+.page-header { margin-bottom: 1.5rem; }
+.page-header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary, #1e293b); }
+
+/* ═══════════════════ FILTERS ═══════════════════ */
+.filter-card {
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;
+  background: var(--card-bg, #fff); border-radius: 12px;
+  padding: 1rem 1.25rem; margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.filter-group { display: flex; flex-direction: column; gap: .3rem; min-width: 180px; }
+.filter-group label { font-size: .75rem; font-weight: 600; color: var(--text-secondary, #64748b); text-transform: uppercase; letter-spacing: .04em; }
+.filter-group select {
+  padding: .45rem .6rem; border: 1px solid var(--border, #e2e8f0); border-radius: 8px;
+  font-size: .85rem; background: var(--card-bg, #fff); color: var(--text-primary, #1e293b);
+}
+
+/* ═══════════════════ TAB BAR ═══════════════════ */
+.tab-bar {
+  display: flex; gap: .35rem; flex-wrap: wrap;
+  margin-bottom: 1.25rem; border-bottom: 2px solid var(--border, #e2e8f0);
+  padding-bottom: 0;
+}
+.tab-btn {
+  padding: .55rem 1.1rem; border: none; background: transparent;
+  font-size: .85rem; font-weight: 600; color: var(--text-secondary, #64748b);
+  cursor: pointer; border-bottom: 3px solid transparent;
+  transition: color .2s, border-color .2s;
+  margin-bottom: -2px;
+}
+.tab-btn:hover { color: var(--primary, #6366f1); }
+.tab-btn.active {
+  color: var(--primary, #6366f1); border-bottom-color: var(--primary, #6366f1);
+}
+
+/* ═══════════════════ SECTION CARD ═══════════════════ */
+.section-card {
+  background: var(--card-bg, #fff); border-radius: 12px;
+  padding: 1.25rem; margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.section-title { font-size: 1rem; font-weight: 700; color: var(--text-primary, #1e293b); margin-bottom: .85rem; }
+
+/* ═══════════════════ TABLE ═══════════════════ */
+.table-wrapper { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.data-table th {
+  text-align: left; padding: .55rem .6rem; font-weight: 600;
+  color: var(--text-secondary, #64748b); border-bottom: 2px solid var(--border, #e2e8f0);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: .5rem .6rem; border-bottom: 1px solid var(--border-light, #f1f5f9);
+  color: var(--text-primary, #1e293b);
+}
+.data-table tbody tr:hover { background: rgba(99,102,241,.04); }
+.col-right { text-align: right !important; }
+.empty-cell { text-align: center; padding: 2rem !important; color: var(--text-secondary, #64748b); font-style: italic; }
+
+/* ═══════════════════ BADGES ═══════════════════ */
+.badge {
+  display: inline-block; padding: .2rem .55rem; border-radius: 999px;
+  font-size: .72rem; font-weight: 600; letter-spacing: .02em;
+}
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-warning { background: #fef9c3; color: #a16207; }
+
+.solde-negative { color: #dc2626; font-weight: 600; }
+
+/* ═══════════════════ LOADING / ERROR ═══════════════════ */
+.center-msg { display: flex; justify-content: center; padding: 3rem 0; }
+.spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border, #e2e8f0);
+  border-top-color: var(--primary, #6366f1); border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-banner {
+  background: #fef2f2; color: #dc2626; padding: .75rem 1rem;
+  border-radius: 8px; margin-bottom: 1rem; font-size: .85rem;
+}

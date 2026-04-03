@@ -1,0 +1,199 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   Property Dashboard – scoped styles
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.property-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Page Header ──────────────────────────────────────────────────────────── */
+
+.page-header {
+  margin-bottom: 2rem;
+}
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.25rem;
+}
+
+/* ── Filters ──────────────────────────────────────────────────────────────── */
+
+.filter-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1 1 200px;
+}
+
+.filter-field label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-field select {
+  height: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.filter-field select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.filter-action {
+  flex: 0 0 auto;
+}
+
+/* ── Stats Grid ───────────────────────────────────────────────────────────── */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid transparent;
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stat-card[data-color='blue']   { border-left-color: #3b82f6; }
+.stat-card[data-color='green']  { border-left-color: #22c55e; }
+.stat-card[data-color='orange'] { border-left-color: #f97316; }
+.stat-card[data-color='purple'] { border-left-color: #a855f7; }
+
+.stat-icon { font-size: 1.75rem; line-height: 1; }
+.stat-body { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.35rem; font-weight: 700; color: var(--color-text); }
+.stat-label { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.2rem; }
+
+/* ── Billing KPIs ─────────────────────────────────────────────────────────── */
+
+.billing-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.billing-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg);
+  border-radius: 10px;
+}
+
+.billing-kpi-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.billing-kpi-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.billing-kpi-value.blue  { color: #3b82f6; }
+.billing-kpi-value.green { color: #22c55e; }
+
+/* ── Section Card ─────────────────────────────────────────────────────────── */
+
+.section-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.section-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ── Charts ───────────────────────────────────────────────────────────────── */
+
+.chart-container {
+  position: relative;
+  height: 350px;
+  margin: 1rem 0;
+}
+
+.chart-tall {
+  height: 500px;
+}
+
+/* ── Bar Track (occupancy progress) ───────────────────────────────────────── */
+
+.bar-track {
+  height: 10px;
+  background: var(--color-border);
+  border-radius: 99px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.45s ease;
+}
+
+.bar-fill.green  { background: #22c55e; }
+.bar-fill.orange { background: #f97316; }
+.bar-fill.red    { background: #dc2626; }
+
+.bar-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+  display: inline-block;
+}

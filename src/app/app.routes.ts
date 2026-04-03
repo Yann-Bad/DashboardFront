@@ -155,6 +155,28 @@ export const routes: Routes = [
       import('./pages/budget-execution/budget-execution').then(m => m.BudgetExecutionComponent),
   },
 
+  // ── Patrimoine Immobilier (DGI) ──────────────────────────────────────
+  {
+    path: 'property-dashboard',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/property-dashboard/property-dashboard').then(m => m.PropertyDashboardComponent),
+  },
+  {
+    path: 'property-detail',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/property-detail/property-detail').then(m => m.PropertyDetailComponent),
+  },
+
+  // ── Analyse Paiements par Document (FinancialContext) ─────────────────
+  {
+    path: 'document-payment',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/document-payment/document-payment').then(m => m.DocumentPaymentComponent),
+  },
+
   // ── Analyse Financière IA (ML.NET) ───────────────────────────────────
   {
     path: 'forecast',

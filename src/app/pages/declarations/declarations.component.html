@@ -244,6 +244,15 @@
       </select>
     </label>
 
+    <label>
+      Granularité
+      <select [(ngModel)]="filter.granularite">
+        <option value="mensuel">Mensuel</option>
+        <option value="trimestriel">Trimestriel</option>
+        <option value="annuel">Annuel</option>
+      </select>
+    </label>
+
     <div class="filter-actions">
       <button class="btn-apply" (click)="load()" [disabled]="loading()">
         {{ loading() ? 'Chargement…' : 'Appliquer' }}

@@ -3,6 +3,7 @@ export interface BudgetExecutionDto {
   centreGestion: string | null;
   typeBudget: string | null;
   codeGestion: string | null;
+  gestion: string | null;
   poste: string | null;
   libellePoste: string | null;
   assignation: number;

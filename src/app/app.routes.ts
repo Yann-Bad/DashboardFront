@@ -126,6 +126,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/recouvrement/recouvrement.component').then(m => m.RecouvrementComponent),
   },
+  {
+    path: 'beneficiaires',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/beneficiaires/beneficiaires.component').then(m => m.BeneficiairesComponent),
+  },
 
   // ── Financial / Summary Account ──────────────────────────────────────
   {

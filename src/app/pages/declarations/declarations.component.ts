@@ -142,7 +142,7 @@ export class DeclarationsComponent implements OnInit {
         },
         {
           type: 'line' as const,
-          label: 'Montant déclaré',
+          label: 'Montant total déclaré',
           data: data.map(d => d.montantTotalDeclare ?? 0),
           borderColor: '#f59e0b',
           backgroundColor: 'rgba(245,158,11,0.08)',
@@ -154,6 +154,24 @@ export class DeclarationsComponent implements OnInit {
           tension: 0.35,
           fill: false,
           borderWidth: 2,
+          yAxisID: 'yMontant',
+          order: 1,
+        } as any,
+        {
+          type: 'line' as const,
+          label: 'Montant encaissé',
+          data: data.map(d => d.montantEncaisse ?? 0),
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34,197,94,0.08)',
+          pointBackgroundColor: '#22c55e',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.35,
+          fill: false,
+          borderWidth: 2,
+          borderDash: [6, 3],
           yAxisID: 'yMontant',
           order: 1,
         } as any,
@@ -185,7 +203,7 @@ export class DeclarationsComponent implements OnInit {
       legend: {
         display: true,
         labels: {
-          filter: (item: any) => item.text === 'Tendance' || item.text === 'Montant déclaré',
+          filter: (item: any) => item.text === 'Tendance' || item.text === 'Montant total déclaré' || item.text === 'Montant encaissé',
           usePointStyle: true,
           pointStyle: 'line',
           font: { size: 12 },
@@ -194,8 +212,8 @@ export class DeclarationsComponent implements OnInit {
       tooltip: {
         callbacks: {
           label: ctx => {
-            if (ctx.dataset.label === 'Montant déclaré')
-              return ` ${(ctx.parsed.y as number).toLocaleString('fr-FR', { minimumFractionDigits: 0 })} (montant)`;
+            if (ctx.dataset.label === 'Montant total déclaré' || ctx.dataset.label === 'Montant encaissé')
+              return ` ${(ctx.parsed.y as number).toLocaleString('fr-FR', { minimumFractionDigits: 0 })} (${ctx.dataset.label!.toLowerCase()})`;
             return ` ${(ctx.parsed.y as number).toLocaleString('fr-FR')} déclarations`;
           },
         },

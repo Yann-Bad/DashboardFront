@@ -292,6 +292,8 @@ export interface DeviseBreakdownDto {
   deviseLibelle: string | null;
   nbDeclarations: number;
   nbEncaissements: number;
+  montantDeclareCdf: number;
+  montantDeclareDevise: number;
   montantEncaisseCdf: number;
   montantEncaisseDevise: number;
   pctDeclarations: number;

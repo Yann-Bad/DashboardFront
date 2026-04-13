@@ -1,0 +1,196 @@
+<div class="beneficiaires-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Bénéficiaires par branche</h1>
+      <p class="page-subtitle">
+        Stock de bénéficiaires actifs par branche (RP, PF, PVID) avec évolution temporelle
+      </p>
+    </div>
+  </div>
+
+  <!-- ══════ Toolbar ══════ -->
+  <div class="filter-toolbar">
+    <div class="filter-row">
+      <label class="filter-label">Période</label>
+      <select class="filter-select sel-sm" [(ngModel)]="filter.anneeDebut">
+        @for (y of [2020,2021,2022,2023,2024,2025,2026]; track y) {
+          <option [ngValue]="y">{{ y }}</option>
+        }
+      </select>
+      <select class="filter-select sel-sm" [(ngModel)]="filter.moisDebut">
+        @for (m of mois; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+      <span class="filter-sep">→</span>
+      <select class="filter-select sel-sm" [(ngModel)]="filter.anneeFin">
+        @for (y of [2020,2021,2022,2023,2024,2025,2026]; track y) {
+          <option [ngValue]="y">{{ y }}</option>
+        }
+      </select>
+      <select class="filter-select sel-sm" [(ngModel)]="filter.moisFin">
+        @for (m of mois; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-row">
+      <label class="filter-label">Granularité</label>
+      <select class="filter-select" [(ngModel)]="filter.granularite">
+        <option value="mensuel">Mensuel</option>
+        <option value="trimestriel">Trimestriel</option>
+        <option value="annuel">Annuel</option>
+      </select>
+      <label class="filter-label">Centre</label>
+      <select class="filter-select" [(ngModel)]="centreId">
+        <option [ngValue]="null">Tous les centres</option>
+        @for (c of lookups()?.centres ?? []; track c.id) {
+          <option [ngValue]="c.id">{{ c.code }} — {{ c.libelle }}</option>
+        }
+      </select>
+      <button class="btn-primary" (click)="load()" [disabled]="loading() || trendLoading()">
+        🔄 Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════ Loading / Error ══════ -->
+  @if (loading() && trendLoading()) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <span>Chargement…</span>
+    </div>
+  }
+
+  @if (error(); as err) {
+    <div class="error-banner">{{ err }}</div>
+  }
+
+  <!-- ══════ Snapshot: Branch cards ══════ -->
+  @if (data(); as d) {
+    <div class="section-heading">
+      Situation au {{ d.dateReference | date:'dd/MM/yyyy' }}
+      <span class="chip chip-blue">Total : {{ d.totalBeneficiairesActifs | number }}</span>
+    </div>
+
+    <div class="branche-cards">
+      @for (b of d.parBranche; track b.brancheId) {
+        <div class="branche-card" [attr.data-color]="brancheColor(b.brancheCode)">
+          <div class="branche-card-header" (click)="toggleBranche(b.brancheId)">
+            <div class="branche-info">
+              <span class="branche-code">{{ b.brancheCode }}</span>
+              <span class="branche-libelle">{{ b.brancheLibelle }}</span>
+            </div>
+            <div class="branche-stats">
+              <span class="branche-total">{{ b.totalActifs | number }}</span>
+              <span class="branche-pct">{{ pct(b.totalActifs, totalActifs()) }}%</span>
+              <span class="expand-icon">{{ expandedBrancheId === b.brancheId ? '▼' : '▶' }}</span>
+            </div>
+          </div>
+
+          <div class="domaine-bars">
+            @for (dom of b.domaines; track dom.domaine) {
+              <div class="domaine-bar">
+                <span class="domaine-label">{{ dom.domaine }}</span>
+                <div class="bar-track">
+                  <div class="bar-fill" [style.width.%]="b.totalActifs ? (dom.nombreBeneficiaires / b.totalActifs * 100) : 0"></div>
+                </div>
+                <span class="domaine-count">{{ dom.nombreBeneficiaires | number }}</span>
+              </div>
+            }
+          </div>
+
+          @if (expandedBrancheId === b.brancheId) {
+            <div class="branche-detail">
+              @for (dom of b.domaines; track dom.domaine) {
+                <div class="detail-section">
+                  <h4 class="detail-heading">{{ dom.domaine }} — Détail par prestation</h4>
+                  <table class="detail-table">
+                    <thead>
+                      <tr>
+                        <th>Code</th>
+                        <th>Prestation</th>
+                        <th class="text-right">Bénéficiaires</th>
+                        <th class="text-right">%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (p of dom.prestations; track p.prestationId) {
+                        <tr>
+                          <td><code>{{ p.prestationCode }}</code></td>
+                          <td>{{ p.prestationLibelle }}</td>
+                          <td class="text-right">{{ p.nombreBeneficiaires | number }}</td>
+                          <td class="text-right">{{ pct(p.nombreBeneficiaires, dom.nombreBeneficiaires) }}%</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ══════ Trend chart ══════ -->
+  @if (trend().length) {
+    <div class="section-heading" style="margin-top: 2rem;">
+      Évolution des bénéficiaires actifs
+    </div>
+
+    <div class="chart-container">
+      <canvas baseChart
+        [data]="chartData()"
+        [options]="chartOptions"
+        type="line">
+      </canvas>
+    </div>
+
+    <!-- Trend data table -->
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Période</th>
+            <th class="text-right">RP</th>
+            <th class="text-right">PF</th>
+            <th class="text-right">PVID</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Variation</th>
+            <th>Tendance</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of trend(); track row.periode) {
+            <tr (click)="selectPeriode(row)"
+                [class.selected]="selectedPeriode() === row">
+              <td>{{ periodLabel(row.mois, row.annee) }}</td>
+              <td class="text-right">{{ row.actifsRp | number }}</td>
+              <td class="text-right">{{ row.actifsPf | number }}</td>
+              <td class="text-right">{{ row.actifsPvid | number }}</td>
+              <td class="text-right fw-bold">{{ row.totalActifs | number }}</td>
+              <td class="text-right" [style.color]="trendColor(row.tendance)">
+                @if (row.variationTotal != null) {
+                  {{ row.variationTotal > 0 ? '+' : '' }}{{ row.variationTotal | number }}
+                } @else {
+                  —
+                }
+              </td>
+              <td>
+                @if (row.tendance) {
+                  <span class="trend-badge" [attr.data-trend]="row.tendance">
+                    {{ row.tendance === 'hausse' ? '↑' : row.tendance === 'baisse' ? '↓' : '→' }}
+                    {{ row.tendance }}
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

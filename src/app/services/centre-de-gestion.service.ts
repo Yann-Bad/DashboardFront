@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { HomeDashboardDto } from '../models/home-dashboard.model';
 import {
   CentreDeGestionDto,
   CentreDeGestionSummaryDto,
@@ -56,6 +57,11 @@ import {
 import {
   GlobalGrappeFamilleStatsDto,
 } from '../models/global-grappe-famille.model';
+import {
+  BeneficiaireSummaryDto,
+  BeneficiaireFilterDto,
+  BeneficiaireTrendDto,
+} from '../models/beneficiaire.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -103,6 +109,11 @@ export class CentreDeGestionService {
   /** GET /api/CentreDeGestion/dashboard/stats */
   getDashboardStats(): Observable<DashboardStatsDto> {
     return this.http.get<DashboardStatsDto>(`${this.base}/dashboard/stats`);
+  }
+
+  /** GET /api/CentreDeGestion/dashboard/home — consolidated home dashboard */
+  getHomeDashboard(): Observable<HomeDashboardDto> {
+    return this.http.get<HomeDashboardDto>(`${this.base}/dashboard/home`);
   }
 
   /**
@@ -364,6 +375,34 @@ export class CentreDeGestionService {
     if (centreDeGestionId != null) params = params.set('centreDeGestionId', centreDeGestionId.toString());
     return this.http.get<GlobalGrappeFamilleStatsDto>(
       `${this.base}/grappe-familiale`, { params },
+    );
+  }
+
+  /** GET /api/CentreDeGestion/beneficiaires/branches */
+  getBeneficiairesParBranche(
+    filter: BeneficiaireFilterDto,
+  ): Observable<BeneficiaireSummaryDto> {
+    let params = new HttpParams();
+    if (filter.dateReference) params = params.set('dateReference', filter.dateReference);
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    return this.http.get<BeneficiaireSummaryDto>(
+      `${this.base}/beneficiaires/branches`, { params },
+    );
+  }
+
+  /** GET /api/CentreDeGestion/beneficiaires/tendance */
+  getBeneficiaireTrend(
+    filter: BeneficiaireFilterDto,
+  ): Observable<BeneficiaireTrendDto[]> {
+    let params = new HttpParams();
+    if (filter.anneeDebut != null) params = params.set('anneeDebut', filter.anneeDebut.toString());
+    if (filter.anneeFin != null) params = params.set('anneeFin', filter.anneeFin.toString());
+    if (filter.moisDebut) params = params.set('moisDebut', filter.moisDebut);
+    if (filter.moisFin) params = params.set('moisFin', filter.moisFin);
+    if (filter.centreDeGestionId != null) params = params.set('centreDeGestionId', filter.centreDeGestionId.toString());
+    if (filter.granularite) params = params.set('granularite', filter.granularite);
+    return this.http.get<BeneficiaireTrendDto[]>(
+      `${this.base}/beneficiaires/tendance`, { params },
     );
   }
 }

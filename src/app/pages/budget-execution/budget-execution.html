@@ -212,7 +212,7 @@
                 <tr>
                   @if (selectedNiveau >= 4) { <th>Centre</th><th>Centre Gestion</th> }
                   <th>Type Budget</th>
-                  @if (selectedNiveau >= 2) { <th>Gestion</th> }
+                  @if (selectedNiveau >= 2) { <th>Code Gestion</th><th>Gestion</th> }
                   @if (selectedNiveau >= 3) { <th>Poste</th><th>Libellé Poste</th> }
                   <th class="text-right">Assignation</th>
                   <th class="text-right">Réalisation</th>
@@ -224,7 +224,7 @@
                   <tr>
                     @if (selectedNiveau >= 4) { <td><code>{{ row.codeCentreGestion }}</code></td><td>{{ row.centreGestion }}</td> }
                     <td>{{ row.typeBudget }}</td>
-                    @if (selectedNiveau >= 2) { <td>{{ row.codeGestion }}</td> }
+                    @if (selectedNiveau >= 2) { <td><code>{{ row.codeGestion }}</code></td><td>{{ row.gestion }}</td> }
                     @if (selectedNiveau >= 3) { <td><code>{{ row.poste }}</code></td><td>{{ row.libellePoste }}</td> }
                     <td class="text-right">{{ fmtMontant(row.assignation) }}</td>
                     <td class="text-right">{{ fmtMontant(row.realisation) }}</td>
@@ -236,7 +236,7 @@
                 <tr class="total-row">
                   @if (selectedNiveau >= 4) { <td colspan="2"></td> }
                   <td><strong>Total</strong></td>
-                  @if (selectedNiveau >= 2) { <td></td> }
+                  @if (selectedNiveau >= 2) { <td></td><td></td> }
                   @if (selectedNiveau >= 3) { <td></td><td></td> }
                   <td class="text-right"><strong>{{ fmtMontant(totalAssignation) }}</strong></td>
                   <td class="text-right"><strong>{{ fmtMontant(totalRealisation) }}</strong></td>

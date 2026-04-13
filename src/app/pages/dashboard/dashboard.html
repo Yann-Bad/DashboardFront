@@ -1,17 +1,123 @@
+<!-- ══════════════════════════════════════════════════════════════════
+     SECTION : Situation de trésorerie (SummaryAccount)
+     ══════════════════════════════════════════════════════════════════ -->
 <div class="dashboard-page">
+
   <div class="page-header">
     <h1>Tableau de Bord</h1>
-    <p class="subtitle">Vue d'ensemble des centres de gestion</p>
+    <p class="subtitle">Situation de trésorerie · {{ today | date:'dd/MM/yyyy' }}</p>
   </div>
 
   @if (loading) {
-    <div class="loading-state">
-      <span class="spinner"></span>
-      <p>Chargement des statistiques…</p>
-    </div>
+    <div class="loading-state"><span class="spinner"></span><p>Chargement…</p></div>
   } @else if (error) {
     <div class="error-banner">{{ error }}</div>
-  } @else if (stats) {
+  } @else if (data) {
+
+    <!-- Banque: per-currency breakdown -->
+    @if (soldesBanque.length) {
+      <div class="section-card">
+        <div class="section-header">
+          <h2>🏦 Soldes bancaires par devise</h2>
+          <a routerLink="/treasury-summary" class="btn-link">Trésorerie détaillée →</a>
+        </div>
+        <div class="branch-summaries">
+          @for (s of soldesBanque; track s.monnaie; let i = $index) {
+            <a class="branch-card" routerLink="/treasury-summary"
+              [class]="'branch-card--' + (i % 2 === 0 ? 'blue' : 'purple')">
+              <div class="branch-card-header">
+                <span class="branch-card-icon">🏦</span>
+                <span class="branch-card-title">{{ s.monnaie }}</span>
+              </div>
+
+              <!-- Hero: Solde disponible -->
+              <div class="treasury-hero">
+                <span class="treasury-hero-label">Solde disponible</span>
+                <span class="treasury-hero-value">{{ fmtMontant(s.soldeDisponible) }}</span>
+              </div>
+
+              <!-- Detail metrics -->
+              <div class="branch-card-body">
+                <div class="bc-metric"><span class="bc-label">Solde réel</span><span class="bc-value">{{ fmtMontant(s.soldeReel) }}</span></div>
+                <div class="bc-metric"><span class="bc-label">Solde émis</span><span class="bc-value">{{ fmtMontant(s.soldeEmis) }}</span></div>
+                <div class="bc-metric"><span class="bc-label">Solde à encaisser</span><span class="bc-value green">{{ fmtMontant(s.soldeEncaisse) }}</span></div>
+                <div class="bc-metric"><span class="bc-label">Solde prévisionnel</span><span class="bc-value">{{ fmtMontant(s.soldePrevisionnel) }}</span></div>
+              </div>
+
+              <!-- Encaissé vs Émis progress bar -->
+              <div class="bc-progress">
+                <div class="bc-progress-label">
+                  <span>À encaisser vs Émis</span>
+                  <strong class="green">{{ fmtMontant(Math.abs(s.soldeEncaisse)) }}</strong>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" [class]="'progress-fill--' + (i % 2 === 0 ? 'blue' : 'purple')"
+                    [style.width.%]="clampPct(Math.abs(s.soldeEncaisse) / (Math.abs(s.soldeEncaisse) + Math.abs(s.soldeEmis) || 1) * 100)">
+                  </div>
+                </div>
+                <div class="treasury-bar-legend">
+                  <span class="green">{{ fmtMontant(Math.abs(s.soldeEncaisse)) }}</span>
+                  <span class="blue">{{ fmtMontant(Math.abs(s.soldeEmis)) }}</span>
+                </div>
+              </div>
+            </a>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SECTION : Paiements par document (DocumentPayment)
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="dashboard-page" style="padding-top:0">
+
+  <div class="page-header">
+    <h2 class="section-page-title">Paiements par document comptable</h2>
+    <p class="subtitle">Synthèse annuelle · exercice en cours</p>
+  </div>
+
+  @if (docExec && execClasseurs.length) {
+
+    <!-- Execution by classeur: bar rows -->
+    <div class="section-card exec-heatmap-card">
+      <div class="section-header">
+        <h2>📅 Exécution par classeur</h2>
+        <div class="exec-heatmap-totals">
+          <span class="exec-total-chip">{{ docExec.totalDocumentsExecutes | number }} docs</span>
+          <span class="exec-total-chip">{{ docExec.totalOperations | number }} ops</span>
+          <span class="exec-total-chip teal">{{ fmtMontant(docExec.totalMontant) }}</span>
+          <a routerLink="/document-payment" class="btn-link">Détail paiements →</a>
+        </div>
+      </div>
+      <div class="exec-classeur-scroll">
+        @for (cl of execClasseurs; track cl) {
+          <div class="doc-classeur-row">
+            <span class="doc-classeur-name">{{ cl }}</span>
+            <div class="emp-bar-track">
+              <div class="emp-bar-fill doc-bar"
+                [style.width.%]="clampPct((execRowTotal(cl) / (docExec.totalMontant || 1)) * 100)">
+              </div>
+            </div>
+            <span class="doc-classeur-meta">{{ execRowDocs(cl) | number }} docs · {{ fmtMontant(execRowTotal(cl)) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SECTION : Centres de gestion (global dashboard)
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="dashboard-page" style="padding-top:0">
+  <div class="page-header">
+    <h2 class="section-page-title">Centres de gestion</h2>
+    <p class="subtitle">Vue d'ensemble des centres de gestion</p>
+  </div>
+
+  @if (data) {
     <!-- Stat cards -->
     <div class="stats-grid">
       @for (card of statCards; track card.label) {
@@ -24,7 +130,8 @@
         </div>
       }
     </div>
-    <!-- ============================================================         Section : Recouvrement & Encaissements (KPI annuels)
+    <!-- ============================================================
+         Section : Recouvrement & Encaissements (KPI annuels)
          ============================================================ -->
     <div class="section-card recouvrement-section">
       <div class="section-header">
@@ -38,22 +145,22 @@
           <div class="recouv-rate-header">
             <span>Taux de recouvrement (année courante)</span>
             <strong
-              [class.green]="stats.tauxRecouvrementAnnuel >= 70"
-              [class.orange]="stats.tauxRecouvrementAnnuel >= 40 && stats.tauxRecouvrementAnnuel < 70"
-              [class.red]="stats.tauxRecouvrementAnnuel < 40"
-            >{{ stats.tauxRecouvrementAnnuel | number:'1.1-1' }} %</strong>
+              [class.green]="data.tauxRecouvrementAnnuel >= 70"
+              [class.orange]="data.tauxRecouvrementAnnuel >= 40 && data.tauxRecouvrementAnnuel < 70"
+              [class.red]="data.tauxRecouvrementAnnuel < 40"
+            >{{ data.tauxRecouvrementAnnuel | number:'1.1-1' }} %</strong>
           </div>
           <div class="emp-bar-track">
             <div class="emp-bar-fill recouv-bar"
-              [class.green]="stats.tauxRecouvrementAnnuel >= 70"
-              [class.orange]="stats.tauxRecouvrementAnnuel >= 40 && stats.tauxRecouvrementAnnuel < 70"
-              [class.red]="stats.tauxRecouvrementAnnuel < 40"
-              [style.width.%]="clampPct(stats.tauxRecouvrementAnnuel)">
+              [class.green]="data.tauxRecouvrementAnnuel >= 70"
+              [class.orange]="data.tauxRecouvrementAnnuel >= 40 && data.tauxRecouvrementAnnuel < 70"
+              [class.red]="data.tauxRecouvrementAnnuel < 40"
+              [style.width.%]="clampPct(data.tauxRecouvrementAnnuel)">
             </div>
           </div>
           <div class="recouv-rate-sub">
-            {{ stats.employeursAyantPaye | number }} employeur(s) ayant payé
-            sur {{ stats.employeursDeclares | number }} déclarant(s)
+            {{ data.employeursAyantPaye | number }} employeur(s) ayant payé
+            sur {{ data.employeursDeclares | number }} déclarant(s)
           </div>
         </div>
 
@@ -61,23 +168,23 @@
         <div class="montant-enc-grid">
           <div class="montant-enc-tile">
             <span class="montant-enc-label">Déclaré (cotisations)</span>
-            <span class="montant-enc-value indigo">{{ fmtMontant(stats.montantTotalDeclare) }}</span>
+            <span class="montant-enc-value indigo">{{ fmtMontant(data.montantTotalDeclare) }}</span>
           </div>
           <div class="montant-enc-tile">
             <span class="montant-enc-label">Principal</span>
-            <span class="montant-enc-value">{{ fmtMontant(stats.montantPrincipalEncaisse) }}</span>
+            <span class="montant-enc-value">{{ fmtMontant(data.montantPrincipalEncaisse) }}</span>
           </div>
           <div class="montant-enc-tile">
             <span class="montant-enc-label">Majorations</span>
-            <span class="montant-enc-value orange">{{ fmtMontant(stats.montantMajorationEncaisse) }}</span>
+            <span class="montant-enc-value orange">{{ fmtMontant(data.montantMajorationEncaisse) }}</span>
           </div>
           <div class="montant-enc-tile">
             <span class="montant-enc-label">Taxations</span>
-            <span class="montant-enc-value red">{{ fmtMontant(stats.montantTaxationEncaisse) }}</span>
+            <span class="montant-enc-value red">{{ fmtMontant(data.montantTaxationEncaisse) }}</span>
           </div>
           <div class="montant-enc-tile total-tile">
             <span class="montant-enc-label">Total encaissé</span>
-            <span class="montant-enc-value teal">{{ fmtMontant(stats.montantTotalEncaisse) }}</span>
+            <span class="montant-enc-value teal">{{ fmtMontant(data.montantTotalEncaisse) }}</span>
           </div>
         </div>
       </div>
@@ -88,6 +195,7 @@
       <div class="section-card">
         <div class="section-header">
           <h2>Ventilation par devise</h2>
+          <a routerLink="/encaissements" class="btn-link">Détail encaissements →</a>
         </div>
         <div class="devise-grid">
           @for (d of deviseBreakdown; track d.deviseId) {
@@ -103,17 +211,27 @@
                   <span class="devise-stat-pct">{{ d.pctDeclarations | number:'1.1-1' }} %</span>
                 </div>
                 <div class="devise-stat">
+                  <span class="devise-stat-label">Montant déclaré (CDF)</span>
+                  <span class="devise-stat-value indigo">{{ fmtMontant(d.montantDeclareCdf) }}</span>
+                </div>
+                @if (d.deviseCode !== 'CDF' && d.montantDeclareDevise > 0) {
+                  <div class="devise-stat">
+                    <span class="devise-stat-label">Déclaré {{ d.deviseCode }}</span>
+                    <span class="devise-stat-value">{{ fmtMontant(d.montantDeclareDevise) }}</span>
+                  </div>
+                }
+                <div class="devise-stat">
                   <span class="devise-stat-label">Encaissements</span>
                   <span class="devise-stat-value">{{ d.nbEncaissements | number }}</span>
                 </div>
                 <div class="devise-stat">
-                  <span class="devise-stat-label">Montant CDF</span>
+                  <span class="devise-stat-label">Montant encaissé (CDF)</span>
                   <span class="devise-stat-value teal">{{ fmtMontant(d.montantEncaisseCdf) }}</span>
                   <span class="devise-stat-pct">{{ d.pctMontantCdf | number:'1.1-1' }} %</span>
                 </div>
                 @if (d.deviseCode !== 'CDF' && d.montantEncaisseDevise > 0) {
                   <div class="devise-stat">
-                    <span class="devise-stat-label">Montant {{ d.deviseCode }}</span>
+                    <span class="devise-stat-label">Encaissé {{ d.deviseCode }}</span>
                     <span class="devise-stat-value">{{ fmtMontant(d.montantEncaisseDevise) }}</span>
                   </div>
                 }
@@ -132,217 +250,48 @@
         </div>
       </div>
     }
-    <!-- ============================================================ -->
-    <!-- Section : Répartition globale des employeurs                 -->
-    <!-- ============================================================ -->
-    <div class="section-card emp-repartition">
-      <div class="section-header">
-        <h2>Répartition des employeurs</h2>
-        <span class="text-muted">Total : {{ stats.totalEmployeurs | number }}</span>
-      </div>
+  }
+</div>
 
-      <div class="emp-rep-grid">
-        <!-- Tuile total -->
-        <div class="emp-total-tile">
-          <span class="emp-total-value">{{ stats.totalEmployeurs | number }}</span>
-          <span class="emp-total-label">Employeurs immatriculés</span>
-          <span class="emp-total-sub">dont {{ stats.totalEmployes | number }} employé(s)</span>
-        </div>
+<!-- ══════════════════════════════════════════════════════════════════
+     SECTION : Tendances des Liquidations (3 branches)
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="dashboard-page" style="padding-top:0">
+  <div class="page-header">
+    <h2 class="section-page-title">Tendances des Liquidations</h2>
+    <p class="subtitle">Prestations Familiales · Pensions (PVID) · Risques Professionnels — année en cours</p>
+  </div>
 
-        <!-- Barres de progression -->
-        <div class="emp-bars">
-          @for (r of repartitionEmployeurs; track r.label) {
-            <div class="emp-bar-row" [attr.data-color]="r.couleur">
-              <div class="emp-bar-meta">
-                <span class="emp-bar-icon">{{ r.icon }}</span>
-                <span class="emp-bar-label">{{ r.label }}</span>
-                <span class="emp-bar-count">{{ r.valeur | number }}</span>
-                <span class="emp-bar-pct">{{ r.pourcentage }} %</span>
-              </div>
-              <div class="emp-bar-track">
-                <div class="emp-bar-fill" [style.width.%]="r.pourcentage"></div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
+  @if (liqSummaries.length) {
 
-    <!-- ============================================================ -->
-    <!-- Section : Répartition globale des employés                  -->
-    <!-- État déduit de l'employeur : EtatId 1/2/3                    -->
-    <!-- ============================================================ -->
-    <div class="section-card emp-repartition">
-      <div class="section-header">
-        <h2>Répartition des employés</h2>
-        <span class="text-muted">Total : {{ stats.totalEmployes | number }}</span>
-      </div>
-
-      <div class="emp-rep-grid">
-        <!-- Tuile total -->
-        <div class="emp-total-tile">
-          <span class="emp-total-value">{{ stats.totalEmployes | number }}</span>
-          <span class="emp-total-label">Employés immatriculés</span>
-          @if (stats.employesSansEmployeur > 0) {
-            <span class="emp-total-sub">{{ stats.employesSansEmployeur | number }} sans employeur</span>
-          }
-        </div>
-
-        <!-- Barres de progression -->
-        <div class="emp-bars">
-          @for (r of repartitionEmployes; track r.label) {
-            <div class="emp-bar-row" [attr.data-color]="r.couleur">
-              <div class="emp-bar-meta">
-                <span class="emp-bar-icon">{{ r.icon }}</span>
-                <span class="emp-bar-label">{{ r.label }}</span>
-                <span class="emp-bar-count">{{ r.valeur | number }}</span>
-                <span class="emp-bar-pct">{{ r.pourcentage }} %</span>
-              </div>
-              <div class="emp-bar-track">
-                <div class="emp-bar-fill" [style.width.%]="r.pourcentage"></div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-
-    <!-- ============================================================
-         Section : Profil des employeurs (forme juridique / régime / secteur)
-         ============================================================ -->
-    @if (topFormesJuridiques.length || topRegimes.length || topSecteurs.length) {
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Profil des employeurs</h2>
-          <span class="text-muted">Ventilation des {{ stats.totalEmployeurs | number }} employeurs valides</span>
-        </div>
-        <div class="breakdown-grid">
-          @if (topFormesJuridiques.length) {
-            <div class="breakdown-panel">
-              <h3 class="breakdown-title">Par forme juridique</h3>
-              @for (item of topFormesJuridiques; track item.id) {
-                <div class="breakdown-row">
-                  <span class="breakdown-label" [title]="item.code ?? ''">{{ item.libelle ?? item.code ?? '—' }}</span>
-                  <div class="breakdown-bar-track">
-                    <div class="breakdown-bar-fill" [style.width.%]="clampPct(item.pourcentage)"></div>
-                  </div>
-                  <span class="breakdown-count">{{ item.nombre | number }}</span>
-                  <span class="breakdown-pct">{{ item.pourcentage }} %</span>
-                </div>
-              }
-            </div>
-          }
-          @if (topRegimes.length) {
-            <div class="breakdown-panel">
-              <h3 class="breakdown-title">Par régime</h3>
-              @for (item of topRegimes; track item.id) {
-                <div class="breakdown-row">
-                  <span class="breakdown-label" [title]="item.code ?? ''">{{ item.libelle ?? item.code ?? '—' }}</span>
-                  <div class="breakdown-bar-track">
-                    <div class="breakdown-bar-fill" [style.width.%]="clampPct(item.pourcentage)"></div>
-                  </div>
-                  <span class="breakdown-count">{{ item.nombre | number }}</span>
-                  <span class="breakdown-pct">{{ item.pourcentage }} %</span>
-                </div>
-              }
-            </div>
-          }
-          @if (topSecteurs.length) {
-            <div class="breakdown-panel">
-              <h3 class="breakdown-title">Par secteur d'activité</h3>
-              @for (item of topSecteurs; track item.id) {
-                <div class="breakdown-row">
-                  <span class="breakdown-label" [title]="item.code ?? ''">{{ item.libelle ?? item.code ?? '—' }}</span>
-                  <div class="breakdown-bar-track">
-                    <div class="breakdown-bar-fill" [style.width.%]="clampPct(item.pourcentage)"></div>
-                  </div>
-                  <span class="breakdown-count">{{ item.nombre | number }}</span>
-                  <span class="breakdown-pct">{{ item.pourcentage }} %</span>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- ============================================================
-         Section : Effectifs déclarés (snapshots Immatriculationeffectif)
-         ============================================================ -->
-    <!-- @if (stats.effectifDeclareTotal > 0) {
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Effectifs déclarés</h2>
-          <span class="text-muted">Cumul des déclarations périodiques (Immatriculationeffectif)</span>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card" data-color="teal">
-            <div class="stat-icon">📋</div>
-            <div class="stat-body">
-              <span class="stat-value">{{ stats.effectifDeclareTotal | number }}</span>
-              <span class="stat-label">Effectif total déclaré</span>
-            </div>
+    <!-- Branch summary cards -->
+    <div class="branch-summaries">
+      @for (b of liqSummaries; track b.label) {
+        <div class="branch-card" [class]="'branch-card--' + b.color">
+          <div class="branch-card-header">
+            <span class="branch-card-icon">{{ b.icon }}</span>
+            <span class="branch-card-title">{{ b.label }}</span>
           </div>
-          <div class="stat-card" data-color="blue">
-            <div class="stat-icon">👤</div>
-            <div class="stat-body">
-              <span class="stat-value">{{ stats.effectifEmployeDeclare | number }}</span>
-              <span class="stat-label">Employés déclarés</span>
-            </div>
+          <div class="branch-card-body">
+            <div class="bc-metric"><span class="bc-label">Liquidations</span><span class="bc-value">{{ fmtCount(b.s.nombreLiquidations) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Bénéficiaires</span><span class="bc-value">{{ fmtCount(b.s.nombreBeneficiaires) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Montant liquidé</span><span class="bc-value">{{ fmtLiqMontant(b.s.montantLiquide) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Montant payé</span><span class="bc-value green">{{ fmtLiqMontant(b.s.montantPaye) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Arriérés</span><span class="bc-value amber">{{ fmtLiqMontant(b.s.montantArriere) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Annulées</span><span class="bc-value red">{{ fmtCount(b.s.annulees) }}</span></div>
           </div>
-          <div class="stat-card" data-color="purple">
-            <div class="stat-icon">👥</div>
-            <div class="stat-body">
-              <span class="stat-value">{{ stats.effectifAssimileDeclare | number }}</span>
-              <span class="stat-label">Assimilés déclarés</span>
+          <div class="bc-progress">
+            <div class="bc-progress-label"><span>Taux de paiement</span><strong>{{ fmtPct(b.s.tauxPaiement) }}</strong></div>
+            <div class="progress-track">
+              <div class="progress-fill" [class]="'progress-fill--' + b.color" [style.width]="barWidth(b.s.tauxPaiement)"></div>
             </div>
           </div>
         </div>
-      </div>
-    } -->
-
-
-
-    <!-- Top 5 table -->
-    <div class="section-card">
-      <div class="section-header">
-        <h2>Top 5 Centres par Nombre d'Employeurs</h2>
-        <a routerLink="/centres" class="btn-link">Voir tous les centres →</a>
-      </div>
-      @if (stats.top5CentresParEmployeurs.length === 0) {
-        <p class="empty-state">Aucun centre disponible.</p>
-      } @else {
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Code</th>
-              <th>Libellé</th>
-              <th>Adresse</th>
-              <th class="text-right">Employeurs</th>
-              <th class="text-right">Employés</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (centre of stats.top5CentresParEmployeurs; track centre.id; let i = $index) {
-              <tr>
-                <td>
-                  <span class="rank-badge" [attr.data-rank]="i + 1">{{ i + 1 }}</span>
-                </td>
-                <td><code>{{ centre.code }}</code></td>
-                <td>{{ centre.libelle }}</td>
-                <td class="text-muted">{{ centre.adresse ?? '—' }}</td>
-                <td class="text-right">{{ centre.nombreEmployeurs | number }}</td>
-                <td class="text-right">{{ centre.nombreEmployes | number }}</td>
-                <td>
-                  <a [routerLink]="['/centres', centre.id]" class="btn-action">Détail</a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
       }
+    </div>
+
+    <div style="text-align: right; margin-top: 0.5rem;">
+      <a routerLink="/liquidation-trends" class="btn-link">Analyse détaillée →</a>
     </div>
   }
 </div>

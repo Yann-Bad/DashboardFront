@@ -416,9 +416,9 @@
       </div>
     </div>
 
-    <!-- Déclaré vs. Calculé — comparaison montants -->
+    <!-- Déclaré vs. Calculé — comparaison montants (affiché uniquement si les deux sources existent) -->
     @if (totaux(); as t) {
-      @if (t.montantDeclare > 0 || t.montantCalcule > 0) {
+      @if (t.montantDeclare > 0 && t.montantCalcule > 0) {
         <div class="compare-section">
           <div class="section-header"><h2>Déclaré vs. Calculé</h2></div>
           <div class="compare-grid">
@@ -750,7 +750,7 @@
                           </span>
                         </div>
 
-                        @if (d.montantDeclare > 0 || d.montantCalcule > 0) {
+                        @if (d.montantDeclare > 0 && d.montantCalcule > 0) {
                           <div class="trend-metric">
                             <span class="tm-label">Déclaré (montant)</span>
                             <span class="tm-value indigo">{{ fmtMontant(d.montantDeclare) }}</span>

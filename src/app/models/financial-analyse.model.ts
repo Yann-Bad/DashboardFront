@@ -57,8 +57,8 @@ export interface AnomalyResult {
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
 export const SUPPORTED_METRICS = [
-  { value: 'Encaissements', label: 'Encaissements' },
-  { value: 'Declarations',  label: 'Déclarations' },
-  { value: 'Dossiers',      label: 'Dossiers' },
-  { value: 'Balance',       label: 'Soldes Employeurs' },
+  { value: 'Encaissements', label: 'Encaissements', unit: 'CDF' },
+  { value: 'Declarations',  label: 'Déclarations',  unit: 'nb' },
+  { value: 'Dossiers',      label: 'Dossiers',      unit: 'nb' },
+  { value: 'Balance',       label: 'Soldes Employeurs', unit: 'CDF' },
 ];

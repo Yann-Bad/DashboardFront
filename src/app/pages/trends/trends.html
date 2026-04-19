@@ -59,7 +59,7 @@
     <!-- Chart 1: Flux de trésorerie -->
     <div class="chart-section">
       <h2>Flux de Trésorerie</h2>
-      <p class="chart-desc">Encaissements vs Décaissements par période</p>
+      <p class="chart-desc">Encaissements vs Décaissements par période · Unité : <strong>{{ currentUnit }}</strong></p>
       <ngx-charts-line-chart
         [view]="view"
         [results]="fluxData"
@@ -70,7 +70,7 @@
         [showXAxisLabel]="true"
         [showYAxisLabel]="true"
         xAxisLabel="Période"
-        yAxisLabel="Montant"
+        [yAxisLabel]="'Montant (' + currentUnit + ')'"
         [autoScale]="true"
         [animations]="true">
       </ngx-charts-line-chart>
@@ -79,7 +79,7 @@
     <!-- Chart 2: Evolution des soldes -->
     <div class="chart-section">
       <h2>Évolution des Soldes</h2>
-      <p class="chart-desc">Solde Disponible et Solde Réel cumulés</p>
+      <p class="chart-desc">Solde Disponible et Solde Réel cumulés · Unité : <strong>{{ currentUnit }}</strong></p>
       <ngx-charts-area-chart
         [view]="view"
         [results]="soldeData"
@@ -90,7 +90,7 @@
         [showXAxisLabel]="true"
         [showYAxisLabel]="true"
         xAxisLabel="Période"
-        yAxisLabel="Solde"
+        [yAxisLabel]="'Solde (' + currentUnit + ')'"
         [autoScale]="true"
         [animations]="true">
       </ngx-charts-area-chart>
@@ -99,7 +99,7 @@
     <!-- Chart 3: Prévisionnel vs Exécuté -->
     <div class="chart-section">
       <h2>Prévisionnel vs Exécuté</h2>
-      <p class="chart-desc">Comparaison des montants prévus et exécutés (sorties & entrées)</p>
+      <p class="chart-desc">Comparaison des montants prévus et exécutés (sorties & entrées) · Unité : <strong>{{ currentUnit }}</strong></p>
       <ngx-charts-bar-horizontal-2d
         [view]="view"
         [results]="prevExeData"
@@ -109,7 +109,7 @@
         [legend]="true"
         [showXAxisLabel]="true"
         [showYAxisLabel]="true"
-        xAxisLabel="Montant"
+        [xAxisLabel]="'Montant (' + currentUnit + ')'"
         yAxisLabel="Période"
         [animations]="true">
       </ngx-charts-bar-horizontal-2d>
@@ -118,7 +118,7 @@
     <!-- Chart 4: Cash flow net -->
     <div class="chart-section">
       <h2>Cash Flow Net</h2>
-      <p class="chart-desc">Flux net par période (Encaissements − Décaissements)</p>
+      <p class="chart-desc">Flux net par période (Encaissements − Décaissements) · Unité : <strong>{{ currentUnit }}</strong></p>
       <ngx-charts-bar-vertical
         [view]="view"
         [results]="netData"
@@ -128,7 +128,7 @@
         [showXAxisLabel]="true"
         [showYAxisLabel]="true"
         xAxisLabel="Période"
-        yAxisLabel="Flux Net"
+        [yAxisLabel]="'Flux Net (' + currentUnit + ')'"
         [animations]="true">
       </ngx-charts-bar-vertical>
     </div>
@@ -154,19 +154,15 @@
     <!-- Chart 6: Répartition par catégorie -->
     <div class="chart-section">
       <h2>Répartition par Catégorie</h2>
-      <p class="chart-desc">Distribution des montants par type d'opération</p>
+      <p class="chart-desc">Distribution des montants par type d'opération · Unité : <strong>{{ currentUnit }}</strong></p>
       <div class="pie-container">
-        <ngx-charts-pie-chart
-          [view]="[500, 350]"
+        <ngx-charts-advanced-pie-chart
+          [view]="[900, 380]"
           [results]="pieData"
           [scheme]="pieColors"
-          [legend]="true"
-          [legendTitle]="'Catégories'"
-          [labels]="true"
-          [doughnut]="true"
-          [arcWidth]="0.45"
+          [gradient]="false"
           [animations]="true">
-        </ngx-charts-pie-chart>
+        </ngx-charts-advanced-pie-chart>
       </div>
     </div>
 

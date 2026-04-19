@@ -138,7 +138,7 @@
     @if (chartData.length > 0) {
     <div class="chart-section">
       <h2>Série temporelle & Anomalies</h2>
-      <p class="chart-desc">Ligne bleue = valeurs normales · Points rouges = anomalies détectées</p>
+      <p class="chart-desc">Ligne bleue = valeurs normales · Points rouges = anomalies détectées · Unité : <strong>{{ currentUnit }}</strong></p>
       <ngx-charts-line-chart
         [view]="view"
         [results]="chartData"
@@ -149,7 +149,7 @@
         [showXAxisLabel]="true"
         [showYAxisLabel]="true"
         xAxisLabel="Période"
-        yAxisLabel="Valeur"
+        [yAxisLabel]="yAxisLabel"
         [autoScale]="true"
         [animations]="true"
         [roundDomains]="true">

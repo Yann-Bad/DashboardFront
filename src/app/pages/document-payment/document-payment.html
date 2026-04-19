@@ -1,14 +1,13 @@
 <div class="document-payment-page">
   <!-- ═══════════════════ PAGE HEADER ═══════════════════ -->
   <div class="page-header">
-    <h1>Analyse des Paiements par Document Comptable</h1>
-    <p class="subtitle">Suivi des opérations comptables par nature, devise et tendances mensuelles</p>
+    <h1>Analyse des Paiements par nature de Document </h1>
+    <p class="subtitle">Suivi des opérations comptables par nature et devise </p>
   </div>
 
   <!-- ═══════════════════ TAB BAR ═══════════════════ -->
   <div class="tab-bar">
     <button class="tab-btn" [class.active]="activeTab === 'dashboard'" (click)="switchTab('dashboard')">Tableau de Bord</button>
-    <button class="tab-btn" [class.active]="activeTab === 'execution'" (click)="switchTab('execution')">Exécution par Nature</button>
     <button class="tab-btn" [class.active]="activeTab === 'details'" (click)="switchTab('details')">Détails Opérations</button>
   </div>
 
@@ -52,141 +51,13 @@
     @if (activeTab === 'dashboard') {
 
       <!-- KPI Cards -->
-      @if (summary) {
-        <div class="stats-grid">
-          <div class="stat-card" data-color="blue">
-            <div class="stat-icon">📄</div>
-            <div class="stat-body">
-              <span class="stat-value">{{ summary.totalDocuments | number }}</span>
-              <span class="stat-label">Documents</span>
-            </div>
-          </div>
-          <div class="stat-card" data-color="green">
-            <div class="stat-icon">🔢</div>
-            <div class="stat-body">
-              <span class="stat-value">{{ summary.totalOperations | number }}</span>
-              <span class="stat-label">Opérations</span>
-            </div>
-          </div>
-          <div class="stat-card" data-color="orange">
-            <div class="stat-icon">💰</div>
-            <div class="stat-body">
-              <span class="stat-value">{{ fmtMontant(summary.totalMontant) }} CDF</span>
-              <span class="stat-label">Montant Total (converti)</span>
-            </div>
-          </div>
-          <div class="stat-card" data-color="purple">
-            <div class="stat-icon">✅</div>
-            <div class="stat-body">
-              <span class="stat-value">{{ summary.documentsAvecOperations | number }}</span>
-              <span class="stat-label">Docs avec Opérations</span>
-            </div>
-          </div>
-          <div class="stat-card" data-color="red">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-body">
-              <span class="stat-value">{{ summary.documentsSansOperations | number }}</span>
-              <span class="stat-label">Docs sans Opérations</span>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Classeur Chart -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Paiements par Nature</h2>
-          <span class="text-muted">{{ byClasseur.length }} nature(s)</span>
-        </div>
-        <div class="chart-container">
-          <canvas baseChart [data]="classeurChartData" [options]="classeurChartOptions" type="bar"></canvas>
-        </div>
-      </div>
-
-      <!-- Classeur Table -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Liste des Natures</h2>
-          <span class="text-muted">{{ byClasseur.length }} nature(s)</span>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr><th>Nature</th><th>Docs</th><th>Ops</th><th>Devise</th><th class="text-right">Montant</th></tr>
-            </thead>
-            <tbody>
-              @for (r of byClasseur; track r.classeurdocumentId) {
-                @for (dv of r.parDevise; track dv.devisedocument; let first = $first) {
-                  <tr>
-                    @if (first) {
-                      <td [attr.rowspan]="r.parDevise.length">{{ r.nomClasseur ?? '—' }}</td>
-                      <td [attr.rowspan]="r.parDevise.length">{{ r.nombreDocuments }}</td>
-                      <td [attr.rowspan]="r.parDevise.length">{{ r.nombreOperations }}</td>
-                    }
-                    <td><span class="badge badge-primary">{{ dv.devisedocument ?? '—' }}</span></td>
-                    <td class="text-right">{{ dv.totalMontant | number:'1.2-2' }}</td>
-                  </tr>
-                }
-              } @empty {
-                <tr><td colspan="5" class="empty-cell">Aucune donnée.</td></tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Devise (Currency) Table -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Paiements par Devise</h2>
-          <span class="text-muted">{{ byDevise.length }} devise(s)</span>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr><th>Devise</th><th>Docs</th><th>Ops</th><th class="text-right">Montant Total</th></tr>
-            </thead>
-            <tbody>
-              @for (r of byDevise; track r.devisedocument) {
-                <tr>
-                  <td><span class="badge badge-primary">{{ r.devisedocument ?? '—' }}</span></td>
-                  <td>{{ r.nombreDocuments }}</td>
-                  <td>{{ r.nombreOperations }}</td>
-                  <td class="text-right">{{ r.totalMontant | number:'1.2-2' }}</td>
-                </tr>
-              } @empty {
-                <tr><td colspan="4" class="empty-cell">Aucune donnée.</td></tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Trend Chart -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2>Tendance Mensuelle Montant Total (CDF)</h2>
-          <span class="text-muted">{{ trend.length }} période(s)</span>
-        </div>
-        <div class="chart-container">
-          <canvas baseChart [data]="trendChartData" [options]="trendChartOptions" type="line"></canvas>
-        </div>
-      </div>
-
-
-    }
-
-    <!-- ═══════════════════ EXÉCUTION PAR CLASSEUR TAB ═══════════════════ -->
-    @if (activeTab === 'execution') {
-
-      <!-- KPI Cards -->
       @if (execResult) {
         <div class="stats-grid">
           <div class="stat-card" data-color="blue">
             <div class="stat-icon">📋</div>
             <div class="stat-body">
               <span class="stat-value">{{ execResult.totalDocumentsExecutes | number }}</span>
-              <span class="stat-label">Documents Exécutés</span>
+              <span class="stat-label">Documents</span>
             </div>
           </div>
           <div class="stat-card" data-color="green">
@@ -206,13 +77,13 @@
         </div>
       }
 
-      <!-- Stacked Bar Chart: classeur x period -->
+      <!-- Horizontal bar chart: montant par classeur -->
       <div class="section-card">
         <div class="section-header">
-          <h2>Montants Exécutés par Nature et Période</h2>
+          <h2>Paiements par Nature</h2>
         </div>
         <div class="chart-container">
-          <canvas baseChart [data]="execChartData" [options]="execChartOptions" type="bar"></canvas>
+          <canvas baseChart [data]="classeurChartData" [options]="classeurChartOptions" type="bar"></canvas>
         </div>
       </div>
 
@@ -220,26 +91,27 @@
       @if (execResult && execResult.details.length > 0) {
         <div class="section-card">
           <div class="section-header">
-            <h2>Détail Nature × Période</h2>
+            <h2>Détail par Nature</h2>
             <span class="text-muted">{{ execResult.details.length }} ligne(s)</span>
           </div>
           <div class="table-wrapper">
             <table class="data-table">
               <thead>
-                <tr>
-                  <th>Nature</th><th>Période</th><th>Docs</th><th>Ops</th>
-                  <th class="text-right">Montant Total (CDF)</th>
-                </tr>
+                <tr><th>Nature</th><th>Docs</th><th>Ops</th><th>Devise</th><th class="text-right">Montant</th></tr>
               </thead>
               <tbody>
                 @for (r of execResult.details; track r.classeurdocumentId + '-' + r.annee + '-' + r.mois) {
-                  <tr>
-                    <td>{{ r.nomClasseur ?? '—' }}</td>
-                    <td>{{ r.annee }}-{{ r.mois.toString().padStart(2, '0') }}</td>
-                    <td>{{ r.nombreDocuments }}</td>
-                    <td>{{ r.nombreOperations }}</td>
-                    <td class="text-right">{{ r.totalMontant | number:'1.2-2' }}</td>
-                  </tr>
+                  @for (dv of r.parDevise; track dv.devisedocument; let first = $first) {
+                    <tr>
+                      @if (first) {
+                        <td [attr.rowspan]="r.parDevise.length">{{ r.nomClasseur ?? '—' }}</td>
+                        <td [attr.rowspan]="r.parDevise.length">{{ r.nombreDocuments }}</td>
+                        <td [attr.rowspan]="r.parDevise.length">{{ r.nombreOperations }}</td>
+                      }
+                      <td><span class="badge badge-primary">{{ dv.devisedocument ?? '—' }}</span></td>
+                      <td class="text-right">{{ dv.totalMontant | number:'1.2-2' }}</td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>
@@ -247,9 +119,6 @@
         </div>
       }
 
-      @if (!execResult || execResult.details.length === 0) {
-        <div class="empty-state">Aucune donnée d'exécution pour les critères sélectionnés.</div>
-      }
     }
 
     <!-- ═══════════════════ DETAILS TAB ═══════════════════ -->
@@ -263,43 +132,39 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>N° Document</th><th>Type</th><th>Nature</th><th>État Doc.</th>
-                <th>Date Op.</th><th>Code Op.</th><th>État Op.</th>
-                <th class="text-right">Montant Op.</th><th>Bénéficiaire</th>
+                <th>Nature</th><th>N° Document</th><th>Date Op.</th>
+                <th class="col-wrap">Bénéficiaire</th><th class="col-libelle">Libellé Op.</th>
+                <th class="text-right">Montant Op.</th><th>Devise</th>
               </tr>
             </thead>
             <tbody>
-              @for (r of details; track r.operationId) {
+              @for (r of pagedDetails; track r.operationId) {
                 <tr>
-                  <td>{{ r.numerodocument }}</td>
-                  <td>{{ r.typedocument ?? '—' }}</td>
                   <td>{{ r.nomClasseur ?? '—' }}</td>
-                  <td>
-                    <span class="badge"
-                      [class.badge-success]="r.etatdocument === 'execute'"
-                      [class.badge-warning]="r.etatdocument === 'etabli'"
-                      [class.badge-info]="r.etatdocument === 'recu'">
-                      {{ r.etatdocument }}
-                    </span>
-                  </td>
+                  <td>{{ r.numerodocument }}</td>
                   <td>{{ r.dateoperation | date:'dd/MM/yyyy' }}</td>
-                  <td><span class="badge badge-primary">{{ r.codeoperation ?? '—' }}</span></td>
-                  <td>
-                    <span class="badge"
-                      [class.badge-success]="r.etatoperation === 'execute'"
-                      [class.badge-warning]="r.etatoperation === 'etabli'">
-                      {{ r.etatoperation ?? '—' }}
-                    </span>
-                  </td>
+                  <td class="col-wrap">{{ r.beneficiaireoperation ?? r.beneficiairedocument ?? '—' }}</td>
+                  <td class="col-libelle">{{ r.libelleoperation ?? '—' }}</td>
                   <td class="text-right">{{ r.montantoperation | number:'1.2-2' }}</td>
-                  <td>{{ r.beneficiaireoperation ?? r.beneficiairedocument ?? '—' }}</td>
+                  <td><span class="badge badge-primary">{{ r.devisedocument ?? '—' }}</span></td>
                 </tr>
               } @empty {
-                <tr><td colspan="9" class="empty-cell">Aucune opération trouvée.</td></tr>
+                <tr><td colspan="7" class="empty-cell">Aucune opération trouvée.</td></tr>
               }
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1) {
+          <div class="pagination">
+            <button class="page-btn" [disabled]="page === 1" (click)="goToPage(1)">&laquo;</button>
+            <button class="page-btn" [disabled]="page === 1" (click)="goToPage(page - 1)">&lsaquo;</button>
+            <span class="page-info">Page {{ page }} / {{ totalPages }}</span>
+            <button class="page-btn" [disabled]="page === totalPages" (click)="goToPage(page + 1)">&rsaquo;</button>
+            <button class="page-btn" [disabled]="page === totalPages" (click)="goToPage(totalPages)">&raquo;</button>
+          </div>
+        }
       </div>
     }
   }

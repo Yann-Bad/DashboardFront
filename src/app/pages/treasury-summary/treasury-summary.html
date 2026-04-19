@@ -94,7 +94,6 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Période</th>
                 <th class="text-right">Opérations</th>
                 <th class="text-right">Documents</th>
@@ -103,7 +102,6 @@
             <tbody>
               @for (e of exercices; track e.id) {
                 <tr>
-                  <td>{{ e.id }}</td>
                   <td>{{ e.periodecomptable ?? '—' }}</td>
                   <td class="text-right">{{ e.nombreOperations | number }}</td>
                   <td class="text-right">{{ e.nombreDocuments | number }}</td>

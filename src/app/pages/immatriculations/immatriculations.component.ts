@@ -32,7 +32,7 @@ export class ImmatriculationsComponent implements OnInit {
     anneeDebut:          new Date().getFullYear(),
     anneeFin:            new Date().getFullYear(),
     moisDebut:           '01',
-    moisFin:             '12',
+    moisFin:             String(new Date().getMonth() + 1).padStart(2, '0'),
     centreDeGestionId:   null,
     tenantId:            undefined,
     avecDetailParCentre: false,

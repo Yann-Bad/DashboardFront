@@ -7,7 +7,7 @@
   <!-- Tab bar -->
   <div class="tab-bar">
     <button class="tab-btn" [class.active]="activeTab === 'execution'" (click)="switchTab('execution')">Exécution Budgétaire</button>
-    <button class="tab-btn" [class.active]="activeTab === 'synthese'" (click)="switchTab('synthese')">Synthèse Consolidée</button>
+    <!-- <button class="tab-btn" [class.active]="activeTab === 'synthese'" (click)="switchTab('synthese')">Synthèse Consolidée</button> -->
   </div>
 
   <!-- ════════════════ EXECUTION TAB ════════════════ -->
@@ -73,37 +73,7 @@
     } @else if (error) {
       <div class="error-banner">{{ error }}</div>
     } @else {
-      <!-- Summary cards -->
-      <div class="stats-grid">
-        <div class="stat-card" data-color="blue">
-          <div class="stat-icon">📋</div>
-          <div class="stat-body">
-            <span class="stat-value">{{ fmtMontant(totalAssignation) }}</span>
-            <span class="stat-label">Assignation totale</span>
-          </div>
-        </div>
-        <div class="stat-card" data-color="green">
-          <div class="stat-icon">✅</div>
-          <div class="stat-body">
-            <span class="stat-value">{{ fmtMontant(totalRealisation) }}</span>
-            <span class="stat-label">Réalisation totale</span>
-          </div>
-        </div>
-        <div class="stat-card" data-color="orange">
-          <div class="stat-icon">💸</div>
-          <div class="stat-body">
-            <span class="stat-value">{{ fmtMontant(totalDepense) }}</span>
-            <span class="stat-label">Dépense totale</span>
-          </div>
-        </div>
-        <div class="stat-card" data-color="purple">
-          <div class="stat-icon">📊</div>
-          <div class="stat-body">
-            <span class="stat-value">{{ totalLignes | number }}</span>
-            <span class="stat-label">Lignes budgétaires</span>
-          </div>
-        </div>
-      </div>
+     
 
       <!-- Taux globaux -->
       <div class="rates-row">
@@ -255,7 +225,7 @@
   }
 
   <!-- ════════════════ SYNTHESE TAB ════════════════ -->
-  @if (activeTab === 'synthese') {
+  <!-- @if (activeTab === 'synthese') {
     <div class="filter-card">
       <div class="filter-row">
         <div class="filter-field filter-field--small">
@@ -334,5 +304,5 @@
     } @else {
       <div class="empty-state">Aucune donnée de synthèse consolidée pour cet exercice.</div>
     }
-  }
+  } -->
 </div>

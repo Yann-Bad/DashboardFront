@@ -38,8 +38,8 @@ export class BeneficiairesComponent implements OnInit {
     anneeDebut:  new Date().getFullYear(),
     anneeFin:    new Date().getFullYear(),
     moisDebut:   '01',
-    moisFin:     '12',
-    granularite: 'mensuel',
+    moisFin:     String(new Date().getMonth() + 1).padStart(2, '0'),
+    granularite: 'trimestriel',
   };
 
   /** Branche currently expanded (null = none) */
@@ -146,7 +146,7 @@ export class BeneficiairesComponent implements OnInit {
   loadSnapshot(): void {
     this.loading.set(true);
     this.error.set(null);
-    const f: BeneficiaireFilterDto = {};
+    const f: BeneficiaireFilterDto = { ...this.filter };
     if (this.centreId != null) f.centreDeGestionId = this.centreId;
 
     this.service.getBeneficiairesParBranche(f).subscribe({

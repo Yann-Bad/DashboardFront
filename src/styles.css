@@ -28,6 +28,7 @@ html, body {
 /* ─── Shared utilities ───────────────────────────────────────────── */
 .text-muted  { color: var(--color-text-muted); }
 .text-right  { text-align: right; }
+.data-table thead th.text-right { text-align: right; }
 
 /* Generic loading state */
 .loading-state {

@@ -31,6 +31,9 @@ export class TreasuryForecastComponent implements OnInit {
   filter: TreasuryForecastFilter = {
     metric: 'NetCashFlow',
     horizon: 6,
+    monnaie: '',
+    anneeDebut: new Date().getFullYear() - 1,
+    anneeFin: new Date().getFullYear(),
   };
 
   view: [number, number] = [1000, 360];
@@ -93,6 +96,16 @@ export class TreasuryForecastComponent implements OnInit {
 
   fmtDate(d: string): string {
     return new Date(d).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
+  }
+
+  get currentUnit(): string {
+    const baseUnit = this.metrics.find(m => m.value === this.filter.metric)?.unit ?? 'CDF';
+    if (baseUnit === 'CDF' && this.filter.monnaie) return this.filter.monnaie;
+    return baseUnit;
+  }
+
+  get yAxisLabel(): string {
+    return `Montant (${this.currentUnit})`;
   }
 
   fmtValue(v: number | null | undefined): string {

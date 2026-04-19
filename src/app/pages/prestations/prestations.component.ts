@@ -61,14 +61,14 @@ export class PrestationsComponent implements OnInit {
     anneeDebut:          new Date().getFullYear(),
     anneeFin:            new Date().getFullYear(),
     moisDebut:           '01',
-    moisFin:             '12',
+    moisFin:             String(new Date().getMonth() + 1).padStart(2, '0'),
     centreDeGestionId:   null,
     typePfId:            null,
     tenantId:            undefined,
     branche:             'PF',
     avecDetailParType:   false,
     avecDetailParCentre: false,
-    granularite:         'mensuel',
+    granularite:         'trimestriel',
   };
 
   readonly mois = [

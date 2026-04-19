@@ -33,10 +33,19 @@ export class RecouvrementComponent implements OnInit {
     anneeDebut: new Date().getFullYear(),
     anneeFin: new Date().getFullYear(),
     moisDebut: 1,
-    moisFin: 12,
+    moisFin: new Date().getMonth() + 1,
     topEmployeurs: 10,
     avecDetailParCentre: false,
   };
+
+  readonly mois = [
+    { value: 1,  label: 'Janvier'   }, { value: 2,  label: 'Février'   },
+    { value: 3,  label: 'Mars'      }, { value: 4,  label: 'Avril'     },
+    { value: 5,  label: 'Mai'       }, { value: 6,  label: 'Juin'      },
+    { value: 7,  label: 'Juillet'   }, { value: 8,  label: 'Août'      },
+    { value: 9,  label: 'Septembre' }, { value: 10, label: 'Octobre'   },
+    { value: 11, label: 'Novembre'  }, { value: 12, label: 'Décembre'  },
+  ];
 
   // ── Totaux ──
   totaux = computed(() => {

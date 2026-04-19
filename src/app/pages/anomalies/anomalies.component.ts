@@ -31,6 +31,8 @@ export class AnomaliesComponent implements OnInit {
   filter: AnomalyFilter = {
     metric: 'Encaissements',
     confidence: 95,
+    anneeDebut: new Date().getFullYear() - 1,
+    anneeFin: new Date().getFullYear(),
   };
 
   // Chart
@@ -87,6 +89,14 @@ export class AnomaliesComponent implements OnInit {
 
   fmtDate(d: string): string {
     return new Date(d).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
+  }
+
+  get currentUnit(): string {
+    return this.metrics.find(m => m.value === this.filter.metric)?.unit ?? '';
+  }
+
+  get yAxisLabel(): string {
+    return `Valeur (${this.currentUnit})`;
   }
 
   fmtValue(v: number | null | undefined): string {

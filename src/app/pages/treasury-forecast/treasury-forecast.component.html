@@ -181,7 +181,7 @@
     @if (chartData.length > 0) {
     <div class="chart-section">
       <h2>Historique & Prévisions</h2>
-      <p class="chart-desc">Ligne bleue = données réelles · Ligne verte = prévisions · Zone grise = intervalle de confiance 95 %</p>
+      <p class="chart-desc">Ligne bleue = données réelles · Ligne verte = prévisions · Zone grise = intervalle de confiance 95 % · Unité : <strong>{{ currentUnit }}</strong></p>
       <ngx-charts-line-chart
         [view]="view"
         [results]="chartData"
@@ -192,7 +192,7 @@
         [showXAxisLabel]="true"
         [showYAxisLabel]="true"
         xAxisLabel="Période"
-        yAxisLabel="Montant"
+        [yAxisLabel]="yAxisLabel"
         [autoScale]="true"
         [animations]="true"
         [roundDomains]="true">

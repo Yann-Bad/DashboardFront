@@ -87,10 +87,18 @@
         <input type="number" [(ngModel)]="filter.anneeFin" min="2000" max="2099">
       </label>
       <label>Mois début
-        <input type="number" [(ngModel)]="filter.moisDebut" min="1" max="12">
+        <select [(ngModel)]="filter.moisDebut">
+          @for (m of mois; track m.value) {
+            <option [ngValue]="m.value">{{ m.label }}</option>
+          }
+        </select>
       </label>
       <label>Mois fin
-        <input type="number" [(ngModel)]="filter.moisFin" min="1" max="12">
+        <select [(ngModel)]="filter.moisFin">
+          @for (m of mois; track m.value) {
+            <option [ngValue]="m.value">{{ m.label }}</option>
+          }
+        </select>
       </label>
       <label>Centre de gestion
         <select [(ngModel)]="filter.centreDeGestionId">

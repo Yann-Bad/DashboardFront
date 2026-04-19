@@ -4,8 +4,79 @@
 <div class="dashboard-page">
 
   <div class="page-header">
-    <h1>Tableau de Bord</h1>
-    <p class="subtitle">Situation de trésorerie · {{ today | date:'dd/MM/yyyy' }}</p>
+    <div class="page-header-row">
+      <div>
+        <h1>Tableau de Bord</h1>
+        <p class="subtitle">Situation de trésorerie · {{ today | date:'dd/MM/yyyy' }}</p>
+      </div>
+      <button class="btn-guide" (click)="toggleGuide()">
+        {{ showGuide() ? '✕ Fermer le guide' : '❓ Guide des analyses' }}
+      </button>
+    </div>
+
+    @if (showGuide()) {
+      <div class="guide-panel">
+        <h3 class="guide-title">Guide des sections du tableau de bord</h3>
+        <div class="guide-grid">
+          <div class="guide-item">
+            <span class="guide-icon">🏦</span>
+            <div>
+              <strong>Soldes bancaires par devise</strong>
+              <p>Affiche le solde disponible, réel, émis et prévisionnel de chaque compte bancaire, ventilé par devise (CDF, USD…). Le solde disponible = solde réel − engagements non encore émis.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-icon">📅</span>
+            <div>
+              <strong>Paiements par nature de document</strong>
+              <p>Répartit les paiements exécutés par classeur (nature de dépense) sur l'exercice en cours. Permet d'identifier les postes de dépense dominants et leur évolution mensuelle.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-icon">👨‍👩‍👧‍👦</span>
+            <div>
+              <strong>Tendances des liquidations — PF</strong>
+              <p>Synthèse des Prestations Familiales liquidées : nombre de dossiers, bénéficiaires distincts, montant liquidé vs payé, arriérés et taux de paiement.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-icon">🏛️</span>
+            <div>
+              <strong>Tendances des liquidations — PVID</strong>
+              <p>Synthèse des Pensions (Vieillesse, Invalidité, Décès) : même indicateurs que PF pour les pensionnés et allocataires.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-icon">⚠️</span>
+            <div>
+              <strong>Tendances des liquidations — RP</strong>
+              <p>Synthèse des Risques Professionnels (IJ, rentes, décès) : montants liquidés, bénéficiaires de droits distincts, taux d'exécution.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-icon">📊</span>
+            <div>
+              <strong>Recouvrement annuel</strong>
+              <p>Taux de recouvrement = montant encaissé / montant déclaré. Inclut le détail principal, majorations et taxations. Un taux ≥ 70 % est considéré satisfaisant.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-icon">💱</span>
+            <div>
+              <strong>Ventilation par devise</strong>
+              <p>Décompose déclarations et encaissements par devise d'origine (CDF, USD…). Les montants sont convertis en CDF pour permettre les comparaisons inter-devises.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <span class="guide-icon">🏢</span>
+            <div>
+              <strong>Centres de gestion — indicateurs globaux</strong>
+              <p>Tuiles de synthèse : nombre de centres, employeurs actifs, employés déclarés, effectif total et nombre de déclarations de l'exercice.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   </div>
 
   @if (loading) {
@@ -19,7 +90,7 @@
       <div class="section-card">
         <div class="section-header">
           <h2>🏦 Soldes bancaires par devise</h2>
-          <a routerLink="/treasury-summary" class="btn-link">Trésorerie détaillée →</a>
+          <a routerLink="/summary-accounts" class="btn-link">Trésorerie détaillée →</a>
         </div>
         <div class="branch-summaries">
           @for (s of soldesBanque; track s.monnaie; let i = $index) {
@@ -71,10 +142,11 @@
 <!-- ══════════════════════════════════════════════════════════════════
      SECTION : Paiements par document (DocumentPayment)
      ══════════════════════════════════════════════════════════════════ -->
+@if (!loading) {
 <div class="dashboard-page" style="padding-top:0">
 
   <div class="page-header">
-    <h2 class="section-page-title">Paiements par document comptable</h2>
+    <h2 class="section-page-title">Paiements par nature de document </h2>
     <p class="subtitle">Synthèse annuelle · exercice en cours</p>
   </div>
 
@@ -107,10 +179,57 @@
     </div>
   }
 </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SECTION : Tendances des Liquidations (3 branches)
+     ══════════════════════════════════════════════════════════════════ -->
+@if (!loading) {
+<div class="dashboard-page" style="padding-top:0">
+  <div class="page-header">
+    <h2 class="section-page-title">Tendances des Liquidations</h2>
+    <p class="subtitle">Prestations Familiales · Pensions (PVID) · Risques Professionnels — année en cours</p>
+  </div>
+
+  @if (liqSummaries.length) {
+
+    <!-- Branch summary cards -->
+    <div class="branch-summaries">
+      @for (b of liqSummaries; track b.label) {
+        <div class="branch-card" [class]="'branch-card--' + b.color">
+          <div class="branch-card-header">
+            <span class="branch-card-icon">{{ b.icon }}</span>
+            <span class="branch-card-title">{{ b.label }}</span>
+          </div>
+          <div class="branch-card-body">
+            <div class="bc-metric"><span class="bc-label">Liquidations</span><span class="bc-value">{{ fmtCount(b.s.nombreLiquidations) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Bénéficiaires</span><span class="bc-value">{{ fmtCount(b.s.nombreBeneficiaires) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Montant liquidé</span><span class="bc-value">{{ fmtLiqMontant(b.s.montantLiquide) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Montant payé</span><span class="bc-value green">{{ fmtLiqMontant(b.s.montantPaye) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Arriérés</span><span class="bc-value amber">{{ fmtLiqMontant(b.s.montantArriere) }}</span></div>
+            <div class="bc-metric"><span class="bc-label">Annulées</span><span class="bc-value red">{{ fmtCount(b.s.annulees) }}</span></div>
+          </div>
+          <div class="bc-progress">
+            <div class="bc-progress-label"><span>Taux de paiement</span><strong>{{ fmtPct(b.s.tauxPaiement) }}</strong></div>
+            <div class="progress-track">
+              <div class="progress-fill" [class]="'progress-fill--' + b.color" [style.width]="barWidth(b.s.tauxPaiement)"></div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div style="text-align: right; margin-top: 0.5rem;">
+      <a routerLink="/liquidation-trends" class="btn-link">Analyse détaillée →</a>
+    </div>
+  }
+</div>
+}
 
 <!-- ══════════════════════════════════════════════════════════════════
      SECTION : Centres de gestion (global dashboard)
      ══════════════════════════════════════════════════════════════════ -->
+@if (!loading) {
 <div class="dashboard-page" style="padding-top:0">
   <div class="page-header">
     <h2 class="section-page-title">Centres de gestion</h2>
@@ -124,7 +243,7 @@
         <div class="stat-card" [attr.data-color]="card.color">
           <div class="stat-icon">{{ card.icon }}</div>
           <div class="stat-body">
-            <span class="stat-value">{{ card.value | number }}</span>
+            <span class="stat-value">{{ fmtCount(card.value) }}</span>
             <span class="stat-label">{{ card.label }}</span>
           </div>
         </div>
@@ -252,46 +371,4 @@
     }
   }
 </div>
-
-<!-- ══════════════════════════════════════════════════════════════════
-     SECTION : Tendances des Liquidations (3 branches)
-     ══════════════════════════════════════════════════════════════════ -->
-<div class="dashboard-page" style="padding-top:0">
-  <div class="page-header">
-    <h2 class="section-page-title">Tendances des Liquidations</h2>
-    <p class="subtitle">Prestations Familiales · Pensions (PVID) · Risques Professionnels — année en cours</p>
-  </div>
-
-  @if (liqSummaries.length) {
-
-    <!-- Branch summary cards -->
-    <div class="branch-summaries">
-      @for (b of liqSummaries; track b.label) {
-        <div class="branch-card" [class]="'branch-card--' + b.color">
-          <div class="branch-card-header">
-            <span class="branch-card-icon">{{ b.icon }}</span>
-            <span class="branch-card-title">{{ b.label }}</span>
-          </div>
-          <div class="branch-card-body">
-            <div class="bc-metric"><span class="bc-label">Liquidations</span><span class="bc-value">{{ fmtCount(b.s.nombreLiquidations) }}</span></div>
-            <div class="bc-metric"><span class="bc-label">Bénéficiaires</span><span class="bc-value">{{ fmtCount(b.s.nombreBeneficiaires) }}</span></div>
-            <div class="bc-metric"><span class="bc-label">Montant liquidé</span><span class="bc-value">{{ fmtLiqMontant(b.s.montantLiquide) }}</span></div>
-            <div class="bc-metric"><span class="bc-label">Montant payé</span><span class="bc-value green">{{ fmtLiqMontant(b.s.montantPaye) }}</span></div>
-            <div class="bc-metric"><span class="bc-label">Arriérés</span><span class="bc-value amber">{{ fmtLiqMontant(b.s.montantArriere) }}</span></div>
-            <div class="bc-metric"><span class="bc-label">Annulées</span><span class="bc-value red">{{ fmtCount(b.s.annulees) }}</span></div>
-          </div>
-          <div class="bc-progress">
-            <div class="bc-progress-label"><span>Taux de paiement</span><strong>{{ fmtPct(b.s.tauxPaiement) }}</strong></div>
-            <div class="progress-track">
-              <div class="progress-fill" [class]="'progress-fill--' + b.color" [style.width]="barWidth(b.s.tauxPaiement)"></div>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-
-    <div style="text-align: right; margin-top: 0.5rem;">
-      <a routerLink="/liquidation-trends" class="btn-link">Analyse détaillée →</a>
-    </div>
-  }
-</div>
+}

@@ -7,6 +7,74 @@
 .page-header {
   margin-bottom: 2rem;
 }
+.page-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.btn-guide {
+  flex-shrink: 0;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #1e293b);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.btn-guide:hover {
+  background: var(--color-surface-hover, #f1f5f9);
+  border-color: var(--color-primary, #6366f1);
+}
+.guide-panel {
+  margin-top: 1.25rem;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+}
+.guide-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  margin: 0 0 1rem;
+}
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+.guide-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: var(--color-bg, #f8fafc);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+.guide-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.guide-item strong {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  margin-bottom: 0.25rem;
+}
+.guide-item p {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #64748b);
+  margin: 0;
+  line-height: 1.5;
+}
 .page-header h1 {
   font-size: 1.75rem;
   font-weight: 700;

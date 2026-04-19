@@ -26,6 +26,7 @@ export class TrendsComponent implements OnInit {
     dateTo: this.toIsoDate(new Date()),
     granularity: 'monthly',
     monnaie: 'CDF',
+    typeBank: 'B',
   };
 
   // Chart dimensions
@@ -49,28 +50,32 @@ export class TrendsComponent implements OnInit {
   // Category labels
   private catLabels: Record<string, string> = {
     // Non-split categories
-    AE_R: 'Annul. Encaissements (AE_R)',
-    BS: 'Prévu Sorties (BS)', BSR: 'Extourne Sorties (BSR)',
-    BSE: 'Exécuté Sorties (BSE)', BE: 'Prévu Entrées (BE)',
-    BER: 'Extourne Entrées (BER)', BEE: 'Exécuté Entrées (BEE)',
+    AE_R: 'Annul. Encaissements',
+    BS: 'Prévu Sorties', BSR: 'Extourne Sorties',
+    BSE: 'Exécuté Sorties', BE: 'Prévu Entrées',
+    BER: 'Extourne Entrées', BEE: 'Exécuté Entrées',
     // AE individual codes
-    A01: 'Encaissement Cotisation (A01)',
-    A02: 'DAT Intérêt (A02)',
-    A03: 'Reversement (A03)',
-    A04: 'Reliquats (A04)',
-    A05: 'Tombée DAT (A05)',
-    A06: 'Créditer (A06)',
-    A07: 'Cantonnement Levée (A07)',
-    D01: 'Report Solde Initial (D01)',
+    A01: 'Encaissement Cotisation',
+    A02: 'DAT Intérêt',
+    A03: 'Reversement',
+    A04: 'Reliquats',
+    A05: 'Tombée DAT',
+    A06: 'Créditer',
+    A07: 'Cantonnement Levée',
+    D01: 'Report Solde Initial',
     // CS sub-groups
-    FRAIS_BANCAIRES: 'Frais Bancaires (C01-C07)',
-    DEBITS_OPERATIONS: 'Débits Opérations (C10+E01)',
-    C08: 'DAT Dépôt (C08)',
-    C09: 'Instruction Permanente (C09)',
-    C11: 'Pénalités DAT (C11)',
-    C12: 'Cantonnement Fonds Gelé (C12)',
-    C13: 'Décaissement PPS (C13)',
+    FRAIS_BANCAIRES: 'Frais Bancaires',
+    DEBITS_OPERATIONS: 'Débits Opérations',
+    C08: 'DAT Dépôt',
+    C09: 'Instruction Permanente',
+    C11: 'Pénalités DAT',
+    C12: 'Cantonnement Fonds Gelé',
+    C13: 'Décaissement PPS',
   };
+
+  get currentUnit(): string {
+    return this.filter.monnaie || 'CDF';
+  }
 
   ngOnInit(): void {
     this.load();

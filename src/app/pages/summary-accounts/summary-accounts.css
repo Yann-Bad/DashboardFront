@@ -81,12 +81,13 @@
   color: var(--text-secondary, #475569);
   text-align: left;
 }
+.data-table th.text-right { text-align: right; }
 .data-table tbody tr:hover { background: #f8fafc; }
 .bank-name { font-weight: 600; }
 .bank-code { font-size: 0.75rem; color: var(--text-secondary, #64748b); }
 
 /* Utility */
-.text-right { text-align: left; }
+.text-right { text-align: right; }
 .text-bold { font-weight: 700; }
 .text-credit { color: var(--credit-color, #16a34a); }
 .text-debit { color: var(--debit-color, #dc2626); }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CentreDeGestionService } from '../../services/centre-de-gestion.service';
@@ -20,10 +20,13 @@ export class DashboardComponent implements OnInit {
 
   readonly Math = Math;
   readonly today = new Date();
+  readonly showGuide = signal(false);
 
   data: HomeDashboardDto | null = null;
   loading = true;
   error: string | null = null;
+
+  toggleGuide(): void { this.showGuide.update(v => !v); }
 
   ngOnInit(): void {
     this.service.getHomeDashboard().subscribe({

@@ -29,6 +29,8 @@ export class ForecastComponent implements OnInit {
   filter: ForecastFilter = {
     metric: 'Encaissements',
     horizon: 6,
+    anneeDebut: new Date().getFullYear() - 1,
+    anneeFin: new Date().getFullYear(),
   };
 
   // Chart
@@ -90,6 +92,14 @@ export class ForecastComponent implements OnInit {
       { name: 'Borne supérieure', series: upperSeries },
       { name: 'Borne inférieure', series: lowerSeries },
     ];
+  }
+
+  get currentUnit(): string {
+    return this.metrics.find(m => m.value === this.filter.metric)?.unit ?? '';
+  }
+
+  get yAxisLabel(): string {
+    return `Valeur (${this.currentUnit})`;
   }
 
   fmtDate(d: string): string {

@@ -69,13 +69,13 @@ export class DossiersComponent implements OnInit {
     anneeDebut:          new Date().getFullYear(),
     anneeFin:            new Date().getFullYear(),
     moisDebut:           '01',
-    moisFin:             '12',
+    moisFin:             String(new Date().getMonth() + 1).padStart(2, '0'),
     typeDossierId:       null,
     etatDossierId:       null,
     centreDeGestionId:   null,
     tenantId:            null,
     avecDetailParCentre: false,
-    granularite:         'mensuel',
+    granularite:         'trimestriel',
   };
 
   readonly mois = [

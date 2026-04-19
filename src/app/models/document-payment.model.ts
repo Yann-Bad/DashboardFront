@@ -82,10 +82,12 @@ export interface DocumentOperationDetailDto {
   exercicedocument: string | null;
   classeurdocumentId: number | null;
   nomClasseur: string | null;
+  devisedocument: string | null;
   operationId: number;
   dateoperation: string;
   montantoperation: number;
   sensoperation: string | null;
+  libelleoperation: string | null;
   codeoperation: string | null;
   codeIntitule: string | null;
   codeCategorie: string | null;
@@ -110,6 +112,7 @@ export interface ExecutionByClasseurPeriodDto {
   nombreDocuments: number;
   nombreOperations: number;
   totalMontant: number;
+  parDevise: PaymentByDeviseDto[];
 }
 
 export interface ExecutionByClasseurResultDto {
